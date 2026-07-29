@@ -31,6 +31,7 @@
     body { background: white !important; }
     #reportCard { background: white !important; color: #0f172a !important; box-shadow: none !important; }
     .print-border { border: 1px solid #94a3b8 !important; }
+    #fotoReportImg { max-height: 260px !important; }
   }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 4px; }
@@ -135,6 +136,18 @@
       </div>
     </div>
     <div class="mt-3">
+      <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Foto de la placa de datos (opcional)</label>
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-2 cursor-pointer">
+          📷 Tomar foto / Subir imagen
+          <input id="fotoPlacaInput" type="file" accept="image/*" capture="environment" class="hidden">
+        </label>
+        <button id="btnQuitarFoto" class="hidden text-xs font-semibold text-red-500">Quitar foto</button>
+        <span id="fotoPlacaCargando" class="hidden text-xs text-slate-400">Procesando imagen…</span>
+      </div>
+      <img id="fotoPlacaPreview" class="hidden mt-2 max-h-40 rounded-lg border border-sky-200 dark:border-slate-700">
+    </div>
+    <div class="mt-3">
       <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Técnico</label>
       <input id="tecnico" type="text" placeholder="Nombre del técnico" class="w-full md:w-1/3 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
     </div>
@@ -188,6 +201,15 @@
       <div class="text-right text-[11px] text-slate-400">
         <p id="rep_fecha"></p>
         <p>Servicios Robert's</p>
+      </div>
+    </div>
+
+    <!-- Foto de la placa de datos -->
+    <div id="fotoReportWrap" class="hidden mb-5">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">📷 Placa de datos del equipo</h3>
+      <img id="fotoReportImg" class="max-h-64 rounded-lg border border-sky-200 dark:border-slate-700">
+      <div class="mt-2 no-print">
+        <button id="btnCompartirFoto" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-2">📤 Compartir foto por WhatsApp</button>
       </div>
     </div>
 
@@ -690,6 +712,76 @@
     }
   }
 
+  /* ================= FOTO DE LA PLACA DE DATOS ================= */
+  let fotoPlacaActual = null; // dataURL comprimido
+
+  function comprimirImagen(file, maxDim, calidad){
+    return new Promise((resolve, reject)=>{
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = () => { img.src = reader.result; };
+      reader.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim){ height = Math.round(height * maxDim/width); width = maxDim; }
+        else if (height > maxDim){ width = Math.round(width * maxDim/height); height = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', calidad));
+      };
+      img.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function mostrarPreviewFotoPlaca(dataUrl){
+    if(dataUrl){
+      $('fotoPlacaPreview').src = dataUrl;
+      $('fotoPlacaPreview').classList.remove('hidden');
+      $('btnQuitarFoto').classList.remove('hidden');
+    } else {
+      $('fotoPlacaPreview').classList.add('hidden');
+      $('btnQuitarFoto').classList.add('hidden');
+    }
+  }
+
+  $('fotoPlacaInput').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    $('fotoPlacaCargando').classList.remove('hidden');
+    try{
+      fotoPlacaActual = await comprimirImagen(file, 1000, 0.72);
+      mostrarPreviewFotoPlaca(fotoPlacaActual);
+    }catch(err){
+      alert('No se pudo procesar la imagen: ' + err.message);
+    }
+    $('fotoPlacaCargando').classList.add('hidden');
+    e.target.value = '';
+  });
+
+  $('btnQuitarFoto').addEventListener('click', ()=>{
+    fotoPlacaActual = null;
+    mostrarPreviewFotoPlaca(null);
+  });
+
+  async function compartirFotoPlaca(){
+    if(!fotoPlacaActual) return;
+    try{
+      const res = await fetch(fotoPlacaActual);
+      const blob = await res.blob();
+      const file = new File([blob], 'placa_equipo.jpg', { type: 'image/jpeg' });
+      if(navigator.canShare && navigator.canShare({ files: [file] })){
+        await navigator.share({ files: [file], title: 'Placa de datos del equipo' });
+      } else {
+        window.open(fotoPlacaActual, '_blank');
+      }
+    }catch(err){
+      if(err.name !== 'AbortError') window.open(fotoPlacaActual, '_blank');
+    }
+  }
+  $('btnCompartirFoto').addEventListener('click', compartirFotoPlaca);
+
   /* ================= CATÁLOGO DE EQUIPOS ================= */
   function renderCatalogoDatalist(){
     const marcas = [...new Set(catalogo.map(c=>c.marca))];
@@ -908,6 +1000,8 @@
     const a = t.entradas?.antes || {}, d = t.entradas?.despues || {};
     setIf('a_te',a.te); setIf('a_hre',a.hre); setIf('a_ts',a.ts); setIf('a_hrs',a.hrs); setIf('a_v',a.v); setIf('a_psi',a.psi); setIf('a_amp',a.amp);
     setIf('d_te',d.te); setIf('d_hre',d.hre); setIf('d_ts',d.ts); setIf('d_hrs',d.hrs); setIf('d_v',d.v); setIf('d_psi',d.psi); setIf('d_amp',d.amp);
+    fotoPlacaActual = t.fotoPlaca || null;
+    mostrarPreviewFotoPlaca(fotoPlacaActual);
     closeModal('modalHistorial');
     calcularYRenderizar();
   }
@@ -1111,6 +1205,14 @@
     ];
     $('recoList').innerHTML = recos.map(t => `<li>${t}</li>`).join('');
 
+    // Foto de la placa de datos
+    if (fotoPlacaActual){
+      $('fotoReportImg').src = fotoPlacaActual;
+      $('fotoReportWrap').classList.remove('hidden');
+    } else {
+      $('fotoReportWrap').classList.add('hidden');
+    }
+
     $('reportCard').classList.remove('hidden');
     $('reportCard').scrollIntoView({behavior:'smooth', block:'start'});
 
@@ -1188,15 +1290,21 @@
         antes: { te:num('a_te'), hre:num('a_hre'), ts:num('a_ts'), hrs:num('a_hrs'), v:num('a_v'), psi:num('a_psi'), amp:num('a_amp') },
         despues: { te:num('d_te'), hre:num('d_hre'), ts:num('d_ts'), hrs:num('d_hrs'), v:num('d_v'), psi:num('d_psi'), amp:num('d_amp') }
       },
-      resultados: { antes: window.__lastReport.antes, despues: window.__lastReport.despues }
+      resultados: { antes: window.__lastReport.antes, despues: window.__lastReport.despues },
+      fotoPlaca: fotoPlacaActual || null
     };
     if (trabajo.marca && trabajo.modelo && !buscarEnCatalogo(trabajo.marca, trabajo.modelo) && trabajo.largo && trabajo.ancho){
       catalogo.push({ id: uid(), marca: trabajo.marca, modelo: trabajo.modelo, largo: trabajo.largo, ancho: trabajo.ancho });
       saveCatalogo(); renderCatalogoDatalist();
     }
     trabajos.push(trabajo);
-    saveTrabajos();
-    mostrarToast('✔ Trabajo guardado en el historial');
+    try{
+      saveTrabajos();
+      mostrarToast('✔ Trabajo guardado en el historial');
+    }catch(err){
+      trabajos.pop();
+      alert('No se pudo guardar: el almacenamiento local está lleno (probablemente por fotos guardadas). Borra fotos de trabajos viejos en el historial o haz un respaldo y limpia registros antiguos.');
+    }
   });
 
   function mostrarToast(msg){
