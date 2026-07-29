@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico Minisplit — Servicios Robert's</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0ea5e9">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Diag. Minisplit">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<style>
+  html{ background:#eff6ff; }
+  html.dark{ background:#020617; }
+  body{ background:#eff6ff; color:#0f172a; }
+  html.dark body{ background:#020617; color:#e2e8f0; }
+  @media print {
+    body * { visibility: hidden; }
+    #reportCard, #reportCard * { visibility: visible; }
+    #reportCard { position: absolute; top: 0; left: 0; width: 100%; }
+    .no-print { display: none !important; }
+    body { background: white !important; }
+    #reportCard { background: white !important; color: #0f172a !important; box-shadow: none !important; }
+    .print-border { border: 1px solid #94a3b8 !important; }
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 4px; }
+  .modal-overlay{ background: rgba(15,23,42,0.55); }
+  .status-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .status-dot.on{ background:#10b981; box-shadow:0 0 6px #10b981; }
+  .status-dot.off{ background:#94a3b8; }
+</style>
+</head>
+<body class="min-h-screen font-sans transition-colors">
+
+<header class="border-b border-sky-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 backdrop-blur sticky top-0 z-30 no-print">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-sky-100 dark:bg-sky-500/15 border border-sky-300 dark:border-sky-500/40 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold">❄</div>
+      <div>
+        <h1 class="text-sm font-bold tracking-wide text-slate-800 dark:text-slate-100 leading-none">DIAGNÓSTICO MINISPLIT</h1>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-none mt-1">Servicios Robert's</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="btnHistorial" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5">🗂 Historial</button>
+      <button id="btnConfig" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5">⚙️</button>
+      <button id="btnTheme" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-5 space-y-5">
+
+  <!-- DATOS GENERALES -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">Datos generales del equipo</h2>
+      <span id="fbStatusBadge" class="text-[10px] flex items-center gap-1 text-slate-400"><span class="status-dot off"></span> Local</span>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="col-span-2">
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Cliente</label>
+        <div class="flex gap-1">
+          <select id="clienteSel" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+            <option value="">— Sin cliente —</option>
+          </select>
+          <button id="btnNuevoCliente" class="shrink-0 bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 text-sm font-bold">+</button>
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Tipo de trabajo</label>
+        <div class="flex gap-1">
+          <select id="tipoTrabajoSel" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"></select>
+          <button id="btnEditarTipos" class="shrink-0 bg-slate-500 hover:bg-slate-400 text-white rounded-lg px-2 text-sm">✎</button>
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Fecha</label>
+        <input id="fechaTrabajo" type="date" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Marca (opcional)</label>
+        <input id="marca" list="listaMarcas" type="text" placeholder="Ej. Mirage" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        <datalist id="listaMarcas"></datalist>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Modelo (opcional)</label>
+        <input id="modelo" list="listaModelos" type="text" placeholder="Ej. MIS12" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        <datalist id="listaModelos"></datalist>
+      </div>
+      <div class="col-span-2 flex items-end gap-2">
+        <p id="autofillMsg" class="text-[11px] text-emerald-600 dark:text-emerald-400 hidden">✔ Difusor auto-completado del catálogo</p>
+        <button id="btnCatalogo" class="ml-auto text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-2">📚 Catálogo de equipos</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Capacidad nominal</label>
+        <select id="capNominalSel" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+          <option value="9000">9,000 BTU/h</option>
+          <option value="12000" selected>12,000 BTU/h</option>
+          <option value="18000">18,000 BTU/h</option>
+          <option value="24000">24,000 BTU/h</option>
+          <option value="36000">36,000 BTU/h</option>
+          <option value="custom">Otro (libre)</option>
+        </select>
+      </div>
+      <div id="capCustomWrap" class="hidden">
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Capacidad libre (BTU/h)</label>
+        <input id="capCustom" type="number" placeholder="Ej. 15000" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Largo difusor (cm)</label>
+        <input id="largo" type="number" value="70" step="0.1" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Ancho difusor (cm)</label>
+        <input id="ancho" type="number" value="8" step="0.1" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+      </div>
+    </div>
+    <div class="mt-3">
+      <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Técnico</label>
+      <input id="tecnico" type="text" placeholder="Nombre del técnico" class="w-full md:w-1/3 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+    </div>
+  </section>
+
+  <!-- BLOQUE ANTES -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-3">🔧 Antes del servicio</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">T° entrada (°C)</label><input id="a_te" type="number" step="0.1" placeholder="26" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">HR entrada (%)</label><input id="a_hre" type="number" step="0.1" placeholder="55" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">T° salida (°C)</label><input id="a_ts" type="number" step="0.1" placeholder="18" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">HR salida (%)</label><input id="a_hrs" type="number" step="0.1" placeholder="90" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Vel. aire (m/s)</label><input id="a_v" type="number" step="0.1" placeholder="2.5" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Presión baja (PSI)</label><input id="a_psi" type="number" step="0.1" placeholder="opcional" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Amperaje (A)</label><input id="a_amp" type="number" step="0.1" placeholder="opcional" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+    </div>
+  </section>
+
+  <!-- BLOQUE DESPUES -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">✅ Después del servicio <span class="text-slate-400 font-normal normal-case">(opcional — deja vacío para reporte preliminar)</span></h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">T° entrada (°C)</label><input id="d_te" type="number" step="0.1" placeholder="26" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">HR entrada (%)</label><input id="d_hre" type="number" step="0.1" placeholder="55" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">T° salida (°C)</label><input id="d_ts" type="number" step="0.1" placeholder="15" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">HR salida (%)</label><input id="d_hrs" type="number" step="0.1" placeholder="92" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Vel. aire (m/s)</label><input id="d_v" type="number" step="0.1" placeholder="4.0" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Presión baja (PSI)</label><input id="d_psi" type="number" step="0.1" placeholder="opcional" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+      <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Amperaje (A)</label><input id="d_amp" type="number" step="0.1" placeholder="opcional" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+    </div>
+  </section>
+
+  <!-- BOTONES -->
+  <section class="flex flex-wrap gap-2 no-print">
+    <button id="btnCalc" class="flex-1 min-w-[150px] bg-sky-500 hover:bg-sky-400 text-white font-bold text-sm rounded-lg px-4 py-3 transition">⚡ Calcular y Generar Reporte</button>
+    <button id="btnGuardar" class="flex-1 min-w-[150px] bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-sm rounded-lg px-4 py-3 transition">💾 Guardar en historial</button>
+    <button id="btnCopy" class="flex-1 min-w-[150px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-lg px-4 py-3 transition">📋 Copiar WhatsApp</button>
+    <button id="btnPrint" class="flex-1 min-w-[150px] bg-slate-600 hover:bg-slate-500 text-white font-bold text-sm rounded-lg px-4 py-3 transition">📄 Exportar / Imprimir PDF</button>
+  </section>
+
+  <p id="toast" class="hidden text-center text-xs text-emerald-600 dark:text-emerald-400 font-semibold no-print"></p>
+
+  <!-- REPORTE -->
+  <section id="reportCard" class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-5 print-border hidden shadow-sm">
+    <div class="flex items-center justify-between border-b border-sky-200 dark:border-slate-700 pb-3 mb-4">
+      <div>
+        <h2 class="text-base font-extrabold text-sky-600 dark:text-sky-400">📋 REPORTE DE DIAGNÓSTICO Y RENDIMIENTO TÉCNICO</h2>
+        <p id="rep_meta" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"></p>
+      </div>
+      <div class="text-right text-[11px] text-slate-400">
+        <p id="rep_fecha"></p>
+        <p>Servicios Robert's</p>
+      </div>
+    </div>
+
+    <!-- Resumen visual con gauges -->
+    <div id="gaugeRow" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
+
+    <!-- Resumen en palabras simples -->
+    <div id="resumenSimpleBox" class="mb-5 bg-sky-50 dark:bg-slate-800/60 border border-sky-200 dark:border-slate-700 rounded-xl p-4">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-2">💡 En palabras simples</h3>
+      <p id="resumenSimpleTxt" class="text-sm leading-relaxed text-slate-700 dark:text-slate-200"></p>
+      <p id="resumenElectrico" class="text-sm leading-relaxed text-slate-700 dark:text-slate-200 mt-2 hidden"></p>
+    </div>
+
+    <!-- 1. Tabla comparativa -->
+    <div class="mb-5">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">1. Resumen de parámetros técnicos</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs border-collapse">
+          <thead>
+            <tr class="text-slate-400 border-b border-sky-200 dark:border-slate-700">
+              <th class="text-left py-2 pr-2">Parámetro</th>
+              <th class="text-center py-2 px-2">Antes</th>
+              <th class="text-center py-2 px-2">Después</th>
+              <th class="text-left py-2 pl-2">Referencia</th>
+            </tr>
+          </thead>
+          <tbody id="tablaBody" class="divide-y divide-sky-100 dark:divide-slate-800"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2. Diagnóstico -->
+    <div class="mb-5">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2">2. Diagnóstico y hallazgos (antes del servicio)</h3>
+      <ul id="diagList" class="text-sm space-y-1.5 list-disc list-inside text-slate-700 dark:text-slate-200"></ul>
+    </div>
+
+    <!-- 3. Mejoras -->
+    <div id="mejorasWrap" class="mb-5 hidden">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">3. Mejoras obtenidas (después del servicio)</h3>
+      <div id="mejorasBox" class="grid grid-cols-2 gap-3 mb-2"></div>
+      <p id="evalFinal" class="text-sm font-semibold text-emerald-600 dark:text-emerald-300"></p>
+    </div>
+
+    <!-- 4. Recomendaciones -->
+    <div>
+      <h3 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-2">4. Recomendaciones para el cliente</h3>
+      <ul id="recoList" class="text-sm space-y-1.5 list-disc list-inside text-slate-600 dark:text-slate-300"></ul>
+    </div>
+
+    <div class="mt-5 pt-3 border-t border-sky-200 dark:border-slate-700 text-[10px] text-slate-400 text-center">
+      Reporte generado automáticamente · Servicios Robert's — Refrigeración, Eléctrico y Plomería
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ MODAL: CATÁLOGO DE EQUIPOS ============ -->
+<div id="modalCatalogo" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">📚 Catálogo de equipos (marca / modelo)</h3>
+      <button data-close="modalCatalogo" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-3">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <input id="cat_marca" placeholder="Marca" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="cat_modelo" placeholder="Modelo" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="cat_largo" type="number" step="0.1" placeholder="Largo cm" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="cat_ancho" type="number" step="0.1" placeholder="Ancho cm" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <button id="btnAddCatalogo" class="bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-2 py-2 text-sm font-bold">Agregar</button>
+      </div>
+      <div id="catalogoLista" class="text-sm divide-y divide-sky-100 dark:divide-slate-800"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: CLIENTES ============ -->
+<div id="modalClientes" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-xl max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">👤 Nuevo cliente</h3>
+      <button data-close="modalClientes" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-3">
+      <p id="clienteFbNote" class="text-[11px] text-slate-400"></p>
+      <div class="grid grid-cols-2 gap-2">
+        <input id="cli_nombre" placeholder="Nombre" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="cli_apellido" placeholder="Apellido" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="cli_tel" placeholder="Teléfono" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="cli_dir" placeholder="Dirección" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      </div>
+      <button id="btnAddCliente" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar cliente</button>
+      <div id="clientesLista" class="text-sm divide-y divide-sky-100 dark:divide-slate-800 pt-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: TIPOS DE TRABAJO ============ -->
+<div id="modalTipos" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-md max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">🛠 Tipos de trabajo</h3>
+      <button data-close="modalTipos" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-3">
+      <div class="flex gap-2">
+        <input id="nuevoTipo" placeholder="Ej. Instalación" class="flex-1 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <button id="btnAddTipo" class="bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Agregar</button>
+      </div>
+      <div id="tiposLista" class="text-sm divide-y divide-sky-100 dark:divide-slate-800"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: HISTORIAL DE TRABAJOS ============ -->
+<div id="modalHistorial" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">🗂 Historial de trabajos</h3>
+      <button data-close="modalHistorial" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-3">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <select id="filtroCliente" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs"><option value="">Todos los clientes</option></select>
+        <select id="filtroTipo" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs"><option value="">Todos los tipos</option></select>
+        <select id="filtroMarca" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs"><option value="">Todas las marcas</option></select>
+        <input id="filtroFecha" type="date" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      </div>
+      <div id="historialLista" class="text-sm divide-y divide-sky-100 dark:divide-slate-800"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: CONFIGURACIÓN / FIRESTORE ============ -->
+<div id="modalConfig" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">⚙️ Conexión con tu app de finanzas (Firestore)</h3>
+      <button data-close="modalConfig" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-2 text-sm">
+      <p class="text-[12px] text-slate-500 dark:text-slate-400 mb-2">Usa el mismo proyecto Firebase de tu app "Mi Bitácora Financiera" para compartir la lista de clientes. Ingresa la misma configuración y tu PIN de acceso.</p>
+      <input id="fb-apiKey" placeholder="apiKey" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <input id="fb-authDomain" placeholder="authDomain" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <input id="fb-projectId" placeholder="projectId" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <input id="fb-storageBucket" placeholder="storageBucket" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <input id="fb-messagingSenderId" placeholder="messagingSenderId" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <input id="fb-appId" placeholder="appId" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <button id="btnFbConnect" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold mt-1">Conectar al proyecto</button>
+      <div id="authLoginFields" class="hidden space-y-2 pt-2 border-t border-sky-200 dark:border-slate-700 mt-2">
+        <input id="auth-pin" type="password" placeholder="Código de acceso (PIN)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+        <button id="btnAuthLogin" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Iniciar sesión</button>
+      </div>
+      <button id="btnAuthLogout" class="hidden w-full bg-slate-500 hover:bg-slate-400 text-white rounded-lg px-3 py-2 text-sm font-bold mt-1">Cerrar sesión</button>
+      <p id="fbStatusText" class="text-[11px] text-slate-500 dark:text-slate-400 pt-1 flex items-center gap-1"><span id="fbStatusDot" class="status-dot off"></span> Sin conectar — trabajando en modo local (en este dispositivo).</p>
+      <p class="text-[11px] text-slate-400 pt-2 border-t border-sky-200 dark:border-slate-700">Nota: solo la lista de <strong>clientes</strong> se comparte con tu app de finanzas. El catálogo de equipos, tipos de trabajo e historial de diagnósticos se guardan en este dispositivo (localStorage) — puedo conectarlos también a Firestore en otra sesión si lo necesitas.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+
+  /* ================= THEME ================= */
+  const THEME_KEY = 'msd_theme';
+  function applyTheme(t){
+    document.documentElement.classList.toggle('dark', t === 'dark');
+    $('btnTheme').textContent = t === 'dark' ? '☀️' : '🌙';
+  }
+  let theme = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(theme);
+  $('btnTheme').addEventListener('click', ()=>{
+    theme = theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, theme);
+    applyTheme(theme);
+  });
+
+  /* ================= MODALES ================= */
+  function openModal(id){ $(id).classList.remove('hidden'); }
+  function closeModal(id){ $(id).classList.add('hidden'); }
+  document.querySelectorAll('[data-close]').forEach(btn=>{
+    btn.addEventListener('click', ()=>closeModal(btn.dataset.close));
+  });
+  document.querySelectorAll('.modal-overlay').forEach(ov=>{
+    ov.addEventListener('click', e=>{ if(e.target === ov) ov.classList.add('hidden'); });
+  });
+
+  /* ================= DATOS LOCALES ================= */
+  const LS_CATALOGO = 'msd_catalogo_v1';
+  const LS_CLIENTES = 'msd_clientes_local_v1';
+  const LS_TIPOS = 'msd_tipos_v1';
+  const LS_TRABAJOS = 'msd_trabajos_v1';
+  const LS_FB = 'msd_fbconfig_v1';
+
+  const DEFAULT_TIPOS = ['Mantenimiento preventivo','Instalación','Diagnóstico','Reparación','Carga de refrigerante','Otro'];
+
+  let catalogo = JSON.parse(localStorage.getItem(LS_CATALOGO) || '[]');
+  let clientesLocal = JSON.parse(localStorage.getItem(LS_CLIENTES) || '[]');
+  let tiposTrabajo = JSON.parse(localStorage.getItem(LS_TIPOS) || 'null') || DEFAULT_TIPOS.slice();
+  let trabajos = JSON.parse(localStorage.getItem(LS_TRABAJOS) || '[]');
+
+  let clientesActivos = clientesLocal; // apunta a Firestore si conecta
+  let modoCloud = false;
+  let db = null, unsubClientes = null;
+
+  function saveCatalogo(){ localStorage.setItem(LS_CATALOGO, JSON.stringify(catalogo)); }
+  function saveClientesLocal(){ localStorage.setItem(LS_CLIENTES, JSON.stringify(clientesLocal)); }
+  function saveTipos(){ localStorage.setItem(LS_TIPOS, JSON.stringify(tiposTrabajo)); }
+  function saveTrabajos(){ localStorage.setItem(LS_TRABAJOS, JSON.stringify(trabajos)); }
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  /* ================= FIRESTORE (opcional, comparte clientes con la app de finanzas) ================= */
+  const ACCESS_EMAIL = 'acceso@misfinanzas.app';
+
+  function tryLoadFbConfig(){
+    const saved = localStorage.getItem(LS_FB);
+    if(!saved) return;
+    try{
+      const cfg = JSON.parse(saved);
+      Object.keys(cfg).forEach(k=>{ const el = $('fb-'+k); if(el) el.value = cfg[k]; });
+      connectFirebase(cfg, true);
+    }catch(e){}
+  }
+
+  function setFbStatus(dotClass, text){
+    $('fbStatusText').innerHTML = '';
+    const dot = document.createElement('span');
+    dot.className = 'status-dot ' + dotClass;
+    $('fbStatusText').appendChild(dot);
+    $('fbStatusText').append(' ' + text);
+    $('fbStatusBadge').innerHTML = `<span class="status-dot ${dotClass}"></span> ${dotClass === 'on' ? 'Firestore' : 'Local'}`;
+  }
+
+  function connectFirebase(cfg, silent){
+    try{
+      if(!firebase.apps.length){ firebase.initializeApp(cfg); } else { firebase.app(); }
+      db = firebase.firestore();
+      localStorage.setItem(LS_FB, JSON.stringify(cfg));
+      $('authLoginFields').classList.remove('hidden');
+      setFbStatus('off', 'Conectado al proyecto. Ingresa tu código de acceso.');
+      firebase.auth().onAuthStateChanged(handleAuthState);
+    }catch(e){
+      setFbStatus('off', 'Error al conectar: ' + e.message);
+      if(!silent) alert('No se pudo conectar: ' + e.message);
+    }
+  }
+
+  function handleAuthState(user){
+    if(user){
+      modoCloud = true;
+      setFbStatus('on', 'Conectado — sincronizando clientes con tu app de finanzas.');
+      $('authLoginFields').classList.add('hidden');
+      $('btnAuthLogout').classList.remove('hidden');
+      if(unsubClientes) unsubClientes();
+      unsubClientes = db.collection('clientes').onSnapshot(snap=>{
+        clientesActivos = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        renderClientesSelects();
+        renderClientesModalLista();
+      }, err=>{
+        setFbStatus('off', 'Error leyendo clientes: ' + err.message);
+      });
+    } else {
+      modoCloud = false;
+      clientesActivos = clientesLocal;
+      setFbStatus('off', 'Conectado al proyecto, sin sesión. Ingresa tu código.');
+      $('authLoginFields').classList.remove('hidden');
+      $('btnAuthLogout').classList.add('hidden');
+      renderClientesSelects();
+      renderClientesModalLista();
+    }
+  }
+
+  $('btnFbConnect').addEventListener('click', ()=>{
+    const cfg = {
+      apiKey: $('fb-apiKey').value.trim(),
+      authDomain: $('fb-authDomain').value.trim(),
+      projectId: $('fb-projectId').value.trim(),
+      storageBucket: $('fb-storageBucket').value.trim(),
+      messagingSenderId: $('fb-messagingSenderId').value.trim(),
+      appId: $('fb-appId').value.trim(),
+    };
+    if(!cfg.apiKey || !cfg.projectId){ alert('Completa al menos apiKey y projectId (los mismos de tu app de finanzas).'); return; }
+    connectFirebase(cfg, false);
+  });
+  $('btnAuthLogin').addEventListener('click', ()=>{
+    const pin = $('auth-pin').value.trim();
+    if(!pin || pin.length < 6){ alert('Ingresa tu código de acceso (mínimo 6 caracteres).'); return; }
+    firebase.auth().signInWithEmailAndPassword(ACCESS_EMAIL, pin).catch(err=>{
+      alert('Código incorrecto o error de conexión: ' + err.message);
+    });
+  });
+  $('btnAuthLogout').addEventListener('click', ()=> firebase.auth().signOut());
+
+  $('btnConfig').addEventListener('click', ()=>openModal('modalConfig'));
+
+  /* ================= CATÁLOGO DE EQUIPOS ================= */
+  function renderCatalogoDatalist(){
+    const marcas = [...new Set(catalogo.map(c=>c.marca))];
+    $('listaMarcas').innerHTML = marcas.map(m=>`<option value="${m}">`).join('');
+    const modelos = [...new Set(catalogo.map(c=>c.modelo))];
+    $('listaModelos').innerHTML = modelos.map(m=>`<option value="${m}">`).join('');
+  }
+
+  function renderCatalogoLista(){
+    if(catalogo.length === 0){ $('catalogoLista').innerHTML = '<p class="text-slate-400 py-3">Sin equipos registrados todavía.</p>'; return; }
+    $('catalogoLista').innerHTML = catalogo.map(c=>`
+      <div class="flex items-center justify-between py-2">
+        <div>
+          <p class="font-semibold text-slate-700 dark:text-slate-200">${esc(c.marca)} — ${esc(c.modelo)}</p>
+          <p class="text-[11px] text-slate-400">Difusor: ${c.largo} × ${c.ancho} cm</p>
+        </div>
+        <button data-id="${c.id}" class="delCatalogo text-red-500 text-xs font-semibold">Borrar</button>
+      </div>`).join('');
+    $('catalogoLista').querySelectorAll('.delCatalogo').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        catalogo = catalogo.filter(c=>c.id !== b.dataset.id);
+        saveCatalogo(); renderCatalogoLista(); renderCatalogoDatalist();
+      });
+    });
+  }
+
+  $('btnCatalogo').addEventListener('click', ()=>{ renderCatalogoLista(); openModal('modalCatalogo'); });
+
+  $('btnAddCatalogo').addEventListener('click', ()=>{
+    const marca = $('cat_marca').value.trim();
+    const modelo = $('cat_modelo').value.trim();
+    const largo = parseFloat($('cat_largo').value);
+    const ancho = parseFloat($('cat_ancho').value);
+    if(!marca || !modelo || isNaN(largo) || isNaN(ancho)){ alert('Completa marca, modelo, largo y ancho.'); return; }
+    catalogo.push({ id: uid(), marca, modelo, largo, ancho });
+    saveCatalogo();
+    $('cat_marca').value=''; $('cat_modelo').value=''; $('cat_largo').value=''; $('cat_ancho').value='';
+    renderCatalogoLista(); renderCatalogoDatalist();
+  });
+
+  function buscarEnCatalogo(marca, modelo){
+    if(!marca || !modelo) return null;
+    const norm = s => s.trim().toLowerCase();
+    return catalogo.find(c => norm(c.marca) === norm(marca) && norm(c.modelo) === norm(modelo)) || null;
+  }
+
+  function intentarAutocompletar(){
+    const marca = $('marca').value;
+    const modelo = $('modelo').value;
+    const match = buscarEnCatalogo(marca, modelo);
+    if(match){
+      $('largo').value = match.largo;
+      $('ancho').value = match.ancho;
+      $('autofillMsg').classList.remove('hidden');
+    } else {
+      $('autofillMsg').classList.add('hidden');
+    }
+  }
+  $('marca').addEventListener('change', intentarAutocompletar);
+  $('modelo').addEventListener('change', intentarAutocompletar);
+  $('marca').addEventListener('blur', intentarAutocompletar);
+  $('modelo').addEventListener('blur', intentarAutocompletar);
+
+  /* ================= CLIENTES ================= */
+  function nombreCompleto(c){ return [c.nombre, c.apellido].filter(Boolean).join(' '); }
+
+  function renderClientesSelects(){
+    const prevSel = $('clienteSel').value;
+    const prevFil = $('filtroCliente') ? $('filtroCliente').value : '';
+    const opts = clientesActivos.map(c=>`<option value="${c.id}">${esc(nombreCompleto(c))}</option>`).join('');
+    $('clienteSel').innerHTML = '<option value="">— Sin cliente —</option>' + opts;
+    $('clienteSel').value = clientesActivos.some(c=>c.id===prevSel) ? prevSel : '';
+    if($('filtroCliente')){
+      $('filtroCliente').innerHTML = '<option value="">Todos los clientes</option>' + opts;
+      $('filtroCliente').value = clientesActivos.some(c=>c.id===prevFil) ? prevFil : '';
+    }
+  }
+
+  function renderClientesModalLista(){
+    $('clienteFbNote').textContent = modoCloud
+      ? '✔ Conectado a Firestore: estos clientes son los mismos que ves en tu app de finanzas.'
+      : 'Modo local: estos clientes solo existen en este dispositivo. Conecta Firestore (⚙️) para compartirlos con tu app de finanzas.';
+    if(clientesActivos.length === 0){ $('clientesLista').innerHTML = '<p class="text-slate-400 py-3">Sin clientes registrados.</p>'; return; }
+    $('clientesLista').innerHTML = clientesActivos.map(c=>`
+      <div class="flex items-center justify-between py-2">
+        <div>
+          <p class="font-semibold text-slate-700 dark:text-slate-200">${esc(nombreCompleto(c))}</p>
+          <p class="text-[11px] text-slate-400">${esc(c.telefono||c.tel||'')} ${c.direccion ? '· '+esc(c.direccion) : ''}</p>
+        </div>
+        ${modoCloud ? '' : `<button data-id="${c.id}" class="delCliente text-red-500 text-xs font-semibold">Borrar</button>`}
+      </div>`).join('');
+    $('clientesLista').querySelectorAll('.delCliente').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        clientesLocal = clientesLocal.filter(c=>c.id !== b.dataset.id);
+        saveClientesLocal(); renderClientesModalLista(); renderClientesSelects();
+      });
+    });
+  }
+
+  $('btnNuevoCliente').addEventListener('click', ()=>{ renderClientesModalLista(); openModal('modalClientes'); });
+
+  $('btnAddCliente').addEventListener('click', async ()=>{
+    const nombre = $('cli_nombre').value.trim();
+    const apellido = $('cli_apellido').value.trim();
+    const telefono = $('cli_tel').value.trim();
+    const direccion = $('cli_dir').value.trim();
+    if(!nombre){ alert('El nombre es obligatorio.'); return; }
+    const nuevo = { nombre, apellido, telefono, direccion };
+    if(modoCloud && db){
+      try{ await db.collection('clientes').add(nuevo); }
+      catch(e){ alert('No se pudo guardar en Firestore: ' + e.message); return; }
+    } else {
+      clientesLocal.push({ id: uid(), ...nuevo });
+      saveClientesLocal();
+      clientesActivos = clientesLocal;
+      renderClientesModalLista(); renderClientesSelects();
+    }
+    $('cli_nombre').value=''; $('cli_apellido').value=''; $('cli_tel').value=''; $('cli_dir').value='';
+  });
+
+  /* ================= TIPOS DE TRABAJO ================= */
+  function renderTipoSelect(){
+    const prev = $('tipoTrabajoSel').value;
+    $('tipoTrabajoSel').innerHTML = tiposTrabajo.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+    if(tiposTrabajo.includes(prev)) $('tipoTrabajoSel').value = prev;
+    if($('filtroTipo')){
+      const prevF = $('filtroTipo').value;
+      $('filtroTipo').innerHTML = '<option value="">Todos los tipos</option>' + tiposTrabajo.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+      $('filtroTipo').value = prevF;
+    }
+  }
+  function renderTiposLista(){
+    $('tiposLista').innerHTML = tiposTrabajo.map((t,i)=>`
+      <div class="flex items-center justify-between py-2">
+        <span>${esc(t)}</span>
+        <button data-i="${i}" class="delTipo text-red-500 text-xs font-semibold">Borrar</button>
+      </div>`).join('');
+    $('tiposLista').querySelectorAll('.delTipo').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        tiposTrabajo.splice(parseInt(b.dataset.i),1);
+        saveTipos(); renderTiposLista(); renderTipoSelect();
+      });
+    });
+  }
+  $('btnEditarTipos').addEventListener('click', ()=>{ renderTiposLista(); openModal('modalTipos'); });
+  $('btnAddTipo').addEventListener('click', ()=>{
+    const v = $('nuevoTipo').value.trim();
+    if(!v) return;
+    if(!tiposTrabajo.includes(v)) tiposTrabajo.push(v);
+    saveTipos(); $('nuevoTipo').value='';
+    renderTiposLista(); renderTipoSelect();
+  });
+
+  /* ================= HISTORIAL DE TRABAJOS ================= */
+  function renderFiltroMarcas(){
+    const marcas = [...new Set(trabajos.map(t=>t.marca).filter(Boolean))];
+    $('filtroMarca').innerHTML = '<option value="">Todas las marcas</option>' + marcas.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('');
+  }
+
+  function renderHistorialLista(){
+    renderFiltroMarcas();
+    const fc = $('filtroCliente').value, ft = $('filtroTipo').value, fm = $('filtroMarca').value, ff = $('filtroFecha').value;
+    let filtrados = trabajos.filter(t=>{
+      if(fc && t.clienteId !== fc) return false;
+      if(ft && t.tipoTrabajo !== ft) return false;
+      if(fm && t.marca !== fm) return false;
+      if(ff && t.fecha !== ff) return false;
+      return true;
+    }).sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||''));
+
+    if(filtrados.length === 0){ $('historialLista').innerHTML = '<p class="text-slate-400 py-3">Sin trabajos que coincidan.</p>'; return; }
+    $('historialLista').innerHTML = filtrados.map(t=>{
+      const cli = clientesActivos.find(c=>c.id===t.clienteId);
+      return `<div class="flex items-center justify-between py-2 gap-2">
+        <div class="min-w-0">
+          <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${esc(t.tipoTrabajo||'—')} · ${esc(cli?nombreCompleto(cli):'Sin cliente')}</p>
+          <p class="text-[11px] text-slate-400">${esc(t.fecha||'')} · ${esc(t.marca||'—')} ${esc(t.modelo||'')} · Antes: ${t.resultados?.antes?.btuh ? Math.round(t.resultados.antes.btuh)+' BTU/h' : '—'} ${t.resultados?.despues?.btuh ? '→ '+Math.round(t.resultados.despues.btuh)+' BTU/h' : ''}</p>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button data-id="${t.id}" class="verTrabajo text-sky-600 dark:text-sky-400 text-xs font-semibold">Ver</button>
+          <button data-id="${t.id}" class="delTrabajo text-red-500 text-xs font-semibold">Borrar</button>
+        </div>
+      </div>`;
+    }).join('');
+    $('historialLista').querySelectorAll('.verTrabajo').forEach(b=>{
+      b.addEventListener('click', ()=>cargarTrabajo(b.dataset.id));
+    });
+    $('historialLista').querySelectorAll('.delTrabajo').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        trabajos = trabajos.filter(t=>t.id !== b.dataset.id);
+        saveTrabajos(); renderHistorialLista();
+      });
+    });
+  }
+
+  function cargarTrabajo(id){
+    const t = trabajos.find(x=>x.id===id);
+    if(!t) return;
+    $('clienteSel').value = t.clienteId || '';
+    $('tipoTrabajoSel').value = t.tipoTrabajo || '';
+    $('fechaTrabajo').value = t.fecha || '';
+    $('marca').value = t.marca || '';
+    $('modelo').value = t.modelo || '';
+    $('largo').value = t.largo || 70;
+    $('ancho').value = t.ancho || 8;
+    $('tecnico').value = t.tecnico || '';
+    if(t.capNominal && ['9000','12000','18000','24000','36000'].includes(String(t.capNominal))){
+      $('capNominalSel').value = String(t.capNominal);
+      $('capCustomWrap').classList.add('hidden');
+    } else if(t.capNominal){
+      $('capNominalSel').value = 'custom';
+      $('capCustom').value = t.capNominal;
+      $('capCustomWrap').classList.remove('hidden');
+    }
+    const setIf = (id,val)=>{ if(val !== undefined && val !== null) $(id).value = val; };
+    const a = t.entradas?.antes || {}, d = t.entradas?.despues || {};
+    setIf('a_te',a.te); setIf('a_hre',a.hre); setIf('a_ts',a.ts); setIf('a_hrs',a.hrs); setIf('a_v',a.v); setIf('a_psi',a.psi); setIf('a_amp',a.amp);
+    setIf('d_te',d.te); setIf('d_hre',d.hre); setIf('d_ts',d.ts); setIf('d_hrs',d.hrs); setIf('d_v',d.v); setIf('d_psi',d.psi); setIf('d_amp',d.amp);
+    closeModal('modalHistorial');
+    calcularYRenderizar();
+  }
+
+  $('btnHistorial').addEventListener('click', ()=>{ renderClientesSelects(); renderHistorialLista(); openModal('modalHistorial'); });
+  ['filtroCliente','filtroTipo','filtroMarca','filtroFecha'].forEach(id=>{
+    $(id).addEventListener('change', renderHistorialLista);
+  });
+
+  /* ================= UTILIDADES ================= */
+  function esc(s){ return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function num(id){ const v = parseFloat($(id).value); return isNaN(v) ? null : v; }
+  function r(n, d){ if(n===null||n===undefined||isNaN(n)) return '—'; return n.toFixed(d); }
+
+  $('capNominalSel').addEventListener('change', e=>{
+    $('capCustomWrap').classList.toggle('hidden', e.target.value !== 'custom');
+  });
+
+  /* ================= MOTOR DE CÁLCULO ================= */
+  function entalpia(T, HR){
+    if (T === null || HR === null) return null;
+    const Psat = 0.61078 * Math.exp((17.27 * T) / (T + 237.3));
+    const Pv = Psat * (HR / 100);
+    const w = 0.622 * (Pv / (101.325 - Pv));
+    return (1.006 * T) + w * (2501 + 1.86 * T);
+  }
+
+  function calcBloque(te, hre, ts, hrs, v, psi, amp, A){
+    const out = { valid: false };
+    if (te !== null && ts !== null) out.deltaT = te - ts;
+    if (v !== null && A !== null){
+      const Q = v * A;
+      out.cfm = Q * 2118.88;
+      out.m3h = Q * 3600;
+    }
+    const hIn = entalpia(te, hre);
+    const hOut = entalpia(ts, hrs);
+    if (hIn !== null && hOut !== null){
+      out.hIn = hIn; out.hOut = hOut;
+      out.deltaH_kJ = hIn - hOut;
+      out.deltaH_BTUlb = out.deltaH_kJ / 2.326;
+    }
+    if (out.cfm !== undefined && out.deltaH_BTUlb !== undefined){
+      out.btuh = 4.5 * out.cfm * out.deltaH_BTUlb;
+    }
+    out.te=te; out.hre=hre; out.ts=ts; out.hrs=hrs; out.v=v; out.psi=psi; out.amp=amp;
+    out.valid = (te !== null && ts !== null) || (v !== null);
+    return out;
+  }
+
+  function generarDiagnostico(a){
+    const hallazgos = [];
+    if (a.v !== null && a.v < 3.0) hallazgos.push('🔴 <strong>Restricción severa de flujo</strong> por acumulación de suciedad en turbina/filtros.');
+    if (a.deltaT !== undefined && a.deltaT > 12 && a.v !== null && a.v < 3.0) hallazgos.push('🟡 <strong>Sobre-enfriamiento localizado</strong> por aire lento (falta de volumen de expulsión).');
+    if (a.deltaT !== undefined && a.deltaT < 8) hallazgos.push('🔴 <strong>Bajo intercambio térmico</strong> — posible falta de refrigerante o serpentín saturado.');
+    if (a.v !== null && a.v >= 3.5 && a.v <= 4.5 && a.deltaT !== undefined && a.deltaT >= 8 && a.deltaT <= 12) hallazgos.push('🟢 Parámetros de flujo y salto térmico dentro de rango aceptable.');
+    if (hallazgos.length === 0) hallazgos.push('ℹ️ No se detectaron anomalías críticas con los datos capturados; se recomienda validar con manómetros para diagnóstico completo de refrigerante.');
+    return hallazgos;
+  }
+
+  function badge(label, value, unit, estado){
+    const colores = {
+      ok: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300',
+      warn: 'bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-300',
+      bad: 'bg-red-50 dark:bg-red-500/10 border-red-300 dark:border-red-500/40 text-red-700 dark:text-red-300',
+      neutral: 'bg-sky-50 dark:bg-slate-800 border-sky-200 dark:border-slate-700 text-sky-700 dark:text-sky-300'
+    };
+    return `<div class="border rounded-xl p-3 text-center ${colores[estado]}">
+      <p class="text-[10px] uppercase tracking-wider font-bold opacity-80">${label}</p>
+      <p class="text-lg font-extrabold mt-1">${value}<span class="text-xs font-medium ml-0.5">${unit}</span></p>
+    </div>`;
+  }
+
+  function calcularYRenderizar(){
+    const largo = num('largo');
+    const ancho = num('ancho');
+    const A = (largo !== null && ancho !== null) ? (largo/100) * (ancho/100) * 0.82 : null;
+
+    const capSel = $('capNominalSel').value;
+    const capNominal = capSel === 'custom' ? num('capCustom') : parseFloat(capSel);
+
+    const antes = calcBloque(num('a_te'), num('a_hre'), num('a_ts'), num('a_hrs'), num('a_v'), num('a_psi'), num('a_amp'), A);
+    const despuesInputs = [num('d_te'), num('d_hre'), num('d_ts'), num('d_hrs'), num('d_v'), num('d_psi'), num('d_amp')];
+    const tieneDespues = despuesInputs.some(v => v !== null);
+    const despues = tieneDespues ? calcBloque(...despuesInputs, A) : null;
+
+    if (!antes.valid){
+      alert('Ingresa al menos temperaturas de entrada/salida o velocidad de aire en el bloque "Antes del servicio" para calcular.');
+      return;
+    }
+
+    const clienteId = $('clienteSel').value;
+    const cliente = clientesActivos.find(c=>c.id===clienteId);
+    const tipoTrabajo = $('tipoTrabajoSel').value;
+    const marca = $('marca').value.trim();
+    const modelo = $('modelo').value.trim();
+    const tecnico = $('tecnico').value.trim();
+    if(!$('fechaTrabajo').value) $('fechaTrabajo').value = new Date().toISOString().slice(0,10);
+
+    const metaParts = [];
+    if (cliente) metaParts.push('Cliente: ' + nombreCompleto(cliente));
+    if (tipoTrabajo) metaParts.push('Trabajo: ' + tipoTrabajo);
+    if (marca || modelo) metaParts.push('Equipo: ' + [marca,modelo].filter(Boolean).join(' '));
+    metaParts.push('Capacidad nominal: ' + (capNominal ? capNominal.toLocaleString('es-MX') + ' BTU/h' : '—'));
+    if (tecnico) metaParts.push('Técnico: ' + tecnico);
+    $('rep_meta').textContent = metaParts.join('  ·  ');
+    $('rep_fecha').textContent = new Date($('fechaTrabajo').value + 'T12:00:00').toLocaleDateString('es-MX', {year:'numeric', month:'long', day:'numeric'});
+
+    // Gauges visuales
+    const estadoV = v => v===null ? 'neutral' : (v>=3.5&&v<=4.5?'ok':(v<3.0?'bad':'warn'));
+    const estadoDT = dt => dt===undefined ? 'neutral' : (dt>=8&&dt<=12?'ok':(dt<8?'bad':'warn'));
+    let gauges = '';
+    gauges += badge('ΔT Antes', r(antes.deltaT,1), '°C', estadoDT(antes.deltaT));
+    gauges += badge('Vel. aire Antes', r(antes.v,2), 'm/s', estadoV(antes.v));
+    gauges += badge('Capacidad Antes', r(antes.btuh,0), 'BTU/h', 'neutral');
+    if (despues){
+      gauges += badge('Capacidad Después', r(despues.btuh,0), 'BTU/h', 'ok');
+    } else {
+      gauges += badge('Capacidad Nominal', capNominal ? capNominal.toLocaleString('es-MX') : '—', 'BTU/h', 'neutral');
+    }
+    $('gaugeRow').innerHTML = gauges;
+
+    // Tabla
+    const fila = (nombre, av, dv, ref, dHas) => `<tr>
+      <td class="py-2 pr-2 text-slate-600 dark:text-slate-300">${nombre}</td>
+      <td class="py-2 px-2 text-center font-semibold text-slate-700 dark:text-slate-200">${av}</td>
+      <td class="py-2 px-2 text-center font-semibold ${dHas ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-300 dark:text-slate-600'}">${dv}</td>
+      <td class="py-2 pl-2 text-slate-400 text-[11px]">${ref}</td>
+    </tr>`;
+    let tbody = '';
+    tbody += fila('Temp. Entrada / Retorno (°C)', r(antes.te,1)+'°C', despues? r(despues.te,1)+'°C':'—', '—', !!despues?.te);
+    tbody += fila('HR Entrada (%)', r(antes.hre,1)+'%', despues? r(despues.hre,1)+'%':'—', '—', !!despues?.hre);
+    tbody += fila('Temp. Salida / Inyección (°C)', r(antes.ts,1)+'°C', despues? r(despues.ts,1)+'°C':'—', '—', !!despues?.ts);
+    tbody += fila('HR Salida (%)', r(antes.hrs,1)+'%', despues? r(despues.hrs,1)+'%':'—', '—', !!despues?.hrs);
+    tbody += fila('Salto Térmico ΔT (°C)', r(antes.deltaT,1)+'°C', despues? r(despues.deltaT,1)+'°C':'—', '8.0 – 12.0 °C', despues?.deltaT!==undefined);
+    tbody += fila('Velocidad del Aire (m/s)', r(antes.v,2), despues? r(despues.v,2):'—', '3.5 – 4.5 m/s', !!despues?.v);
+    tbody += fila('Flujo de Aire (CFM)', r(antes.cfm,0), despues? r(despues.cfm,0):'—', '—', !!despues?.cfm);
+    tbody += fila('Flujo de Aire (m³/h)', r(antes.m3h,0), despues? r(despues.m3h,0):'—', '—', !!despues?.m3h);
+    tbody += fila('Capacidad Real Antes/Después (BTU/h)', r(antes.btuh,0), despues? r(despues.btuh,0):'—', capNominal? 'Nominal: '+capNominal.toLocaleString('es-MX'):'—', !!despues?.btuh);
+    tbody += fila('Presión Baja (PSI)', r(antes.psi,1), despues? r(despues.psi,1):'—', 'Referencial, varía según refrigerante', despues?.psi!==null && despues?.psi!==undefined);
+    tbody += fila('Amperaje (A)', r(antes.amp,1), despues? r(despues.amp,1):'—', 'Solo registro', despues?.amp!==null && despues?.amp!==undefined);
+    $('tablaBody').innerHTML = tbody;
+
+    // Diagnóstico
+    const hallazgos = generarDiagnostico(antes);
+    $('diagList').innerHTML = hallazgos.map(h => `<li>${h}</li>`).join('');
+
+    // Resumen en palabras simples + mejoras
+    let gananciaCFM = null, gananciaBTU = null;
+    if (despues && antes.cfm && despues.cfm && antes.btuh && despues.btuh){
+      gananciaCFM = ((despues.cfm - antes.cfm) / antes.cfm) * 100;
+      gananciaBTU = ((despues.btuh - antes.btuh) / antes.btuh) * 100;
+      $('mejorasWrap').classList.remove('hidden');
+      $('mejorasBox').innerHTML = `
+        <div class="bg-sky-50 dark:bg-slate-800 rounded-lg p-3 text-center">
+          <p class="text-[11px] text-slate-400">Ganancia de Flujo</p>
+          <p class="text-xl font-extrabold ${gananciaCFM>=0?'text-emerald-600 dark:text-emerald-400':'text-red-500'}">${gananciaCFM>=0?'+':''}${r(gananciaCFM,1)}%</p>
+        </div>
+        <div class="bg-sky-50 dark:bg-slate-800 rounded-lg p-3 text-center">
+          <p class="text-[11px] text-slate-400">Ganancia de Capacidad</p>
+          <p class="text-xl font-extrabold ${gananciaBTU>=0?'text-emerald-600 dark:text-emerald-400':'text-red-500'}">${gananciaBTU>=0?'+':''}${r(gananciaBTU,1)}%</p>
+        </div>`;
+      let evalTxt = '';
+      if (capNominal){
+        const pctNominal = (despues.btuh / capNominal) * 100;
+        evalTxt = `Operación ${pctNominal>=90?'óptima':pctNominal>=75?'aceptable':'aún deficiente'} alcanzando el ${r(pctNominal,0)}% de la capacidad nominal (${capNominal.toLocaleString('es-MX')} BTU/h).`;
+      } else {
+        evalTxt = 'Servicio completado con mejora medible en flujo y capacidad de enfriamiento.';
+      }
+      $('evalFinal').textContent = evalTxt;
+
+      $('resumenSimpleTxt').textContent = `Tu minisplit ahora enfría un ${r(Math.abs(gananciaBTU),0)}% ${gananciaBTU>=0?'mejor':'menos'} que antes del servicio, y mueve un ${r(Math.abs(gananciaCFM),0)}% ${gananciaCFM>=0?'más':'menos'} de aire fresco hacia el cuarto. En otras palabras: antes tardaba más en enfriar el espacio; ahora lo hace más rápido y de forma más pareja.`;
+    } else {
+      $('mejorasWrap').classList.add('hidden');
+      $('resumenSimpleTxt').textContent = `Este es un diagnóstico preliminar (antes del servicio). El equipo está entregando aproximadamente ${capNominal ? r((antes.btuh/capNominal)*100,0)+'% de su capacidad nominal' : Math.round(antes.btuh||0)+' BTU/h de enfriamiento real'}. Con el servicio se espera recuperar flujo de aire y capacidad de enfriamiento.`;
+    }
+
+    // Comentario de consumo eléctrico
+    const ampAntes = antes.amp, ampDespues = despues?.amp;
+    if (ampAntes !== null && ampAntes !== undefined && ampDespues !== null && ampDespues !== undefined){
+      const cambioAmp = ((ampDespues - ampAntes) / ampAntes) * 100;
+      $('resumenElectrico').classList.remove('hidden');
+      if (cambioAmp < -1){
+        $('resumenElectrico').innerHTML = `⚡ Además, el equipo ahora consume un <strong>${r(Math.abs(cambioAmp),0)}% menos de corriente</strong> (${r(ampAntes,1)}A → ${r(ampDespues,1)}A) para lograr el mismo o mejor enfriamiento, lo cual puede reflejarse en un ahorro en el recibo de luz.`;
+      } else if (cambioAmp > 1){
+        $('resumenElectrico').innerHTML = `⚡ El amperaje subió de ${r(ampAntes,1)}A a ${r(ampDespues,1)}A (+${r(cambioAmp,0)}%). Esto puede ser normal si el compresor ahora trabaja con carga completa de refrigerante; si el aumento es muy alto, vale la pena revisar el estado eléctrico del equipo.`;
+      } else {
+        $('resumenElectrico').innerHTML = `⚡ El consumo eléctrico se mantuvo prácticamente igual (${r(ampAntes,1)}A → ${r(ampDespues,1)}A).`;
+      }
+    } else {
+      $('resumenElectrico').classList.add('hidden');
+    }
+
+    // Recomendaciones
+    const recos = [
+      '🧼 Limpieza de filtros plásticos cada 30 días en uso residencial, cada 15 días en uso comercial/intensivo.',
+      '🌡️ Mantener temperatura de confort sugerida entre 24°C y 25°C para eficiencia energética óptima.',
+      '🔍 Revisión de nivel de refrigerante y presiones al menos una vez al año.',
+      '🧹 Lavado de turbina y serpentín evaporador en servicio preventivo anual.',
+      '⚡ Verificar consumo eléctrico y estado de conexiones para prevenir fallas prematuras.'
+    ];
+    $('recoList').innerHTML = recos.map(t => `<li>${t}</li>`).join('');
+
+    $('reportCard').classList.remove('hidden');
+    $('reportCard').scrollIntoView({behavior:'smooth', block:'start'});
+
+    window.__lastReport = { antes, despues, capNominal, cliente, tecnico, tipoTrabajo, marca, modelo, hallazgos, gananciaCFM, gananciaBTU };
+  }
+
+  function textoPlano(){
+    const d = window.__lastReport;
+    if (!d) return '';
+    const { antes, despues, capNominal, cliente, tecnico, tipoTrabajo, marca, modelo, hallazgos, gananciaCFM, gananciaBTU } = d;
+    let t = '';
+    t += `📋 *REPORTE DE DIAGNÓSTICO Y RENDIMIENTO TÉCNICO*\n`;
+    t += `_Servicios Robert's — Refrigeración/Eléctrico/Plomería_\n`;
+    t += `📅 ${new Date($('fechaTrabajo').value + 'T12:00:00').toLocaleDateString('es-MX')}\n`;
+    if (cliente) t += `👤 Cliente: ${nombreCompleto(cliente)}\n`;
+    if (tipoTrabajo) t += `🛠 Trabajo: ${tipoTrabajo}\n`;
+    if (marca || modelo) t += `❄️ Equipo: ${[marca,modelo].filter(Boolean).join(' ')}\n`;
+    if (tecnico) t += `🧑‍🔧 Técnico: ${tecnico}\n`;
+    if (capNominal) t += `📐 Capacidad nominal: ${capNominal.toLocaleString('es-MX')} BTU/h\n`;
+
+    t += `\n*💡 EN PALABRAS SIMPLES*\n${$('resumenSimpleTxt').textContent}\n`;
+    if (!$('resumenElectrico').classList.contains('hidden')) t += `${$('resumenElectrico').textContent}\n`;
+
+    t += `\n*1. PARÁMETROS TÉCNICOS*\n`;
+    t += `▫️ T° Entrada: ${r(antes.te,1)}°C ${despues? '→ '+r(despues.te,1)+'°C':''}\n`;
+    t += `▫️ HR Entrada: ${r(antes.hre,1)}% ${despues? '→ '+r(despues.hre,1)+'%':''}\n`;
+    t += `▫️ T° Salida: ${r(antes.ts,1)}°C ${despues? '→ '+r(despues.ts,1)+'°C':''}\n`;
+    t += `▫️ HR Salida: ${r(antes.hrs,1)}% ${despues? '→ '+r(despues.hrs,1)+'%':''}\n`;
+    t += `▫️ ΔT: ${r(antes.deltaT,1)}°C ${despues? '→ '+r(despues.deltaT,1)+'°C':''} (ideal 8–12°C)\n`;
+    t += `▫️ Vel. aire: ${r(antes.v,2)} m/s ${despues? '→ '+r(despues.v,2)+' m/s':''} (ideal 3.5–4.5)\n`;
+    t += `▫️ Flujo: ${r(antes.cfm,0)} CFM ${despues? '→ '+r(despues.cfm,0)+' CFM':''}\n`;
+    t += `▫️ Capacidad real: ${r(antes.btuh,0)} BTU/h ${despues? '→ '+r(despues.btuh,0)+' BTU/h':''}\n`;
+    if (antes.psi!==null || despues?.psi!==null) t += `▫️ Presión baja: ${r(antes.psi,1)} PSI ${despues? '→ '+r(despues.psi,1)+' PSI':''}\n`;
+    if (antes.amp!==null || despues?.amp!==null) t += `▫️ Amperaje: ${r(antes.amp,1)} A ${despues? '→ '+r(despues.amp,1)+' A':''}\n`;
+
+    t += `\n*2. DIAGNÓSTICO (ANTES)*\n`;
+    hallazgos.forEach(h => { t += `${h.replace(/<\/?strong>/g,'*')}\n`; });
+
+    if (gananciaCFM !== null){
+      t += `\n*3. MEJORAS OBTENIDAS*\n`;
+      t += `📈 Ganancia de flujo: ${gananciaCFM>=0?'+':''}${r(gananciaCFM,1)}%\n`;
+      t += `📈 Ganancia de capacidad: ${gananciaBTU>=0?'+':''}${r(gananciaBTU,1)}%\n`;
+      if (capNominal){
+        const pctNominal = (despues.btuh / capNominal) * 100;
+        t += `✅ Operación al ${r(pctNominal,0)}% de capacidad nominal.\n`;
+      }
+    }
+
+    t += `\n*4. RECOMENDACIONES*\n`;
+    t += `🧼 Limpieza de filtros cada 30 días (residencial) / 15 días (comercial)\n`;
+    t += `🌡️ Temperatura de confort sugerida: 24°C – 25°C\n`;
+    t += `🔍 Revisión anual de refrigerante y presiones\n`;
+    t += `🧹 Lavado de turbina y serpentín en servicio preventivo\n`;
+    t += `\n_Reporte generado automáticamente_ ❄️`;
+    return t;
+  }
+
+  /* ================= GUARDAR EN HISTORIAL ================= */
+  $('btnGuardar').addEventListener('click', ()=>{
+    if (!window.__lastReport) calcularYRenderizar();
+    if (!window.__lastReport) return;
+    const capSel = $('capNominalSel').value;
+    const capNominal = capSel === 'custom' ? num('capCustom') : parseFloat(capSel);
+    const trabajo = {
+      id: uid(),
+      fecha: $('fechaTrabajo').value || new Date().toISOString().slice(0,10),
+      clienteId: $('clienteSel').value || null,
+      tipoTrabajo: $('tipoTrabajoSel').value || null,
+      marca: $('marca').value.trim(),
+      modelo: $('modelo').value.trim(),
+      largo: num('largo'), ancho: num('ancho'),
+      capNominal: capNominal,
+      tecnico: $('tecnico').value.trim(),
+      entradas: {
+        antes: { te:num('a_te'), hre:num('a_hre'), ts:num('a_ts'), hrs:num('a_hrs'), v:num('a_v'), psi:num('a_psi'), amp:num('a_amp') },
+        despues: { te:num('d_te'), hre:num('d_hre'), ts:num('d_ts'), hrs:num('d_hrs'), v:num('d_v'), psi:num('d_psi'), amp:num('d_amp') }
+      },
+      resultados: { antes: window.__lastReport.antes, despues: window.__lastReport.despues }
+    };
+    if (trabajo.marca && trabajo.modelo && !buscarEnCatalogo(trabajo.marca, trabajo.modelo) && trabajo.largo && trabajo.ancho){
+      catalogo.push({ id: uid(), marca: trabajo.marca, modelo: trabajo.modelo, largo: trabajo.largo, ancho: trabajo.ancho });
+      saveCatalogo(); renderCatalogoDatalist();
+    }
+    trabajos.push(trabajo);
+    saveTrabajos();
+    mostrarToast('✔ Trabajo guardado en el historial');
+  });
+
+  function mostrarToast(msg){
+    const toast = $('toast');
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(()=>toast.classList.add('hidden'), 2200);
+  }
+
+  $('btnCalc').addEventListener('click', calcularYRenderizar);
+
+  $('btnCopy').addEventListener('click', async () => {
+    if (!window.__lastReport) calcularYRenderizar();
+    if (!window.__lastReport) return;
+    const txt = textoPlano();
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){
+      const ta = document.createElement('textarea');
+      ta.value = txt; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    mostrarToast('✔ Reporte copiado al portapapeles');
+  });
+
+  $('btnPrint').addEventListener('click', () => {
+    if (!window.__lastReport) calcularYRenderizar();
+    if ($('reportCard').classList.contains('hidden')) return;
+    window.print();
+  });
+
+  /* ================= INIT ================= */
+  $('fechaTrabajo').value = new Date().toISOString().slice(0,10);
+  renderCatalogoDatalist();
+  renderClientesSelects();
+  renderTipoSelect();
+  tryLoadFbConfig();
+
+  /* ================= PWA: service worker + botón instalar ================= */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    });
+  }
+  let deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const btn = document.createElement('button');
+    btn.id = 'btnInstalarApp';
+    btn.textContent = '⬇️ Instalar app';
+    btn.className = 'text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-2.5 py-1.5';
+    document.querySelector('header .flex.items-center.gap-2').prepend(btn);
+    btn.addEventListener('click', async () => {
+      btn.remove();
+      if (deferredInstallPrompt) await deferredInstallPrompt.prompt();
+    });
+  });
+})();
+</script>
+</body>
+</html>
