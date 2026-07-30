@@ -134,6 +134,10 @@
         <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Ancho difusor (cm)</label>
         <input id="ancho" type="number" value="8" step="0.1" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
       </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Amperaje nominal (A) — opcional</label>
+        <input id="ampNominal" type="number" step="0.1" placeholder="Ej. 5.5" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+      </div>
     </div>
     <div class="mt-3">
       <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Foto de la placa de datos (opcional)</label>
@@ -988,6 +992,7 @@
     $('largo').value = t.largo || 70;
     $('ancho').value = t.ancho || 8;
     $('tecnico').value = t.tecnico || '';
+    $('ampNominal').value = (t.ampNominal !== undefined && t.ampNominal !== null) ? t.ampNominal : '';
     if(t.capNominal && ['9000','12000','18000','24000','36000'].includes(String(t.capNominal))){
       $('capNominalSel').value = String(t.capNominal);
       $('capCustomWrap').classList.add('hidden');
@@ -1052,13 +1057,31 @@
     return out;
   }
 
-  function generarDiagnostico(a){
+  const TIPOS_ENFOQUE_REPARACION = ['reparación', 'reparacion', 'carga de refrigerante'];
+  function esEnfoqueReparacion(tipoTrabajo){
+    if (!tipoTrabajo) return false;
+    const t = tipoTrabajo.trim().toLowerCase();
+    return TIPOS_ENFOQUE_REPARACION.some(k => t.includes(k));
+  }
+
+  function generarDiagnostico(a, tipoTrabajo){
+    const reparacion = esEnfoqueReparacion(tipoTrabajo);
     const hallazgos = [];
-    if (a.v !== null && a.v < 3.0) hallazgos.push('🔴 <strong>Restricción severa de flujo</strong> por acumulación de suciedad en turbina/filtros.');
-    if (a.deltaT !== undefined && a.deltaT > 12 && a.v !== null && a.v < 3.0) hallazgos.push('🟡 <strong>Sobre-enfriamiento localizado</strong> por aire lento (falta de volumen de expulsión).');
-    if (a.deltaT !== undefined && a.deltaT < 8) hallazgos.push('🔴 <strong>Bajo intercambio térmico</strong> — posible falta de refrigerante o serpentín saturado.');
-    if (a.v !== null && a.v >= 3.5 && a.v <= 4.5 && a.deltaT !== undefined && a.deltaT >= 8 && a.deltaT <= 12) hallazgos.push('🟢 Parámetros de flujo y salto térmico dentro de rango aceptable.');
-    if (hallazgos.length === 0) hallazgos.push('ℹ️ No se detectaron anomalías críticas con los datos capturados; se recomienda validar con manómetros para diagnóstico completo de refrigerante.');
+    if (reparacion){
+      // Enfoque reparación / corrección técnica: falla de componentes, fuga de refrigerante, presiones.
+      if (a.deltaT !== undefined && a.deltaT < 8) hallazgos.push('🔴 <strong>ΔT por debajo de lo normal</strong> — indicio de falta de carga de refrigerante, fuga en el sistema o serpentín saturado que impide el intercambio térmico correcto.');
+      if (a.psi !== null && a.psi !== undefined && a.psi < 60) hallazgos.push('🔴 <strong>Presión baja fuera de rango</strong> — compatible con fuga de refrigerante o carga insuficiente; se recomienda prueba de fugas antes de recargar.');
+      if (a.amp !== null && a.amp !== undefined) hallazgos.push('🟡 Amperaje registrado antes de la intervención como referencia para evaluar el estado del compresor/capacitor tras la reparación.');
+      if (a.v !== null && a.v < 3.0) hallazgos.push('🟡 También se detectó restricción de flujo de aire, que se corrige en la misma intervención junto con la falla técnica principal.');
+      if (hallazgos.length === 0) hallazgos.push('ℹ️ Se realizó revisión técnica del sistema; no se detectaron anomalías críticas adicionales con los datos capturados, se recomienda validar presiones y estado del compresor con manómetros.');
+    } else {
+      // Enfoque mantenimiento / limpieza: restricción de flujo por suciedad.
+      if (a.v !== null && a.v < 3.0) hallazgos.push('🔴 <strong>Restricción severa de flujo</strong> por acumulación de suciedad en turbina/filtros.');
+      if (a.deltaT !== undefined && a.deltaT > 12 && a.v !== null && a.v < 3.0) hallazgos.push('🟡 <strong>Sobre-enfriamiento localizado</strong> por aire lento (falta de volumen de expulsión).');
+      if (a.deltaT !== undefined && a.deltaT < 8) hallazgos.push('🔴 <strong>Bajo intercambio térmico</strong> — posible falta de refrigerante o serpentín saturado.');
+      if (a.v !== null && a.v >= 3.5 && a.v <= 4.5 && a.deltaT !== undefined && a.deltaT >= 8 && a.deltaT <= 12) hallazgos.push('🟢 Parámetros de flujo y salto térmico dentro de rango aceptable.');
+      if (hallazgos.length === 0) hallazgos.push('ℹ️ No se detectaron anomalías críticas con los datos capturados; se recomienda validar con manómetros para diagnóstico completo de refrigerante.');
+    }
     return hallazgos;
   }
 
@@ -1141,12 +1164,19 @@
     tbody += fila('Flujo de Aire (CFM)', r(antes.cfm,0), despues? r(despues.cfm,0):'—', '—', !!despues?.cfm);
     tbody += fila('Flujo de Aire (m³/h)', r(antes.m3h,0), despues? r(despues.m3h,0):'—', '—', !!despues?.m3h);
     tbody += fila('Capacidad Real Antes/Después (BTU/h)', r(antes.btuh,0), despues? r(despues.btuh,0):'—', capNominal? 'Nominal: '+capNominal.toLocaleString('es-MX'):'—', !!despues?.btuh);
-    tbody += fila('Presión Baja (PSI)', r(antes.psi,1), despues? r(despues.psi,1):'—', 'Referencial, varía según refrigerante', despues?.psi!==null && despues?.psi!==undefined);
-    tbody += fila('Amperaje (A)', r(antes.amp,1), despues? r(despues.amp,1):'—', 'Solo registro', despues?.amp!==null && despues?.amp!==undefined);
+    const hayPsi = (antes.psi!==null && antes.psi!==undefined) || (despues?.psi!==null && despues?.psi!==undefined);
+    const hayAmp = (antes.amp!==null && antes.amp!==undefined) || (despues?.amp!==null && despues?.amp!==undefined);
+    const ampNominal = num('ampNominal');
+    if (hayPsi){
+      tbody += fila('Presión Baja (PSI)', r(antes.psi,1), despues? r(despues.psi,1):'—', 'Referencial, varía según refrigerante', despues?.psi!==null && despues?.psi!==undefined);
+    }
+    if (hayAmp){
+      tbody += fila('Amperaje (A)', r(antes.amp,1), despues? r(despues.amp,1):'—', ampNominal!==null ? 'Nom: '+r(ampNominal,1)+' A' : 'Solo registro', despues?.amp!==null && despues?.amp!==undefined);
+    }
     $('tablaBody').innerHTML = tbody;
 
     // Diagnóstico
-    const hallazgos = generarDiagnostico(antes);
+    const hallazgos = generarDiagnostico(antes, tipoTrabajo);
     $('diagList').innerHTML = hallazgos.map(h => `<li>${h}</li>`).join('');
 
     // Resumen en palabras simples + mejoras
@@ -1285,6 +1315,7 @@
       modelo: $('modelo').value.trim(),
       largo: num('largo'), ancho: num('ancho'),
       capNominal: capNominal,
+      ampNominal: num('ampNominal'),
       tecnico: $('tecnico').value.trim(),
       entradas: {
         antes: { te:num('a_te'), hre:num('a_hre'), ts:num('a_ts'), hrs:num('a_hrs'), v:num('a_v'), psi:num('a_psi'), amp:num('a_amp') },
@@ -1366,4 +1397,3 @@
 </script>
 </body>
 </html>
-
