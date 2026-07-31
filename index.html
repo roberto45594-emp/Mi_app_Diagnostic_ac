@@ -31,7 +31,7 @@
     body { background: white !important; }
     #reportCard { background: white !important; color: #0f172a !important; box-shadow: none !important; }
     .print-border { border: 1px solid #94a3b8 !important; }
-    #fotoReportImg { max-height: 260px !important; }
+    #fotoReportWrap img { max-height: 220px !important; }
   }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 4px; }
@@ -169,6 +169,18 @@
       <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Presión baja (PSI)</label><input id="a_psi" type="number" step="0.1" placeholder="opcional" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
       <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Amperaje (A)</label><input id="a_amp" type="number" step="0.1" placeholder="opcional" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
     </div>
+    <div class="mt-3">
+      <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Foto antes del servicio (opcional)</label>
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="text-xs font-semibold bg-amber-100 dark:bg-slate-800 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-slate-700 rounded-lg px-3 py-2 cursor-pointer">
+          📷 Tomar / Subir foto
+          <input id="fotoAntesInput" type="file" accept="image/*" capture="environment" class="hidden">
+        </label>
+        <button id="btnQuitarFotoAntes" class="hidden text-xs font-semibold text-red-500">Quitar foto</button>
+        <span id="fotoAntesCargando" class="hidden text-xs text-slate-400">Procesando imagen…</span>
+      </div>
+      <img id="fotoAntesPreview" class="hidden mt-2 max-h-40 rounded-lg border border-amber-200 dark:border-slate-700">
+    </div>
   </section>
 
   <!-- BLOQUE DESPUES -->
@@ -182,6 +194,18 @@
       <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Vel. aire (m/s)</label><input id="d_v" type="number" step="0.1" placeholder="4.0" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
       <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Presión baja (PSI)</label><input id="d_psi" type="number" step="0.1" placeholder="opcional" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
       <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Amperaje (A)</label><input id="d_amp" type="number" step="0.1" placeholder="opcional" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+    </div>
+    <div class="mt-3">
+      <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Foto después del servicio (opcional)</label>
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="text-xs font-semibold bg-emerald-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-slate-700 rounded-lg px-3 py-2 cursor-pointer">
+          📷 Tomar / Subir foto
+          <input id="fotoDespuesInput" type="file" accept="image/*" capture="environment" class="hidden">
+        </label>
+        <button id="btnQuitarFotoDespues" class="hidden text-xs font-semibold text-red-500">Quitar foto</button>
+        <span id="fotoDespuesCargando" class="hidden text-xs text-slate-400">Procesando imagen…</span>
+      </div>
+      <img id="fotoDespuesPreview" class="hidden mt-2 max-h-40 rounded-lg border border-emerald-200 dark:border-slate-700">
     </div>
   </section>
 
@@ -208,12 +232,25 @@
       </div>
     </div>
 
-    <!-- Foto de la placa de datos -->
+    <!-- Fotos del equipo -->
     <div id="fotoReportWrap" class="hidden mb-5">
-      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">📷 Placa de datos del equipo</h3>
-      <img id="fotoReportImg" class="max-h-64 rounded-lg border border-sky-200 dark:border-slate-700">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">📷 Fotos del equipo</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div id="fotoBox_placa" class="hidden">
+          <p class="text-[11px] text-slate-400 mb-1">Placa de datos</p>
+          <img id="fotoReportImg_placa" class="w-full max-h-56 object-contain rounded-lg border border-sky-200 dark:border-slate-700">
+        </div>
+        <div id="fotoBox_antes" class="hidden">
+          <p class="text-[11px] text-slate-400 mb-1">Antes del servicio</p>
+          <img id="fotoReportImg_antes" class="w-full max-h-56 object-contain rounded-lg border border-amber-200 dark:border-slate-700">
+        </div>
+        <div id="fotoBox_despues" class="hidden">
+          <p class="text-[11px] text-slate-400 mb-1">Después del servicio</p>
+          <img id="fotoReportImg_despues" class="w-full max-h-56 object-contain rounded-lg border border-emerald-200 dark:border-slate-700">
+        </div>
+      </div>
       <div class="mt-2 no-print">
-        <button id="btnCompartirFoto" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-2">📤 Compartir foto por WhatsApp</button>
+        <button id="btnCompartirFoto" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-2">📤 Compartir fotos por WhatsApp</button>
       </div>
     </div>
 
@@ -450,19 +487,22 @@
 
   const DEFAULT_TIPOS = ['Mantenimiento preventivo','Instalación','Diagnóstico','Reparación','Carga de refrigerante','Otro'];
 
-  let catalogo = JSON.parse(localStorage.getItem(LS_CATALOGO) || '[]');
+  let catalogoLocal = JSON.parse(localStorage.getItem(LS_CATALOGO) || '[]');
   let clientesLocal = JSON.parse(localStorage.getItem(LS_CLIENTES) || '[]');
-  let tiposTrabajo = JSON.parse(localStorage.getItem(LS_TIPOS) || 'null') || DEFAULT_TIPOS.slice();
-  let trabajos = JSON.parse(localStorage.getItem(LS_TRABAJOS) || '[]');
+  let tiposTrabajoLocal = JSON.parse(localStorage.getItem(LS_TIPOS) || 'null') || DEFAULT_TIPOS.slice();
+  let trabajosLocal = JSON.parse(localStorage.getItem(LS_TRABAJOS) || '[]');
 
+  let catalogo = catalogoLocal;       // apunta a Firestore si conecta
+  let tiposTrabajo = tiposTrabajoLocal;
+  let trabajos = trabajosLocal;
   let clientesActivos = clientesLocal; // apunta a Firestore si conecta
   let modoCloud = false;
-  let db = null, unsubClientes = null;
+  let db = null, unsubClientes = null, unsubCatalogo = null, unsubTipos = null, unsubTrabajos = null;
 
-  function saveCatalogo(){ localStorage.setItem(LS_CATALOGO, JSON.stringify(catalogo)); }
+  function saveCatalogo(){ localStorage.setItem(LS_CATALOGO, JSON.stringify(catalogoLocal)); }
   function saveClientesLocal(){ localStorage.setItem(LS_CLIENTES, JSON.stringify(clientesLocal)); }
-  function saveTipos(){ localStorage.setItem(LS_TIPOS, JSON.stringify(tiposTrabajo)); }
-  function saveTrabajos(){ localStorage.setItem(LS_TRABAJOS, JSON.stringify(trabajos)); }
+  function saveTipos(){ localStorage.setItem(LS_TIPOS, JSON.stringify(tiposTrabajoLocal)); }
+  function saveTrabajos(){ localStorage.setItem(LS_TRABAJOS, JSON.stringify(trabajosLocal)); }
 
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
@@ -505,27 +545,94 @@
   function handleAuthState(user){
     if(user){
       modoCloud = true;
-      setFbStatus('on', 'Conectado — sincronizando clientes con tu app de finanzas.');
+      setFbStatus('on', 'Conectado — sincronizando datos con tu app de finanzas.');
       $('authLoginFields').classList.add('hidden');
       $('btnAuthLogout').classList.remove('hidden');
+
       if(unsubClientes) unsubClientes();
       unsubClientes = db.collection('clientes').onSnapshot(snap=>{
         clientesActivos = snap.docs.map(d=>({id:d.id, ...d.data()}));
         renderClientesSelects();
         renderClientesModalLista();
-      }, err=>{
-        setFbStatus('off', 'Error leyendo clientes: ' + err.message);
-      });
+      }, err=>{ setFbStatus('off', 'Error leyendo clientes: ' + err.message); });
+
+      if(unsubCatalogo) unsubCatalogo();
+      unsubCatalogo = db.collection('catalogo_equipos').onSnapshot(snap=>{
+        catalogo = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        renderCatalogoDatalist();
+        if(!$('modalCatalogo').classList.contains('hidden')) renderCatalogoLista();
+      }, err=>{ setFbStatus('off', 'Error leyendo catálogo: ' + err.message); });
+
+      if(unsubTipos) unsubTipos();
+      unsubTipos = db.collection('config').doc('tipos_trabajo').onSnapshot(doc=>{
+        const items = doc.exists ? doc.data().items : null;
+        tiposTrabajo = (items && items.length) ? items : DEFAULT_TIPOS.slice();
+        renderTipoSelect();
+        if(!$('modalTipos').classList.contains('hidden')) renderTiposLista();
+      }, err=>{ setFbStatus('off', 'Error leyendo tipos de trabajo: ' + err.message); });
+
+      if(unsubTrabajos) unsubTrabajos();
+      unsubTrabajos = db.collection('trabajos_minisplit').onSnapshot(snap=>{
+        trabajos = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        if(!$('modalHistorial').classList.contains('hidden')) renderHistorialLista();
+      }, err=>{ setFbStatus('off', 'Error leyendo historial: ' + err.message); });
+
+      setTimeout(ofrecerMigracionLocal, 1500);
     } else {
       modoCloud = false;
       clientesActivos = clientesLocal;
+      catalogo = catalogoLocal;
+      tiposTrabajo = tiposTrabajoLocal;
+      trabajos = trabajosLocal;
       setFbStatus('off', 'Conectado al proyecto, sin sesión. Ingresa tu código.');
       $('authLoginFields').classList.remove('hidden');
       $('btnAuthLogout').classList.add('hidden');
       renderClientesSelects();
       renderClientesModalLista();
+      renderCatalogoDatalist();
+      renderTipoSelect();
     }
   }
+
+  async function ofrecerMigracionLocal(){
+    if(!modoCloud) return;
+    try{
+      const [snapCat, snapTip, snapTra] = await Promise.all([
+        db.collection('catalogo_equipos').limit(1).get(),
+        db.collection('config').doc('tipos_trabajo').get(),
+        db.collection('trabajos_minisplit').limit(1).get()
+      ]);
+      const nubeVacia = snapCat.empty && !snapTip.exists && snapTra.empty;
+      const hayDatosLocales = catalogoLocal.length || trabajosLocal.length || (tiposTrabajoLocal.length && JSON.stringify(tiposTrabajoLocal) !== JSON.stringify(DEFAULT_TIPOS));
+      if(nubeVacia && hayDatosLocales){
+        if(confirm(`Encontré datos guardados solo en este dispositivo (${catalogoLocal.length} equipos, ${trabajosLocal.length} trabajos en historial). ¿Quieres subirlos ahora a la nube para verlos desde cualquier dispositivo?`)){
+          await migrarDatosLocalesACloud();
+        }
+      }
+    }catch(e){ /* silencioso, no interrumpir si falla el chequeo */ }
+  }
+
+  async function migrarDatosLocalesACloud(){
+    mostrarToast('⏳ Subiendo datos a la nube…');
+    try{
+      for(const eq of catalogoLocal){
+        const { id, ...rest } = eq;
+        await db.collection('catalogo_equipos').add(rest);
+      }
+      await db.collection('config').doc('tipos_trabajo').set({ items: tiposTrabajoLocal });
+      for(const tr of trabajosLocal){
+        const { id, fotoPlaca, fotoAntes, fotoDespues, ...rest } = tr;
+        const ref = await db.collection('trabajos_minisplit').add(rest);
+        // Las fotos locales quedan asociadas al nuevo id de la nube para seguir viéndolas en este dispositivo.
+        moverFotosLocales(id, ref.id);
+      }
+      mostrarToast('✔ Datos migrados a la nube correctamente');
+    }catch(e){
+      alert('Ocurrió un error migrando: ' + e.message + '\n\nRevisa que tus reglas de Firestore permitan leer/escribir en "catalogo_equipos", "config" y "trabajos_minisplit" para usuarios autenticados.');
+    }
+  }
+
+  $('btnConfig').addEventListener('click', ()=>openModal('modalConfig'));
 
   $('btnFbConnect').addEventListener('click', ()=>{
     const cfg = {
@@ -548,15 +655,14 @@
   });
   $('btnAuthLogout').addEventListener('click', ()=> firebase.auth().signOut());
 
-  $('btnConfig').addEventListener('click', ()=>openModal('modalConfig'));
-
   /* ================= RESPALDO LOCAL (.json) ================= */
   function snapshotDatos(){
     return {
       tipo: 'respaldo_diagnostico_minisplit',
-      version: 1,
+      version: 2,
       exportado: new Date().toISOString(),
-      catalogo, clientesLocal, tiposTrabajo, trabajos
+      catalogo: catalogoLocal, clientesLocal, tiposTrabajo: tiposTrabajoLocal, trabajos: trabajosLocal,
+      fotosLocalMap
     };
   }
 
@@ -566,14 +672,15 @@
       return false;
     }
     if(!confirm(`Esto reemplazará tus datos locales actuales (catálogo, clientes locales, tipos de trabajo e historial) con el respaldo ${origen ? 'de '+origen : ''} del ${new Date(data.exportado).toLocaleString('es-MX')}. ¿Continuar?`)) return false;
-    catalogo = data.catalogo || [];
+    catalogoLocal = data.catalogo || [];
     clientesLocal = data.clientesLocal || [];
-    tiposTrabajo = (data.tiposTrabajo && data.tiposTrabajo.length) ? data.tiposTrabajo : DEFAULT_TIPOS.slice();
-    trabajos = data.trabajos || [];
-    saveCatalogo(); saveClientesLocal(); saveTipos(); saveTrabajos();
-    if(!modoCloud) clientesActivos = clientesLocal;
+    tiposTrabajoLocal = (data.tiposTrabajo && data.tiposTrabajo.length) ? data.tiposTrabajo : DEFAULT_TIPOS.slice();
+    trabajosLocal = data.trabajos || [];
+    fotosLocalMap = data.fotosLocalMap || {};
+    saveCatalogo(); saveClientesLocal(); saveTipos(); saveTrabajos(); saveFotosLocalMap();
+    if(!modoCloud){ clientesActivos = clientesLocal; catalogo = catalogoLocal; tiposTrabajo = tiposTrabajoLocal; trabajos = trabajosLocal; }
     renderCatalogoDatalist(); renderClientesSelects(); renderTipoSelect();
-    mostrarToast('✔ Datos restaurados correctamente');
+    mostrarToast(modoCloud ? '✔ Respaldo restaurado en este dispositivo (estás conectado a la nube; usa "Migrar" si quieres subirlo)' : '✔ Datos restaurados correctamente');
     return true;
   }
 
@@ -716,8 +823,22 @@
     }
   }
 
-  /* ================= FOTO DE LA PLACA DE DATOS ================= */
-  let fotoPlacaActual = null; // dataURL comprimido
+  /* ================= FOTOS: PLACA / ANTES / DESPUÉS ================= */
+  const TIPOS_FOTO = ['placa','antes','despues'];
+  let fotosActuales = { placa: null, antes: null, despues: null };   // dataURL de esta sesión (recién capturada)
+  let fotosLinksActuales = { placa: null, antes: null, despues: null }; // {id, viewLink, embedLink} si ya está en Drive
+  const LS_FOTOS_LOCAL = 'msd_fotos_local_v1'; // respaldo local por trabajo cuando NO hay Drive conectado
+  let fotosLocalMap = JSON.parse(localStorage.getItem(LS_FOTOS_LOCAL) || '{}');
+  function saveFotosLocalMap(){ try{ localStorage.setItem(LS_FOTOS_LOCAL, JSON.stringify(fotosLocalMap)); }catch(e){ /* espacio lleno, se ignora */ } }
+  function moverFotosLocales(oldId, newId){
+    if(fotosLocalMap[oldId]){ fotosLocalMap[newId] = fotosLocalMap[oldId]; delete fotosLocalMap[oldId]; saveFotosLocalMap(); }
+  }
+
+  const FOTO_ID_INPUT = { placa: 'fotoPlacaInput', antes: 'fotoAntesInput', despues: 'fotoDespuesInput' };
+  const FOTO_ID_PREVIEW = { placa: 'fotoPlacaPreview', antes: 'fotoAntesPreview', despues: 'fotoDespuesPreview' };
+  const FOTO_ID_QUITAR = { placa: 'btnQuitarFoto', antes: 'btnQuitarFotoAntes', despues: 'btnQuitarFotoDespues' };
+  const FOTO_ID_CARGANDO = { placa: 'fotoPlacaCargando', antes: 'fotoAntesCargando', despues: 'fotoDespuesCargando' };
+  const FOTO_LABEL = { placa: 'Placa de datos', antes: 'Antes del servicio', despues: 'Después del servicio' };
 
   function comprimirImagen(file, maxDim, calidad){
     return new Promise((resolve, reject)=>{
@@ -739,52 +860,111 @@
     });
   }
 
-  function mostrarPreviewFotoPlaca(dataUrl){
-    if(dataUrl){
-      $('fotoPlacaPreview').src = dataUrl;
-      $('fotoPlacaPreview').classList.remove('hidden');
-      $('btnQuitarFoto').classList.remove('hidden');
+  function mostrarPreviewFoto(tipo, dataUrlOEmbedLink){
+    const img = $(FOTO_ID_PREVIEW[tipo]);
+    const btn = $(FOTO_ID_QUITAR[tipo]);
+    if(dataUrlOEmbedLink){
+      img.src = dataUrlOEmbedLink;
+      img.classList.remove('hidden');
+      btn.classList.remove('hidden');
     } else {
-      $('fotoPlacaPreview').classList.add('hidden');
-      $('btnQuitarFoto').classList.add('hidden');
+      img.classList.add('hidden');
+      btn.classList.add('hidden');
     }
   }
 
-  $('fotoPlacaInput').addEventListener('change', async (e)=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    $('fotoPlacaCargando').classList.remove('hidden');
-    try{
-      fotoPlacaActual = await comprimirImagen(file, 1000, 0.72);
-      mostrarPreviewFotoPlaca(fotoPlacaActual);
-    }catch(err){
-      alert('No se pudo procesar la imagen: ' + err.message);
-    }
-    $('fotoPlacaCargando').classList.add('hidden');
-    e.target.value = '';
+  TIPOS_FOTO.forEach(tipo=>{
+    $(FOTO_ID_INPUT[tipo]).addEventListener('change', async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      $(FOTO_ID_CARGANDO[tipo]).classList.remove('hidden');
+      try{
+        fotosActuales[tipo] = await comprimirImagen(file, 1000, 0.72);
+        fotosLinksActuales[tipo] = null; // la nueva foto reemplaza cualquier link anterior de Drive
+        mostrarPreviewFoto(tipo, fotosActuales[tipo]);
+      }catch(err){
+        alert('No se pudo procesar la imagen: ' + err.message);
+      }
+      $(FOTO_ID_CARGANDO[tipo]).classList.add('hidden');
+      e.target.value = '';
+    });
+    $(FOTO_ID_QUITAR[tipo]).addEventListener('click', ()=>{
+      fotosActuales[tipo] = null;
+      fotosLinksActuales[tipo] = null;
+      mostrarPreviewFoto(tipo, null);
+    });
   });
 
-  $('btnQuitarFoto').addEventListener('click', ()=>{
-    fotoPlacaActual = null;
-    mostrarPreviewFotoPlaca(null);
-  });
-
-  async function compartirFotoPlaca(){
-    if(!fotoPlacaActual) return;
+  async function compartirFotosReporte(){
+    const disponibles = TIPOS_FOTO.filter(t => fotosActuales[t] || fotosLinksActuales[t]);
+    if(disponibles.length === 0) return;
     try{
-      const res = await fetch(fotoPlacaActual);
-      const blob = await res.blob();
-      const file = new File([blob], 'placa_equipo.jpg', { type: 'image/jpeg' });
-      if(navigator.canShare && navigator.canShare({ files: [file] })){
-        await navigator.share({ files: [file], title: 'Placa de datos del equipo' });
+      const files = [];
+      for(const tipo of disponibles){
+        const src = fotosActuales[tipo] || fotosLinksActuales[tipo].embedLink;
+        const res = await fetch(src);
+        const blob = await res.blob();
+        files.push(new File([blob], `${tipo}_equipo.jpg`, { type: 'image/jpeg' }));
+      }
+      if(navigator.canShare && navigator.canShare({ files })){
+        await navigator.share({ files, title: 'Fotos del diagnóstico' });
       } else {
-        window.open(fotoPlacaActual, '_blank');
+        disponibles.forEach(tipo => window.open(fotosActuales[tipo] || fotosLinksActuales[tipo].viewLink, '_blank'));
       }
     }catch(err){
-      if(err.name !== 'AbortError') window.open(fotoPlacaActual, '_blank');
+      if(err.name !== 'AbortError') disponibles.forEach(tipo => window.open(fotosActuales[tipo] || fotosLinksActuales[tipo].viewLink, '_blank'));
     }
   }
-  $('btnCompartirFoto').addEventListener('click', compartirFotoPlaca);
+  $('btnCompartirFoto').addEventListener('click', compartirFotosReporte);
+
+  /* ---- Subida a Google Drive con link público (para que las fotos viajen en el trabajo sin pesar en Firestore) ---- */
+  let gdFotosFolderId = null;
+
+  async function gdObtenerCarpetaFotos(){
+    if(gdFotosFolderId) return gdFotosFolderId;
+    const q = encodeURIComponent("name = 'Fotos_Diagnostico_Minisplit' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`, { headers: { 'Authorization': 'Bearer ' + gdAccessToken } });
+    const json = await res.json();
+    if(json.files && json.files.length){ gdFotosFolderId = json.files[0].id; return gdFotosFolderId; }
+    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Fotos_Diagnostico_Minisplit', mimeType: 'application/vnd.google-apps.folder' })
+    });
+    const created = await createRes.json();
+    gdFotosFolderId = created.id;
+    return gdFotosFolderId;
+  }
+
+  async function gdSubirFoto(dataUrl, nombreArchivo){
+    if(!gdAccessToken) throw new Error('Google Drive no está conectado.');
+    const folderId = await gdObtenerCarpetaFotos();
+    const blob = await (await fetch(dataUrl)).blob();
+    const metadata = { name: nombreArchivo, mimeType: 'image/jpeg', parents: [folderId] };
+    const boundary = 'msdfotoboundary';
+    const metaPart = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n`;
+    const filePartHeader = `--${boundary}\r\nContent-Type: image/jpeg\r\n\r\n`;
+    const closing = `\r\n--${boundary}--`;
+    const body = new Blob([metaPart, filePartHeader, blob, closing]);
+    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': `multipart/related; boundary=${boundary}` },
+      body
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const file = await res.json();
+    // Hacer el link público ("cualquiera con el link puede ver") para que se vea en el reporte sin pedir sesión.
+    await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}/permissions`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'reader', type: 'anyone' })
+    });
+    return {
+      id: file.id,
+      viewLink: `https://drive.google.com/file/d/${file.id}/view`,
+      embedLink: `https://drive.google.com/uc?export=view&id=${file.id}`
+    };
+  }
 
   /* ================= CATÁLOGO DE EQUIPOS ================= */
   function renderCatalogoDatalist(){
@@ -806,24 +986,34 @@
       </div>`).join('');
     $('catalogoLista').querySelectorAll('.delCatalogo').forEach(b=>{
       b.addEventListener('click', ()=>{
-        catalogo = catalogo.filter(c=>c.id !== b.dataset.id);
-        saveCatalogo(); renderCatalogoLista(); renderCatalogoDatalist();
+        if(modoCloud && db){
+          db.collection('catalogo_equipos').doc(b.dataset.id).delete().catch(e=>alert('No se pudo borrar: '+e.message));
+        } else {
+          catalogoLocal = catalogoLocal.filter(c=>c.id !== b.dataset.id);
+          saveCatalogo(); catalogo = catalogoLocal;
+          renderCatalogoLista(); renderCatalogoDatalist();
+        }
       });
     });
   }
 
   $('btnCatalogo').addEventListener('click', ()=>{ renderCatalogoLista(); openModal('modalCatalogo'); });
 
-  $('btnAddCatalogo').addEventListener('click', ()=>{
+  $('btnAddCatalogo').addEventListener('click', async ()=>{
     const marca = $('cat_marca').value.trim();
     const modelo = $('cat_modelo').value.trim();
     const largo = parseFloat($('cat_largo').value);
     const ancho = parseFloat($('cat_ancho').value);
     if(!marca || !modelo || isNaN(largo) || isNaN(ancho)){ alert('Completa marca, modelo, largo y ancho.'); return; }
-    catalogo.push({ id: uid(), marca, modelo, largo, ancho });
-    saveCatalogo();
+    if(modoCloud && db){
+      try{ await db.collection('catalogo_equipos').add({ marca, modelo, largo, ancho }); }
+      catch(e){ alert('No se pudo guardar en la nube: ' + e.message); return; }
+    } else {
+      catalogoLocal.push({ id: uid(), marca, modelo, largo, ancho });
+      saveCatalogo(); catalogo = catalogoLocal;
+      renderCatalogoLista(); renderCatalogoDatalist();
+    }
     $('cat_marca').value=''; $('cat_modelo').value=''; $('cat_largo').value=''; $('cat_ancho').value='';
-    renderCatalogoLista(); renderCatalogoDatalist();
   });
 
   function buscarEnCatalogo(marca, modelo){
@@ -925,8 +1115,15 @@
       </div>`).join('');
     $('tiposLista').querySelectorAll('.delTipo').forEach(b=>{
       b.addEventListener('click', ()=>{
-        tiposTrabajo.splice(parseInt(b.dataset.i),1);
-        saveTipos(); renderTiposLista(); renderTipoSelect();
+        const idx = parseInt(b.dataset.i);
+        if(modoCloud && db){
+          const nuevos = tiposTrabajo.filter((_,i)=>i!==idx);
+          db.collection('config').doc('tipos_trabajo').set({ items: nuevos }).catch(e=>alert('No se pudo guardar: '+e.message));
+        } else {
+          tiposTrabajoLocal.splice(idx,1);
+          saveTipos(); tiposTrabajo = tiposTrabajoLocal;
+          renderTiposLista(); renderTipoSelect();
+        }
       });
     });
   }
@@ -934,9 +1131,16 @@
   $('btnAddTipo').addEventListener('click', ()=>{
     const v = $('nuevoTipo').value.trim();
     if(!v) return;
-    if(!tiposTrabajo.includes(v)) tiposTrabajo.push(v);
-    saveTipos(); $('nuevoTipo').value='';
-    renderTiposLista(); renderTipoSelect();
+    if(modoCloud && db){
+      if(tiposTrabajo.includes(v)) { $('nuevoTipo').value=''; return; }
+      const nuevos = [...tiposTrabajo, v];
+      db.collection('config').doc('tipos_trabajo').set({ items: nuevos }).catch(e=>alert('No se pudo guardar: '+e.message));
+    } else {
+      if(!tiposTrabajoLocal.includes(v)) tiposTrabajoLocal.push(v);
+      saveTipos(); tiposTrabajo = tiposTrabajoLocal;
+      renderTiposLista(); renderTipoSelect();
+    }
+    $('nuevoTipo').value='';
   });
 
   /* ================= HISTORIAL DE TRABAJOS ================= */
@@ -975,8 +1179,14 @@
     });
     $('historialLista').querySelectorAll('.delTrabajo').forEach(b=>{
       b.addEventListener('click', ()=>{
-        trabajos = trabajos.filter(t=>t.id !== b.dataset.id);
-        saveTrabajos(); renderHistorialLista();
+        if(!confirm('¿Borrar este trabajo del historial?')) return;
+        if(modoCloud && db){
+          db.collection('trabajos_minisplit').doc(b.dataset.id).delete().catch(e=>alert('No se pudo borrar: '+e.message));
+        } else {
+          trabajosLocal = trabajosLocal.filter(t=>t.id !== b.dataset.id);
+          saveTrabajos(); trabajos = trabajosLocal;
+          renderHistorialLista();
+        }
       });
     });
   }
@@ -1005,8 +1215,25 @@
     const a = t.entradas?.antes || {}, d = t.entradas?.despues || {};
     setIf('a_te',a.te); setIf('a_hre',a.hre); setIf('a_ts',a.ts); setIf('a_hrs',a.hrs); setIf('a_v',a.v); setIf('a_psi',a.psi); setIf('a_amp',a.amp);
     setIf('d_te',d.te); setIf('d_hre',d.hre); setIf('d_ts',d.ts); setIf('d_hrs',d.hrs); setIf('d_v',d.v); setIf('d_psi',d.psi); setIf('d_amp',d.amp);
-    fotoPlacaActual = t.fotoPlaca || null;
-    mostrarPreviewFotoPlaca(fotoPlacaActual);
+
+    TIPOS_FOTO.forEach(tipo=>{
+      const linkField = 'foto' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Link'; // fotoPlacaLink, fotoAntesLink, fotoDespuesLink
+      const localCache = fotosLocalMap[t.id];
+      if(t[linkField]){
+        fotosLinksActuales[tipo] = t[linkField];
+        fotosActuales[tipo] = null;
+        mostrarPreviewFoto(tipo, t[linkField].embedLink);
+      } else if(localCache && localCache[tipo]){
+        fotosActuales[tipo] = localCache[tipo];
+        fotosLinksActuales[tipo] = null;
+        mostrarPreviewFoto(tipo, localCache[tipo]);
+      } else {
+        fotosActuales[tipo] = null;
+        fotosLinksActuales[tipo] = null;
+        mostrarPreviewFoto(tipo, null);
+      }
+    });
+
     closeModal('modalHistorial');
     calcularYRenderizar();
   }
@@ -1235,13 +1462,19 @@
     ];
     $('recoList').innerHTML = recos.map(t => `<li>${t}</li>`).join('');
 
-    // Foto de la placa de datos
-    if (fotoPlacaActual){
-      $('fotoReportImg').src = fotoPlacaActual;
-      $('fotoReportWrap').classList.remove('hidden');
-    } else {
-      $('fotoReportWrap').classList.add('hidden');
-    }
+    // Fotos del equipo (placa / antes / después)
+    let hayAlgunaFoto = false;
+    TIPOS_FOTO.forEach(tipo=>{
+      const src = fotosActuales[tipo] || (fotosLinksActuales[tipo] && fotosLinksActuales[tipo].embedLink);
+      if(src){
+        $('fotoReportImg_' + tipo).src = src;
+        $('fotoBox_' + tipo).classList.remove('hidden');
+        hayAlgunaFoto = true;
+      } else {
+        $('fotoBox_' + tipo).classList.add('hidden');
+      }
+    });
+    $('fotoReportWrap').classList.toggle('hidden', !hayAlgunaFoto);
 
     $('reportCard').classList.remove('hidden');
     $('reportCard').scrollIntoView({behavior:'smooth', block:'start'});
@@ -1301,13 +1534,13 @@
   }
 
   /* ================= GUARDAR EN HISTORIAL ================= */
-  $('btnGuardar').addEventListener('click', ()=>{
+  $('btnGuardar').addEventListener('click', async ()=>{
     if (!window.__lastReport) calcularYRenderizar();
     if (!window.__lastReport) return;
     const capSel = $('capNominalSel').value;
     const capNominal = capSel === 'custom' ? num('capCustom') : parseFloat(capSel);
-    const trabajo = {
-      id: uid(),
+    const idLocal = uid();
+    const trabajoBase = {
       fecha: $('fechaTrabajo').value || new Date().toISOString().slice(0,10),
       clienteId: $('clienteSel').value || null,
       tipoTrabajo: $('tipoTrabajoSel').value || null,
@@ -1321,20 +1554,60 @@
         antes: { te:num('a_te'), hre:num('a_hre'), ts:num('a_ts'), hrs:num('a_hrs'), v:num('a_v'), psi:num('a_psi'), amp:num('a_amp') },
         despues: { te:num('d_te'), hre:num('d_hre'), ts:num('d_ts'), hrs:num('d_hrs'), v:num('d_v'), psi:num('d_psi'), amp:num('d_amp') }
       },
-      resultados: { antes: window.__lastReport.antes, despues: window.__lastReport.despues },
-      fotoPlaca: fotoPlacaActual || null
+      resultados: { antes: window.__lastReport.antes, despues: window.__lastReport.despues }
     };
-    if (trabajo.marca && trabajo.modelo && !buscarEnCatalogo(trabajo.marca, trabajo.modelo) && trabajo.largo && trabajo.ancho){
-      catalogo.push({ id: uid(), marca: trabajo.marca, modelo: trabajo.modelo, largo: trabajo.largo, ancho: trabajo.ancho });
-      saveCatalogo(); renderCatalogoDatalist();
+
+    // Auto-agregar el equipo al catálogo si es nuevo
+    if (trabajoBase.marca && trabajoBase.modelo && !buscarEnCatalogo(trabajoBase.marca, trabajoBase.modelo) && trabajoBase.largo && trabajoBase.ancho){
+      const nuevoEquipo = { marca: trabajoBase.marca, modelo: trabajoBase.modelo, largo: trabajoBase.largo, ancho: trabajoBase.ancho };
+      if(modoCloud && db){ db.collection('catalogo_equipos').add(nuevoEquipo).catch(()=>{}); }
+      else { catalogoLocal.push({ id: uid(), ...nuevoEquipo }); saveCatalogo(); catalogo = catalogoLocal; renderCatalogoDatalist(); }
     }
-    trabajos.push(trabajo);
-    try{
-      saveTrabajos();
-      mostrarToast('✔ Trabajo guardado en el historial');
-    }catch(err){
-      trabajos.pop();
-      alert('No se pudo guardar: el almacenamiento local está lleno (probablemente por fotos guardadas). Borra fotos de trabajos viejos en el historial o haz un respaldo y limpia registros antiguos.');
+
+    if(modoCloud && db && gdAccessToken){
+      // Modo nube + Drive conectado: sube fotos nuevas a Drive y guarda solo los links (Firestore queda liviano)
+      mostrarToast('⏳ Guardando y subiendo fotos…');
+      try{
+        for(const tipo of TIPOS_FOTO){
+          if(fotosActuales[tipo]){
+            const nombreArchivo = `${tipo}_${trabajoBase.marca||'equipo'}_${trabajoBase.fecha}.jpg`;
+            const link = await gdSubirFoto(fotosActuales[tipo], nombreArchivo);
+            trabajoBase['foto' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Link'] = link;
+          } else if(fotosLinksActuales[tipo]){
+            trabajoBase['foto' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Link'] = fotosLinksActuales[tipo];
+          }
+        }
+        await db.collection('trabajos_minisplit').add(trabajoBase);
+        mostrarToast('✔ Trabajo y fotos guardados en la nube');
+      }catch(e){
+        alert('No se pudo guardar en la nube: ' + e.message);
+      }
+    } else if(modoCloud && db){
+      // Conectado a Firestore pero sin Drive: guarda el trabajo en la nube y las fotos solo en este dispositivo
+      try{
+        const ref = await db.collection('trabajos_minisplit').add(trabajoBase);
+        const fotosParaGuardar = {};
+        TIPOS_FOTO.forEach(t=>{ if(fotosActuales[t]) fotosParaGuardar[t] = fotosActuales[t]; });
+        if(Object.keys(fotosParaGuardar).length){ fotosLocalMap[ref.id] = fotosParaGuardar; saveFotosLocalMap(); }
+        mostrarToast('✔ Trabajo guardado en la nube (fotos solo en este dispositivo — conecta Drive para verlas en todos lados)');
+      }catch(e){
+        alert('No se pudo guardar en la nube: ' + e.message);
+      }
+    } else {
+      // Todo local
+      const trabajo = { id: idLocal, ...trabajoBase };
+      trabajosLocal.push(trabajo);
+      const fotosParaGuardar = {};
+      TIPOS_FOTO.forEach(t=>{ if(fotosActuales[t]) fotosParaGuardar[t] = fotosActuales[t]; });
+      if(Object.keys(fotosParaGuardar).length){ fotosLocalMap[idLocal] = fotosParaGuardar; }
+      try{
+        saveTrabajos(); saveFotosLocalMap();
+        trabajos = trabajosLocal;
+        mostrarToast('✔ Trabajo guardado en el historial (local)');
+      }catch(err){
+        trabajosLocal.pop();
+        alert('No se pudo guardar: el almacenamiento local está lleno (probablemente por fotos guardadas). Haz un respaldo y limpia registros antiguos, o conecta Google Drive para no depender del espacio del dispositivo.');
+      }
     }
   });
 
