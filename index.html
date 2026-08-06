@@ -1431,7 +1431,6 @@
         }
       });
     });
-    // Limpiar equipos sobrantes si el trabajo cargado tenía menos equipos que la sesión anterior
     for(let i=equipos.length+1;i<=NUM_EQUIPOS_MAX;i++){
       TIPOS_FOTO.forEach(tipo=>{ fotosActuales[i][tipo]=null; fotosLinksActuales[i][tipo]=null; mostrarPreviewFotoEq(i,tipo,null); });
     }
@@ -1494,382 +1493,120 @@
       if (a.v !== null && a.v < 3.0) hallazgos.push('🟡 También se detectó restricción de flujo de aire, que se corrige en la misma intervención junto con la falla técnica principal.');
       if (hallazgos.length === 0) hallazgos.push('ℹ️ Se realizó revisión técnica del sistema; no se detectaron anomalías críticas adicionales con los datos capturados, se recomienda validar presiones y estado del compresor con manómetros.');
     } else {
-      if (a.v !== null && a.v < 3.0) hallazgos.push('🔴 <strong>Baja velocidad de expulsión de aire</strong> (< 3.0 m/s) — indica turbina, serpentín o filtros saturados de polvo/humedad.');
-      if (a.deltaT !== undefined && a.deltaT < 8) hallazgos.push('🔴 <strong>Salto térmico (ΔT) insuficiente</strong> (< 8 °C) — la unidad no está retirando calor adecuadamente.');
-      if (a.btuh !== undefined && a.btuh < 7000) hallazgos.push('🔴 <strong>Capacidad de enfriamiento real muy reducida</strong> por restricción severa de flujo.');
-      if (hallazgos.length === 0) hallazgos.push('🟡 El equipo presenta parámetros ajustables pero funcionales. Se sugiere mantenimiento preventivo para conservar la eficiencia.');
+      if (a.v !== null && a.v < 3.0) hallazgos.push('🔴 <strong>Restricción severa de flujo</strong> por acumulación de suciedad en turbina/filtros.');
+      if (a.deltaT !== undefined && a.deltaT > 12 && a.v !== null && a.v < 3.0) hallazgos.push('🟡 <strong>Sobre-enfriamiento localizado</strong> por aire lento (falta de volumen de expulsión).');
+      if (a.deltaT !== undefined && a.deltaT < 8) hallazgos.push('🔴 <strong>Bajo intercambio térmico</strong> — posible falta de refrigerante o serpentín saturado.');
+      if (a.v !== null && a.v >= 3.5 && a.v <= 4.5 && a.deltaT !== undefined && a.deltaT >= 8 && a.deltaT <= 12) hallazgos.push('🟢 Parámetros de flujo y salto térmico dentro de rango aceptable.');
+      if (hallazgos.length === 0) hallazgos.push('ℹ️ No se detectaron anomalías críticas con los datos capturados; se recomienda validar con manómetros para diagnóstico completo de refrigerante.');
     }
     return hallazgos;
   }
 
-  /* ================= LECTURA DE UN EQUIPO ESPECÍFICO ================= */
-  function leerDatosEquipo(i){
+  function badge(label, value, unit, estado){
+    const colores = {
+      ok: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300',
+      warn: 'bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-300',
+      bad: 'bg-red-50 dark:bg-red-500/10 border-red-300 dark:border-red-500/40 text-red-700 dark:text-red-300',
+      neutral: 'bg-sky-50 dark:bg-slate-800 border-sky-200 dark:border-slate-700 text-sky-700 dark:text-sky-300'
+    };
+    return `<div class="border rounded-xl p-3 text-center ${colores[estado]}">
+      <p class="text-[10px] uppercase tracking-wider font-bold opacity-80">${label}</p>
+      <p class="text-lg font-extrabold mt-1">${value}<span class="text-xs font-medium ml-0.5">${unit}</span></p>
+    </div>`;
+  }
+
+  function filaTabla(nombre, av, dv, ref, dHas){
+    return `<tr>
+      <td class="py-2 pr-2 text-slate-600 dark:text-slate-300">${nombre}</td>
+      <td class="py-2 px-2 text-center font-semibold text-slate-700 dark:text-slate-200">${av}</td>
+      <td class="py-2 px-2 text-center font-semibold ${dHas ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-300 dark:text-slate-600'}">${dv}</td>
+      <td class="py-2 pl-2 text-slate-400 text-[11px]">${ref}</td>
+    </tr>`;
+  }
+
+  /* ================= PROCESAR UN EQUIPO (lee sus inputs y calcula todo) ================= */
+  function procesarEquipo(i, tipoTrabajo){
+    const marca = txt(`eq${i}_marca`);
+    const modelo = txt(`eq${i}_modelo`);
+    const linea = txt(`eq${i}_linea`);
+    const largo = num(`eq${i}_largo`);
+    const ancho = num(`eq${i}_ancho`);
+    const A = (largo !== null && ancho !== null) ? (largo/100) * (ancho/100) * 0.82 : null;
     const capSel = $(`eq${i}_capNominalSel`).value;
     const capNominal = capSel === 'custom' ? num(`eq${i}_capCustom`) : parseFloat(capSel);
-    const largo = num(`eq${i}_largo`), ancho = num(`eq${i}_ancho`);
-    const A = (largo !== null && ancho !== null) ? (largo/100)*(ancho/100) : null;
+    const ampNominal = num(`eq${i}_ampNominal`);
+    const voltaje = num(`eq${i}_voltaje`);
+    const refrigTipo = txt(`eq${i}_refrigTipo`);
+    const refrigCant = num(`eq${i}_refrigCant`);
 
-    const a_te=num(`eq${i}_a_te`), a_hre=num(`eq${i}_a_hre`), a_ts=num(`eq${i}_a_ts`), a_hrs=num(`eq${i}_a_hrs`), a_v=num(`eq${i}_a_v`), a_psi=num(`eq${i}_a_psi`), a_amp=num(`eq${i}_a_amp`);
-    const d_te=num(`eq${i}_d_te`), d_hre=num(`eq${i}_d_hre`), d_ts=num(`eq${i}_d_ts`), d_hrs=num(`eq${i}_d_hrs`), d_v=num(`eq${i}_d_v`), d_psi=num(`eq${i}_d_psi`), d_amp=num(`eq${i}_d_amp`);
+    const antes = calcBloque(num(`eq${i}_a_te`), num(`eq${i}_a_hre`), num(`eq${i}_a_ts`), num(`eq${i}_a_hrs`), num(`eq${i}_a_v`), num(`eq${i}_a_psi`), num(`eq${i}_a_amp`), A);
+    const dInputs = [num(`eq${i}_d_te`), num(`eq${i}_d_hre`), num(`eq${i}_d_ts`), num(`eq${i}_d_hrs`), num(`eq${i}_d_v`), num(`eq${i}_d_psi`), num(`eq${i}_d_amp`)];
+    const tieneDespues = dInputs.some(v => v !== null);
+    const despues = tieneDespues ? calcBloque(...dInputs, A) : null;
+
+    const comentarioAntes = txt(`eq${i}_a_comentario`);
+    const comentarioDespues = txt(`eq${i}_d_comentario`);
+
+    const vacio = !marca && !modelo && !antes.valid;
+    if(vacio) return null;
+
+    const hallazgos = generarDiagnostico(antes, tipoTrabajo);
+    let gananciaCFM = null, gananciaBTU = null, resumenSimpleTxt = '', resumenElectricoTxt = '';
+    if (despues && antes.cfm && despues.cfm && antes.btuh && despues.btuh){
+      gananciaCFM = ((despues.cfm - antes.cfm) / antes.cfm) * 100;
+      gananciaBTU = ((despues.btuh - antes.btuh) / antes.btuh) * 100;
+      resumenSimpleTxt = `Este equipo ahora enfría un ${r(Math.abs(gananciaBTU),0)}% ${gananciaBTU>=0?'mejor':'menos'} que antes del servicio, y mueve un ${r(Math.abs(gananciaCFM),0)}% ${gananciaCFM>=0?'más':'menos'} de aire fresco.`;
+    } else {
+      resumenSimpleTxt = `Diagnóstico preliminar (antes del servicio). El equipo entrega aproximadamente ${capNominal ? r((antes.btuh/capNominal)*100,0)+'% de su capacidad nominal' : Math.round(antes.btuh||0)+' BTU/h de enfriamiento real'}.`;
+    }
+    const ampAntes = antes.amp, ampDespues = despues?.amp;
+    if (ampAntes !== null && ampAntes !== undefined && ampDespues !== null && ampDespues !== undefined){
+      const cambioAmp = ((ampDespues - ampAntes) / ampAntes) * 100;
+      if (cambioAmp < -1) resumenElectricoTxt = `⚡ Además, consume un ${r(Math.abs(cambioAmp),0)}% menos de corriente (${r(ampAntes,1)}A → ${r(ampDespues,1)}A), lo cual puede reflejarse en ahorro en el recibo de luz.`;
+      else if (cambioAmp > 1) resumenElectricoTxt = `⚡ El amperaje subió de ${r(ampAntes,1)}A a ${r(ampDespues,1)}A (+${r(cambioAmp,0)}%). Puede ser normal con carga completa de refrigerante; si es muy alto conviene revisar el estado eléctrico.`;
+      else resumenElectricoTxt = `⚡ El consumo eléctrico se mantuvo prácticamente igual (${r(ampAntes,1)}A → ${r(ampDespues,1)}A).`;
+    }
 
     return {
-      index: i,
-      marca: txt(`eq${i}_marca`), modelo: txt(`eq${i}_modelo`), linea: txt(`eq${i}_linea`),
-      capNominal, largo, ancho, A,
-      ampNominal: num(`eq${i}_ampNominal`), voltaje: num(`eq${i}_voltaje`),
-      refrigTipo: txt(`eq${i}_refrigTipo`), refrigCant: num(`eq${i}_refrigCant`),
-      entradas: {
-        antes: { te:a_te, hre:a_hre, ts:a_ts, hrs:a_hrs, v:a_v, psi:a_psi, amp:a_amp, comentario: txt(`eq${i}_a_comentario`) },
-        despues: { te:d_te, hre:d_hre, ts:d_ts, hrs:d_hrs, v:d_v, psi:d_psi, amp:d_amp, comentario: txt(`eq${i}_d_comentario`) }
-      },
-      a: calcBloque(a_te, a_hre, a_ts, a_hrs, a_v, a_psi, a_amp, A),
-      d: calcBloque(d_te, d_hre, d_ts, d_hrs, d_v, d_psi, d_amp, A)
+      i, marca, modelo, linea, capNominal, largo, ancho, ampNominal, voltaje, refrigTipo, refrigCant,
+      antes, despues, hallazgos, gananciaCFM, gananciaBTU, resumenSimpleTxt, resumenElectricoTxt,
+      comentarioAntes, comentarioDespues,
+      fotos: {
+        Placa: fotosActuales[i].Placa || (fotosLinksActuales[i].Placa && fotosLinksActuales[i].Placa.embedLink) || null,
+        Antes: fotosActuales[i].Antes || (fotosLinksActuales[i].Antes && fotosLinksActuales[i].Antes.embedLink) || null,
+        Despues: fotosActuales[i].Despues || (fotosLinksActuales[i].Despues && fotosLinksActuales[i].Despues.embedLink) || null
+      }
     };
   }
 
-  /* ================= RENDERS DE REPORTE ================= */
-  function renderTablaMediciones(a, d, ampNominal){
-    const hasD = d && d.valid;
-    return `
-    <div class="overflow-x-auto my-3">
-      <table class="w-full text-xs border-collapse">
-        <thead>
-          <tr class="bg-sky-100/70 dark:bg-slate-800 text-sky-900 dark:text-sky-200">
-            <th class="p-2 text-left border border-sky-200 dark:border-slate-700">Parámetro</th>
-            <th class="p-2 text-center border border-sky-200 dark:border-slate-700">Antes</th>
-            ${hasD ? '<th class="p-2 text-center border border-sky-200 dark:border-slate-700">Después</th>' : ''}
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-sky-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-          <tr><td class="p-2 border border-sky-200 dark:border-slate-700 font-semibold">T° entrada / salida</td><td class="p-2 text-center border border-sky-200 dark:border-slate-700">${r(a.te,1)}°C / ${r(a.ts,1)}°C</td>${hasD ? `<td class="p-2 text-center border border-sky-200 dark:border-slate-700">${r(d.te,1)}°C / ${r(d.ts,1)}°C</td>` : ''}</tr>
-          <tr><td class="p-2 border border-sky-200 dark:border-slate-700 font-semibold">Humedad relativa entrada / salida</td><td class="p-2 text-center border border-sky-200 dark:border-slate-700">${r(a.hre,0)}% / ${r(a.hrs,0)}%</td>${hasD ? `<td class="p-2 text-center border border-sky-200 dark:border-slate-700">${r(d.hre,0)}% / ${r(d.hrs,0)}%</td>` : ''}</tr>
-          <tr><td class="p-2 border border-sky-200 dark:border-slate-700 font-semibold">Salto térmico (ΔT)</td><td class="p-2 text-center border border-sky-200 dark:border-slate-700 font-bold ${a.deltaT<8?'text-red-500':'text-emerald-600'}">${r(a.deltaT,1)} °C</td>${hasD ? `<td class="p-2 text-center border border-sky-200 dark:border-slate-700 font-bold ${d.deltaT<8?'text-red-500':'text-emerald-600'}">${r(d.deltaT,1)} °C</td>` : ''}</tr>
-          <tr><td class="p-2 border border-sky-200 dark:border-slate-700 font-semibold">Velocidad del aire (m/s)</td><td class="p-2 text-center border border-sky-200 dark:border-slate-700 font-bold ${a.v<3?'text-red-500':'text-emerald-600'}">${r(a.v,1)} m/s</td>${hasD ? `<td class="p-2 text-center border border-sky-200 dark:border-slate-700 font-bold ${d.v<3?'text-red-500':'text-emerald-600'}">${r(d.v,1)} m/s</td>` : ''}</tr>
-          <tr><td class="p-2 border border-sky-200 dark:border-slate-700 font-semibold">Flujo de aire (CFM / m³/h)</td><td class="p-2 text-center border border-sky-200 dark:border-slate-700">${r(a.cfm,0)} CFM (${r(a.m3h,0)} m³/h)</td>${hasD ? `<td class="p-2 text-center border border-sky-200 dark:border-slate-700">${r(d.cfm,0)} CFM (${r(d.m3h,0)} m³/h)</td>` : ''}</tr>
-          <tr><td class="p-2 border border-sky-200 dark:border-slate-700 font-semibold">Capacidad de enfriamiento real</td><td class="p-2 text-center border border-sky-200 dark:border-slate-700 font-bold">${r(a.btuh,0)} BTU/h</td>${hasD ? `<td class="p-2 text-center border border-sky-200 dark:border-slate-700 font-bold text-emerald-600">${r(d.btuh,0)} BTU/h</td>` : ''}</tr>
-          ${(a.psi !== null || (hasD && d.psi !== null)) ? `<tr><td class="p-2 border border-sky-200 dark:border-slate-700 font-semibold">Presión de baja (PSI)</td><td class="p-2 text-center border border-sky-200 dark:border-slate-700">${r(a.psi,1)} PSI</td>${hasD ? `<td class="p-2 text-center border border-sky-200 dark:border-slate-700">${r(d.psi,1)} PSI</td>` : ''}</tr>` : ''}
-          ${(a.amp !== null || (hasD && d.amp !== null) || ampNominal !== null) ? `<tr><td class="p-2 border border-sky-200 dark:border-slate-700 font-semibold">Amperaje de trabajo${ampNominal ? ' (nom: '+ampNominal+'A)' : ''}</td><td class="p-2 text-center border border-sky-200 dark:border-slate-700">${r(a.amp,1)} A</td>${hasD ? `<td class="p-2 text-center border border-sky-200 dark:border-slate-700">${r(d.amp,1)} A</td>` : ''}</tr>` : ''}
-        </tbody>
-      </table>
-    </div>`;
-  }
+  function renderEquipoReporteHTML(d){
+    const estadoV = v => v===null ? 'neutral' : (v>=3.5&&v<=4.5?'ok':(v<3.0?'bad':'warn'));
+    const estadoDT = dt => dt===undefined ? 'neutral' : (dt>=8&&dt<=12?'ok':(dt<8?'bad':'warn'));
+    let gauges = '';
+    gauges += badge('ΔT Antes', r(d.antes.deltaT,1), '°C', estadoDT(d.antes.deltaT));
+    gauges += badge('Vel. aire Antes', r(d.antes.v,2), 'm/s', estadoV(d.antes.v));
+    gauges += badge('Capacidad Antes', r(d.antes.btuh,0), 'BTU/h', 'neutral');
+    gauges += d.despues ? badge('Capacidad Después', r(d.despues.btuh,0), 'BTU/h', 'ok') : badge('Capacidad Nominal', d.capNominal ? d.capNominal.toLocaleString('es-MX') : '—', 'BTU/h', 'neutral');
 
-  function renderComentarioConVinetasHTML(comentario, titulo){
-    if(!comentario) return '';
-    const lineas = comentario.split('\n').map(l=>l.trim()).filter(Boolean);
-    if(lineas.length === 0) return '';
-    return `
-    <div class="mt-2 text-xs">
-      <p class="font-semibold text-slate-700 dark:text-slate-300 mb-1">${esc(titulo)}:</p>
-      <ul class="list-none space-y-1 pl-1 text-slate-600 dark:text-slate-300">
-        ${lineas.map(l=> `<li class="flex items-start gap-1.5"><span class="text-sky-500 font-bold shrink-0">•</span><span>${esc(l.replace(/^[•\-\*]\s*/, ''))}</span></li>`).join('')}
-      </ul>
-    </div>`;
-  }
+    let tbody = '';
+    tbody += filaTabla('Temp. Entrada / Retorno (°C)', r(d.antes.te,1)+'°C', d.despues? r(d.despues.te,1)+'°C':'—', '—', !!d.despues?.te);
+    tbody += filaTabla('HR Entrada (%)', r(d.antes.hre,1)+'%', d.despues? r(d.despues.hre,1)+'%':'—', '—', !!d.despues?.hre);
+    tbody += filaTabla('Temp. Salida / Inyección (°C)', r(d.antes.ts,1)+'°C', d.despues? r(d.despues.ts,1)+'°C':'—', '—', !!d.despues?.ts);
+    tbody += filaTabla('HR Salida (%)', r(d.antes.hrs,1)+'%', d.despues? r(d.despues.hrs,1)+'%':'—', '—', !!d.despues?.hrs);
+    tbody += filaTabla('Salto Térmico ΔT (°C)', r(d.antes.deltaT,1)+'°C', d.despues? r(d.despues.deltaT,1)+'°C':'—', '8.0 – 12.0 °C', d.despues?.deltaT!==undefined);
+    tbody += filaTabla('Velocidad del Aire (m/s)', r(d.antes.v,2), d.despues? r(d.despues.v,2):'—', '3.5 – 4.5 m/s', !!d.despues?.v);
+    tbody += filaTabla('Flujo de Aire (CFM)', r(d.antes.cfm,0), d.despues? r(d.despues.cfm,0):'—', '—', !!d.despues?.cfm);
+    tbody += filaTabla('Flujo de Aire (m³/h)', r(d.antes.m3h,0), d.despues? r(d.despues.m3h,0):'—', '—', !!d.despues?.m3h);
+    tbody += filaTabla('Capacidad Real Antes/Después (BTU/h)', r(d.antes.btuh,0), d.despues? r(d.despues.btuh,0):'—', d.capNominal? 'Nominal: '+d.capNominal.toLocaleString('es-MX'):'—', !!d.despues?.btuh);
+    const hayPsi = (d.antes.psi!==null && d.antes.psi!==undefined) || (d.despues?.psi!==null && d.despues?.psi!==undefined);
+    const hayAmp = (d.antes.amp!==null && d.antes.amp!==undefined) || (d.despues?.amp!==null && d.despues?.amp!==undefined);
+    if (hayPsi) tbody += filaTabla('Presión Baja (PSI)', r(d.antes.psi,1), d.despues? r(d.despues.psi,1):'—', 'Referencial, varía según refrigerante', d.despues?.psi!==null && d.despues?.psi!==undefined);
+    if (hayAmp) tbody += filaTabla('Amperaje (A)', r(d.antes.amp,1), d.despues? r(d.despues.amp,1):'—', d.ampNominal!==null ? 'Nom: '+r(d.ampNominal,1)+' A' : 'Solo registro', d.despues?.amp!==null && d.despues?.amp!==undefined);
+    if (d.voltaje) tbody += filaTabla('Voltaje (V)', r(d.voltaje,0), '—', 'Dato de placa', false);
+    if (d.refrigTipo || d.refrigCant) tbody += filaTabla('Refrigerante', esc(d.refrigTipo||'—') + (d.refrigCant?` (${d.refrigCant} gr)`:''), '—', 'Dato de placa', false);
 
-  function renderFotosReporteHTML(i, eqData){
-    const fotos = [];
-    TIPOS_FOTO.forEach(tipo=>{
-      const key = tipo.toLowerCase();
-      const linkField = 'foto' + tipo + 'Link';
-      const label = tipo === 'Placa' ? 'Placa de datos' : (tipo === 'Antes' ? 'Estado inicial' : 'Resultado final');
-      if(fotosLinksActuales[i][tipo]){
-        fotos.push({ label, src: fotosLinksActuales[i][tipo].embedLink });
-      } else if(fotosActuales[i][tipo]){
-        fotos.push({ label, src: fotosActuales[i][tipo] });
-      } else if(eqData && eqData[linkField]){
-        fotos.push({ label, src: eqData[linkField].embedLink });
-      }
-    });
-    if(fotos.length === 0) return '';
-    return `
-    <div class="mt-3 foto-report">
-      <p class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-2">Evidencia fotográfica</p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        ${fotos.map(f=>`
-          <div class="border border-sky-200 dark:border-slate-700 rounded-lg p-2 bg-slate-50 dark:bg-slate-800/50 flex flex-col items-center">
-            <img src="${f.src}" class="max-h-48 w-auto object-contain rounded mb-1">
-            <span class="text-[11px] font-semibold text-slate-600 dark:text-slate-300">${f.label}</span>
-          </div>`).join('')}
-      </div>
-    </div>`;
-  }
-
-  function renderEquipoReporteBlock(eq, totalEquipos, tipoTrabajo){
-    const nombreEq = [eq.marca, eq.modelo].filter(Boolean).join(' ') || `Equipo ${eq.index}`;
-    const lineaTxt = eq.linea ? ` (${eq.linea})` : '';
-    const capTxt = eq.capNominal ? `${(eq.capNominal/12000).toFixed(1).replace('.0','')} TR (${eq.capNominal.toLocaleString('es-MX')} BTU/h)` : 'Capacidad no esp.';
-    const placaDetalles = [
-      eq.ampNominal ? `Amp. nominal: ${eq.ampNominal} A` : null,
-      eq.voltaje ? `Voltaje: ${eq.voltaje} V` : null,
-      eq.refrigTipo ? `Refrigerante: ${eq.refrigTipo}${eq.refrigCant ? ' ('+eq.refrigCant+' gr)' : ''}` : null
-    ].filter(Boolean).join(' · ');
-
-    const hallazgos = generarDiagnostico(eq.a, tipoTrabajo);
-    const hasD = eq.d && eq.d.valid;
-
-    let gananciaHTML = '';
-    if (hasD && eq.a.btuh && eq.d.btuh){
-      const incBTU = eq.d.btuh - eq.a.btuh;
-      const pctBTU = (incBTU / eq.a.btuh) * 100;
-      const incVel = (eq.a.v && eq.d.v) ? eq.d.v - eq.a.v : null;
-      gananciaHTML = `
-      <div class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3 my-3 text-xs">
-        <p class="font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-1">🚀 Mejora obtenida tras el servicio</p>
-        <p class="text-slate-700 dark:text-slate-200">
-          Recuperación de capacidad de enfriamiento: <strong class="text-emerald-600 dark:text-emerald-400">+${r(incBTU,0)} BTU/h (+${r(pctBTU,1)}%)</strong>.
-          ${incVel !== null ? ` Incremento en flujo de aire: <strong class="text-emerald-600 dark:text-emerald-400">+${r(incVel,1)} m/s</strong>.` : ''}
-          El equipo trabaja ahora en sus parámetros óptimos de diseño.
-        </p>
-      </div>`;
-    }
-
-    return `
-    <div class="equipo-report-block border-b border-sky-100 dark:border-slate-800 pb-6 last:border-b-0">
-      <div class="flex flex-wrap items-baseline justify-between gap-2 bg-sky-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-sky-200 dark:border-slate-700">
-        <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">
-          ${totalEquipos > 1 ? `<span class="text-sky-600 dark:text-sky-400">[Equipo ${eq.index}]</span> ` : ''}${esc(nombreEq)}${esc(lineaTxt)}
-        </h3>
-        <span class="text-xs font-semibold text-sky-700 dark:text-sky-300">${capTxt}</span>
-      </div>
-      ${placaDetalles ? `<p class="text-[11px] text-slate-400 mt-1 px-1">Placa: ${esc(placaDetalles)}</p>` : ''}
-
-      ${renderTablaMediciones(eq.a, eq.d, eq.ampNominal)}
-
-      ${renderComentarioConVinetasHTML(eq.entradas.antes.comentario, 'Observaciones previas')}
-      ${renderComentarioConVinetasHTML(eq.entradas.despues.comentario, 'Observaciones del trabajo realizado')}
-
-      ${gananciaHTML}
-
-      <div class="mt-3">
-        <p class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">Diagnóstico técnico del equipo</p>
-        <ul class="text-xs space-y-1 list-none pl-1 text-slate-700 dark:text-slate-300">
-          ${hallazgos.map(h=>`<li class="flex items-start gap-1.5"><span class="shrink-0">•</span><span>${h}</span></li>`).join('')}
-        </ul>
-      </div>
-
-      ${renderFotosReporteHTML(eq.index, eq)}
-    </div>`;
-  }
-
-  function calcularYRenderizar(){
-    const n = numEquiposActivos();
-    const clienteId = $('clienteSel').value;
-    const cliente = clientesActivos.find(c=>c.id===clienteId);
-    const tipoTrabajo = $('tipoTrabajoSel').value || 'Servicio Técnico';
-    const fecha = $('fechaTrabajo').value || new Date().toISOString().slice(0,10);
-    const tec = $('tecnico').value || 'Técnico Especializado';
-
-    $('rep_meta').innerHTML = `
-      <strong>Cliente:</strong> ${esc(cliente ? nombreCompleto(cliente) : '—')} ·
-      <strong>Tipo:</strong> ${esc(tipoTrabajo)} ·
-      <strong>Técnico:</strong> ${esc(tec)} ·
-      <strong>Equipos:</strong> ${n}
-    `;
-    $('rep_fecha').textContent = 'Fecha: ' + fecha;
-
-    const equiposData = [];
-    for(let i=1;i<=n;i++){
-      equiposData.push(leerDatosEquipo(i));
-    }
-
-    const htmlEquipos = equiposData.map(eq => renderEquipoReporteBlock(eq, n, tipoTrabajo)).join('');
-    $('reportEquiposContainer').innerHTML = htmlEquipos;
-
-    // Recomendaciones generales
-    const reparacion = esEnfoqueReparacion(tipoTrabajo);
-    const recos = [];
-    if (reparacion){
-      recos.push('Programar mantenimiento preventivo periódico (cada 6 meses) para mantener los serpentines limpios y prevenir futuras fallas mecánicas o pérdidas de eficiencia.');
-      recos.push('Monitorear el rendimiento de enfriamiento en los próximos días y reportar de inmediato cualquier variación de temperatura o ruido inusual.');
-      recos.push('Mantener los filtros lavables limpios (lavar cada 2 a 3 semanas) para asegurar un flujo de aire óptimo hacia el evaporador.');
-    } else {
-      recos.push('Realizar mantenimiento preventivo profundo cada 6 meses en zonas de alto uso para preservar la eficiencia energética y prolongar la vida útil del compresor.');
-      recos.push('Lavar los filtros de aire cada 2 a 3 semanas. Filtros sucios reducen el flujo de aire hasta en un 40% e incrementan el consumo eléctrico.');
-      recos.push('Mantener el área alrededor de la unidad condensadora (exterior) libre de obstáculos y vegetación para asegurar una adecuada disipación de calor.');
-    }
-    $('recoList').innerHTML = recos.map(r=>`<li>${r}</li>`).join('');
-
-    $('reportCard').classList.remove('hidden');
-    mostrarToast('✔ Reporte generado correctamente');
-    return { cliente, tipoTrabajo, fecha, tec, n, equiposData };
-  }
-
-  $('btnCalc').addEventListener('click', calcularYRenderizar);
-
-  /* ================= GUARDAR TRABAJO EN HISTORIAL ================= */
-  async function subirFotosADriveSiConectado(trabajoId, n){
-    if(!gdAccessToken) return;
-    mostrarToast('☁️ Subiendo fotos a Google Drive…');
-    for(let i=1;i<=n;i++){
-      for(const tipo of TIPOS_FOTO){
-        if(fotosActuales[i][tipo] && !fotosLinksActuales[i][tipo]){
-          try{
-            const nombre = `foto_${tipo.toLowerCase()}_eq${i}_${trabajoId}.jpg`;
-            const linkObj = await gdSubirFoto(fotosActuales[i][tipo], nombre);
-            fotosLinksActuales[i][tipo] = linkObj;
-          }catch(e){ console.warn('Error subiendo foto:', e); }
-        }
-      }
-    }
-  }
-
-  function guardarFotosEnCacheLocal(trabajoId, n){
-    for(let i=1;i<=n;i++){
-      const key = trabajoId + '::' + i;
-      fotosLocalMap[key] = {
-        placa: fotosActuales[i]['Placa'] || null,
-        antes: fotosActuales[i]['Antes'] || null,
-        despues: fotosActuales[i]['Despues'] || null
-      };
-    }
-    saveFotosLocalMap();
-  }
-
-  $('btnGuardar').addEventListener('click', async ()=>{
-    const dataRep = calcularYRenderizar();
-    const clienteId = $('clienteSel').value;
-    const trabajoId = uid();
-
-    await subirFotosADriveSiConectado(trabajoId, dataRep.n);
-    guardarFotosEnCacheLocal(trabajoId, dataRep.n);
-
-    const equiposGuardar = dataRep.equiposData.map(eq=>({
-      marca: eq.marca, modelo: eq.modelo, linea: eq.linea,
-      capNominal: eq.capNominal, largo: eq.largo, ancho: eq.ancho,
-      ampNominal: eq.ampNominal, voltaje: eq.voltaje,
-      refrigTipo: eq.refrigTipo, refrigCant: eq.refrigCant,
-      entradas: eq.entradas,
-      fotoPlacaLink: fotosLinksActuales[eq.index]['Placa'] || null,
-      fotoAntesLink: fotosLinksActuales[eq.index]['Antes'] || null,
-      fotoDespuesLink: fotosLinksActuales[eq.index]['Despues'] || null
-    }));
-
-    const nuevoTrabajo = {
-      id: trabajoId,
-      fecha: dataRep.fecha,
-      clienteId: clienteId || null,
-      tipoTrabajo: dataRep.tipoTrabajo,
-      tecnico: dataRep.tec,
-      misComentarios: $('misComentarios').value || '',
-      pendienteFecha: $('tienePendiente').checked ? $('pendienteFecha').value || null : null,
-      pendienteHora: $('tienePendiente').checked ? $('pendienteHora').value || null : null,
-      equipos: equiposGuardar
-    };
-
-    if(modoCloud && db){
-      try{
-        const docRef = await db.collection('trabajos_minisplit').add(nuevoTrabajo);
-        moverFotosLocales(trabajoId, docRef.id);
-        mostrarToast('✔ Trabajo guardado en la nube (Firestore)');
-      }catch(e){ alert('No se pudo guardar en la nube: ' + e.message); return; }
-    } else {
-      trabajosLocal.push(nuevoTrabajo);
-      saveTrabajos();
-      trabajos = trabajosLocal;
-      mostrarToast('✔ Trabajo guardado en el historial local');
-    }
-  });
-
-  /* ================= VISTA PREVIA Y TEXTO PARA WHATSAPP ================= */
-  function generarTextoWhatsApp(){
-    const dataRep = calcularYRenderizar();
-    const cliNombre = dataRep.cliente ? nombreCompleto(dataRep.cliente) : 'Cliente';
-    let text = `*SERVICIOS ROBERT'S — REPORTE TÉCNICO DE MINISPLIT*\n`;
-    text += `----------------------------------------\n`;
-    text += `👤 *Cliente:* ${cliNombre}\n`;
-    text += `🛠 *Trabajo:* ${dataRep.tipoTrabajo}\n`;
-    text += `📅 *Fecha:* ${dataRep.fecha}\n`;
-    text += `👨‍🔧 *Técnico:* ${dataRep.tec}\n`;
-    text += `----------------------------------------\n\n`;
-
-    dataRep.equiposData.forEach(eq => {
-      const nombreEq = [eq.marca, eq.modelo].filter(Boolean).join(' ') || `Equipo ${eq.index}`;
-      const capTxt = eq.capNominal ? `${(eq.capNominal/12000).toFixed(1).replace('.0','')} TR (${eq.capNominal.toLocaleString('es-MX')} BTU/h)` : '';
-      text += `❄ *${dataRep.n > 1 ? `[Equipo ${eq.index}] ` : ''}${nombreEq}* ${capTxt ? `(${capTxt})` : ''}\n`;
-
-      if (eq.a.valid){
-        text += `🔹 *Parámetros iniciales:*\n`;
-        text += `  • T° Entrada / Salida: ${r(eq.a.te,1)}°C / ${r(eq.a.ts,1)}°C\n`;
-        text += `  • Salto Térmico (ΔT): ${r(eq.a.deltaT,1)}°C\n`;
-        text += `  • Velocidad del aire: ${r(eq.a.v,1)} m/s\n`;
-        if (eq.a.btuh) text += `  • Rendimiento real: ${r(eq.a.btuh,0)} BTU/h\n`;
-        if (eq.a.psi !== null) text += `  • Presión de baja: ${r(eq.a.psi,1)} PSI\n`;
-        if (eq.a.amp !== null) text += `  • Amperaje: ${r(eq.a.amp,1)} A\n`;
-      }
-
-      if (eq.d && eq.d.valid){
-        text += `✅ *Resultado tras el servicio:*\n`;
-        text += `  • T° Entrada / Salida: ${r(eq.d.te,1)}°C / ${r(eq.d.ts,1)}°C\n`;
-        text += `  • Salto Térmico (ΔT): ${r(eq.d.deltaT,1)}°C\n`;
-        text += `  • Velocidad del aire: ${r(eq.d.v,1)} m/s\n`;
-        if (eq.d.btuh) text += `  • Rendimiento real: ${r(eq.d.btuh,0)} BTU/h\n`;
-        if (eq.d.psi !== null) text += `  • Presión de baja: ${r(eq.d.psi,1)} PSI\n`;
-        if (eq.d.amp !== null) text += `  • Amperaje: ${r(eq.d.amp,1)} A\n`;
-
-        if (eq.a.btuh && eq.d.btuh){
-          const incBTU = eq.d.btuh - eq.a.btuh;
-          const pctBTU = (incBTU / eq.a.btuh) * 100;
-          text += `🚀 *Mejora de rendimiento:* +${r(incBTU,0)} BTU/h (+${r(pctBTU,1)}%)\n`;
-        }
-      }
-
-      const hallazgos = generarDiagnostico(eq.a, dataRep.tipoTrabajo);
-      text += `📋 *Diagnóstico:* ${hallazgos.map(h=>h.replace(/<[^>]*>/g,'')).join(' ')}\n\n`;
-    });
-
-    text += `----------------------------------------\n`;
-    text += `💡 *Servicios Robert's* — Refrigeración, Eléctrico y Plomería\n`;
-    return text;
-  }
-
-  $('btnCopy').addEventListener('click', ()=>{
-    const text = generarTextoWhatsApp();
-    $('previewWATexto').textContent = text;
-    openModal('modalPreviewWA');
-  });
-
-  $('btnCopiarDesdePreview').addEventListener('click', ()=>{
-    const text = $('previewWATexto').textContent;
-    navigator.clipboard.writeText(text).then(()=>{
-      mostrarToast('📋 Copiado al portapapeles');
-    }).catch(err=>{ alert('No se pudo copiar: ' + err.message); });
-  });
-
-  $('btnCompartirDesdePreview').addEventListener('click', ()=>{
-    const text = $('previewWATexto').textContent;
-    if(navigator.share){
-      navigator.share({ title: 'Reporte Técnico — Servicios Robert\'s', text })
-        .catch(err=>console.log('Compartir cancelado', err));
-    } else {
-      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(text), '_blank');
-    }
-  });
-
-  $('btnPrint').addEventListener('click', ()=>{
-    calcularYRenderizar();
-    setTimeout(()=>window.print(), 300);
-  });
-
-  /* ================= INICIALIZACIÓN DE LA PÁGINA ================= */
-  function initApp(){
-    // Establecer fecha de hoy por defecto
-    $('fechaTrabajo').value = new Date().toISOString().slice(0,10);
-
-    // Construir dinámicamente las 5 tarjetas de equipos
-    construirEquiposCards();
-
-    // Cargar datos locales iniciales
-    renderTipoSelect();
-    renderClientesSelects();
-    renderCatalogoDatalist();
-
-    // Intentar autoconectar a Firebase si existe configuración previa
-    tryLoadFbConfig();
-  }
-
-  initApp();
-})();
-</script>
-</body>
-</html>
+    let mejorasHTML = '';
+    if (d.gananciaCFM !== null){
+      let evalTxt = '';
+      if (d.capNominal){
+        const pctNominal = (d.despues.btuh / d.
