@@ -276,4 +276,1662 @@
   </div>
 </div>
 
-<!-- ============ MODAL: RESPALDO Y RES
+<!-- ============ MODAL: RESPALDO Y RESTAURACIÓN ============ -->
+<div id="modalRespaldo" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">☁️ Respaldo y restauración</h3>
+      <button data-close="modalRespaldo" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-4 text-sm">
+      <p class="text-[12px] text-slate-500 dark:text-slate-400">Respalda catálogo de equipos, clientes locales, tipos de trabajo e historial de diagnósticos.</p>
+
+      <div class="border border-sky-200 dark:border-slate-700 rounded-lg p-3">
+        <h4 class="font-bold text-slate-600 dark:text-slate-300 text-xs uppercase mb-2">💾 Respaldo local (siempre disponible)</h4>
+        <div class="flex gap-2">
+          <button id="btnExportLocal" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white rounded-lg px-3 py-2 text-xs font-bold">Descargar .json</button>
+          <label class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-center cursor-pointer">
+            Restaurar archivo
+            <input id="inputImportLocal" type="file" accept=".json" class="hidden">
+          </label>
+        </div>
+      </div>
+
+      <div class="border border-sky-200 dark:border-slate-700 rounded-lg p-3">
+        <h4 class="font-bold text-slate-600 dark:text-slate-300 text-xs uppercase mb-2">☁️ Google Drive</h4>
+        <div id="driveSetup" class="space-y-2">
+          <input id="gd_clientid" placeholder="Client ID de Google Cloud (…apps.googleusercontent.com)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+          <button id="btnGdConnect" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Conectar con Google Drive</button>
+        </div>
+        <p id="gdStatusText" class="text-[11px] text-slate-500 dark:text-slate-400 pt-2 flex items-center gap-1"><span id="gdStatusDot" class="status-dot off"></span> Sin conectar.</p>
+        <div id="gdActions" class="hidden space-y-2 pt-2">
+          <button id="btnGdSave" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar respaldo ahora en Drive</button>
+          <div id="gdLista" class="text-xs divide-y divide-sky-100 dark:divide-slate-800 max-h-48 overflow-y-auto"></div>
+        </div>
+        <p class="text-[11px] text-slate-400 pt-2 border-t border-sky-200 dark:border-slate-700 mt-2">La primera vez necesitas crear un Client ID en Google Cloud Console. Cada colega que quiera usar su propio Drive necesita su propio Client ID o estar agregado como "usuario de prueba" del tuyo.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: CONFIGURACIÓN / FIRESTORE ============ -->
+<div id="modalConfig" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">⚙️ Conexión con tu app de finanzas (Firestore)</h3>
+      <button data-close="modalConfig" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-2 text-sm">
+      <p class="text-[12px] text-slate-500 dark:text-slate-400 mb-2">Usa el mismo proyecto Firebase de tu app "Mi Bitácora Financiera" para compartir la lista de clientes y sincronizar catálogo/tipos/historial entre tus dispositivos. Ingresa la misma configuración y tu PIN de acceso.</p>
+      <input id="fb-apiKey" placeholder="apiKey" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <input id="fb-authDomain" placeholder="authDomain" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <input id="fb-projectId" placeholder="projectId" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <input id="fb-storageBucket" placeholder="storageBucket" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <input id="fb-messagingSenderId" placeholder="messagingSenderId" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <input id="fb-appId" placeholder="appId" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+      <button id="btnFbConnect" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold mt-1">Conectar al proyecto</button>
+      <div id="authLoginFields" class="hidden space-y-2 pt-2 border-t border-sky-200 dark:border-slate-700 mt-2">
+        <input id="auth-pin" type="password" placeholder="Código de acceso (PIN)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+        <button id="btnAuthLogin" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Iniciar sesión</button>
+      </div>
+      <button id="btnAuthLogout" class="hidden w-full bg-slate-500 hover:bg-slate-400 text-white rounded-lg px-3 py-2 text-sm font-bold mt-1">Cerrar sesión</button>
+      <p id="fbStatusText" class="text-[11px] text-slate-500 dark:text-slate-400 pt-1 flex items-center gap-1"><span id="fbStatusDot" class="status-dot off"></span> Sin conectar — trabajando en modo local (en este dispositivo).</p>
+      <p class="text-[11px] text-slate-400 pt-2 border-t border-sky-200 dark:border-slate-700">Nota: las fotos NO se guardan en Firestore. Si conectas Google Drive (☁️ Respaldo), las fotos viajan como un link ligero dentro del trabajo; si no, se quedan solo en este dispositivo.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function num(id){ const el = $(id); if(!el) return null; const v = parseFloat(el.value); return isNaN(v) ? null : v; }
+  function txt(id){ const el = $(id); return el ? el.value.trim() : ''; }
+  function r(n, d){ if(n===null||n===undefined||isNaN(n)) return '—'; return n.toFixed(d); }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  /* ================= THEME ================= */
+  const THEME_KEY = 'msd_theme';
+  function applyTheme(t){
+    document.documentElement.classList.toggle('dark', t === 'dark');
+    $('btnTheme').textContent = t === 'dark' ? '☀️' : '🌙';
+  }
+  let theme = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(theme);
+  $('btnTheme').addEventListener('click', ()=>{
+    theme = theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, theme);
+    applyTheme(theme);
+  });
+
+  /* ================= MODALES ================= */
+  function openModal(id){ $(id).classList.remove('hidden'); }
+  function closeModal(id){ $(id).classList.add('hidden'); }
+  document.querySelectorAll('[data-close]').forEach(btn=>{
+    btn.addEventListener('click', ()=>closeModal(btn.dataset.close));
+  });
+  document.querySelectorAll('.modal-overlay').forEach(ov=>{
+    ov.addEventListener('click', e=>{ if(e.target === ov) ov.classList.add('hidden'); });
+  });
+
+  function mostrarToast(msg){
+    const toast = $('toast');
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(()=>toast.classList.add('hidden'), 2200);
+  }
+
+  /* ================= DATOS LOCALES ================= */
+  const LS_CATALOGO = 'msd_catalogo_v1';
+  const LS_CLIENTES = 'msd_clientes_local_v1';
+  const LS_TIPOS = 'msd_tipos_v1';
+  const LS_TRABAJOS = 'msd_trabajos_v1';
+  const LS_FB = 'msd_fbconfig_v1';
+  const LS_FOTOS_LOCAL = 'msd_fotos_local_v1';
+
+  const DEFAULT_TIPOS = ['Mantenimiento preventivo','Instalación','Diagnóstico','Reparación','Carga de refrigerante','Otro'];
+  const NUM_EQUIPOS_MAX = 5;
+
+  let catalogoLocal = JSON.parse(localStorage.getItem(LS_CATALOGO) || '[]');
+  let clientesLocal = JSON.parse(localStorage.getItem(LS_CLIENTES) || '[]');
+  let tiposTrabajoLocal = JSON.parse(localStorage.getItem(LS_TIPOS) || 'null') || DEFAULT_TIPOS.slice();
+  let trabajosLocal = JSON.parse(localStorage.getItem(LS_TRABAJOS) || '[]');
+  let fotosLocalMap = JSON.parse(localStorage.getItem(LS_FOTOS_LOCAL) || '{}');
+
+  let catalogo = catalogoLocal;        // apunta a Firestore si conecta
+  let tiposTrabajo = tiposTrabajoLocal;
+  let trabajos = trabajosLocal;
+  let clientesActivos = clientesLocal; // apunta a Firestore si conecta
+  let modoCloud = false;
+  let db = null, unsubClientes = null, unsubCatalogo = null, unsubTipos = null, unsubTrabajos = null;
+
+  function saveCatalogo(){ localStorage.setItem(LS_CATALOGO, JSON.stringify(catalogoLocal)); }
+  function saveClientesLocal(){ localStorage.setItem(LS_CLIENTES, JSON.stringify(clientesLocal)); }
+  function saveTipos(){ localStorage.setItem(LS_TIPOS, JSON.stringify(tiposTrabajoLocal)); }
+  function saveTrabajos(){ localStorage.setItem(LS_TRABAJOS, JSON.stringify(trabajosLocal)); }
+  function saveFotosLocalMap(){ try{ localStorage.setItem(LS_FOTOS_LOCAL, JSON.stringify(fotosLocalMap)); }catch(e){ /* espacio lleno, se ignora */ } }
+
+  // Normaliza UN trabajo del formato viejo (un solo equipo por trabajo) al nuevo formato equipos[].
+  function normalizarUnTrabajo(t){
+    if(t.equipos) return t;
+    const equipo = {
+      marca: t.marca || '', modelo: t.modelo || '', linea: null,
+      capNominal: (t.capNominal !== undefined ? t.capNominal : null),
+      largo: (t.largo !== undefined ? t.largo : null), ancho: (t.ancho !== undefined ? t.ancho : null),
+      ampNominal: (t.ampNominal !== undefined ? t.ampNominal : null),
+      voltaje: null, refrigTipo: null, refrigCant: null,
+      entradas: t.entradas || { antes:{}, despues:{} },
+      fotoPlacaLink: t.fotoPlacaLink || null, fotoAntesLink: t.fotoAntesLink || null, fotoDespuesLink: t.fotoDespuesLink || null
+    };
+    return {
+      id: t.id, fecha: t.fecha, clienteId: t.clienteId, tipoTrabajo: t.tipoTrabajo, tecnico: t.tecnico,
+      misComentarios: t.misComentarios || '', pendienteFecha: t.pendienteFecha || null, pendienteHora: t.pendienteHora || null,
+      equipos: [equipo]
+    };
+  }
+
+  // Migra trabajos LOCALES guardados con el formato viejo al nuevo formato equipos[] (además reubica sus fotos locales).
+  function normalizarTrabajosLocales(){
+    let cambiado = false;
+    trabajosLocal = trabajosLocal.map(t=>{
+      if(t.equipos) return t;
+      cambiado = true;
+      if(fotosLocalMap[t.id] && !fotosLocalMap[t.id + '::1']){
+        fotosLocalMap[t.id + '::1'] = fotosLocalMap[t.id];
+        delete fotosLocalMap[t.id];
+      }
+      return normalizarUnTrabajo(t);
+    });
+    if(cambiado){ saveTrabajos(); saveFotosLocalMap(); }
+  }
+  normalizarTrabajosLocales();
+  trabajos = trabajosLocal;
+
+  function moverFotosLocales(oldId, newId){
+    let changed = false;
+    Object.keys(fotosLocalMap).forEach(key=>{
+      if(key === oldId || key.startsWith(oldId + '::')){
+        const sufijo = key === oldId ? '' : key.slice(oldId.length);
+        fotosLocalMap[newId + sufijo] = fotosLocalMap[key];
+        delete fotosLocalMap[key];
+        changed = true;
+      }
+    });
+    if(changed) saveFotosLocalMap();
+  }
+
+  /* ================= FIRESTORE (opcional, comparte clientes con la app de finanzas) ================= */
+  const ACCESS_EMAIL = 'acceso@misfinanzas.app';
+
+  function tryLoadFbConfig(){
+    const saved = localStorage.getItem(LS_FB);
+    if(!saved) return;
+    try{
+      const cfg = JSON.parse(saved);
+      Object.keys(cfg).forEach(k=>{ const el = $('fb-'+k); if(el) el.value = cfg[k]; });
+      connectFirebase(cfg, true);
+    }catch(e){}
+  }
+
+  function setFbStatus(dotClass, text){
+    $('fbStatusText').innerHTML = '';
+    const dot = document.createElement('span');
+    dot.className = 'status-dot ' + dotClass;
+    $('fbStatusText').appendChild(dot);
+    $('fbStatusText').append(' ' + text);
+    $('fbStatusBadge').innerHTML = `<span class="status-dot ${dotClass}"></span> ${dotClass === 'on' ? 'Firestore' : 'Local'}`;
+  }
+
+  function connectFirebase(cfg, silent){
+    try{
+      if(!firebase.apps.length){ firebase.initializeApp(cfg); } else { firebase.app(); }
+      db = firebase.firestore();
+      localStorage.setItem(LS_FB, JSON.stringify(cfg));
+      $('authLoginFields').classList.remove('hidden');
+      setFbStatus('off', 'Conectado al proyecto. Ingresa tu código de acceso.');
+      firebase.auth().onAuthStateChanged(handleAuthState);
+    }catch(e){
+      setFbStatus('off', 'Error al conectar: ' + e.message);
+      if(!silent) alert('No se pudo conectar: ' + e.message);
+    }
+  }
+
+  function handleAuthState(user){
+    if(user){
+      modoCloud = true;
+      setFbStatus('on', 'Conectado — sincronizando datos con tu app de finanzas.');
+      $('authLoginFields').classList.add('hidden');
+      $('btnAuthLogout').classList.remove('hidden');
+
+      if(unsubClientes) unsubClientes();
+      unsubClientes = db.collection('clientes').onSnapshot(snap=>{
+        clientesActivos = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        renderClientesSelects();
+        renderClientesModalLista();
+      }, err=>{ setFbStatus('off', 'Error leyendo clientes: ' + err.message); });
+
+      if(unsubCatalogo) unsubCatalogo();
+      unsubCatalogo = db.collection('catalogo_equipos').onSnapshot(snap=>{
+        catalogo = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        renderCatalogoDatalist();
+        if(!$('modalCatalogo').classList.contains('hidden')) renderCatalogoLista();
+      }, err=>{ setFbStatus('off', 'Error leyendo catálogo: ' + err.message); });
+
+      if(unsubTipos) unsubTipos();
+      unsubTipos = db.collection('config').doc('tipos_trabajo').onSnapshot(doc=>{
+        const items = doc.exists ? doc.data().items : null;
+        tiposTrabajo = (items && items.length) ? items : DEFAULT_TIPOS.slice();
+        renderTipoSelect();
+        if(!$('modalTipos').classList.contains('hidden')) renderTiposLista();
+      }, err=>{ setFbStatus('off', 'Error leyendo tipos de trabajo: ' + err.message); });
+
+      if(unsubTrabajos) unsubTrabajos();
+      unsubTrabajos = db.collection('trabajos_minisplit').onSnapshot(snap=>{
+        trabajos = snap.docs.map(d=>normalizarUnTrabajo({id:d.id, ...d.data()}));
+        if(!$('modalHistorial').classList.contains('hidden')) renderHistorialLista();
+      }, err=>{ setFbStatus('off', 'Error leyendo historial: ' + err.message); });
+
+      setTimeout(ofrecerMigracionLocal, 1500);
+    } else {
+      modoCloud = false;
+      clientesActivos = clientesLocal;
+      catalogo = catalogoLocal;
+      tiposTrabajo = tiposTrabajoLocal;
+      trabajos = trabajosLocal;
+      setFbStatus('off', 'Conectado al proyecto, sin sesión. Ingresa tu código.');
+      $('authLoginFields').classList.remove('hidden');
+      $('btnAuthLogout').classList.add('hidden');
+      renderClientesSelects();
+      renderClientesModalLista();
+      renderCatalogoDatalist();
+      renderTipoSelect();
+    }
+  }
+
+  async function ofrecerMigracionLocal(){
+    if(!modoCloud) return;
+    try{
+      const [snapCat, snapTip, snapTra] = await Promise.all([
+        db.collection('catalogo_equipos').limit(1).get(),
+        db.collection('config').doc('tipos_trabajo').get(),
+        db.collection('trabajos_minisplit').limit(1).get()
+      ]);
+      const nubeVacia = snapCat.empty && !snapTip.exists && snapTra.empty;
+      const hayDatosLocales = catalogoLocal.length || trabajosLocal.length || (tiposTrabajoLocal.length && JSON.stringify(tiposTrabajoLocal) !== JSON.stringify(DEFAULT_TIPOS));
+      if(nubeVacia && hayDatosLocales){
+        if(confirm(`Encontré datos guardados solo en este dispositivo (${catalogoLocal.length} equipos, ${trabajosLocal.length} trabajos en historial). ¿Quieres subirlos ahora a la nube para verlos desde cualquier dispositivo?`)){
+          await migrarDatosLocalesACloud();
+        }
+      }
+    }catch(e){ /* silencioso */ }
+  }
+
+  async function migrarDatosLocalesACloud(){
+    mostrarToast('⏳ Subiendo datos a la nube…');
+    try{
+      for(const eqc of catalogoLocal){
+        const { id, ...rest } = eqc;
+        await db.collection('catalogo_equipos').add(rest);
+      }
+      await db.collection('config').doc('tipos_trabajo').set({ items: tiposTrabajoLocal });
+      for(const tr of trabajosLocal){
+        const { id, ...rest } = tr;
+        const ref = await db.collection('trabajos_minisplit').add(rest);
+        moverFotosLocales(id, ref.id);
+      }
+      mostrarToast('✔ Datos migrados a la nube correctamente');
+    }catch(e){
+      alert('Ocurrió un error migrando: ' + e.message + '\n\nRevisa que tus reglas de Firestore permitan leer/escribir en "catalogo_equipos", "config" y "trabajos_minisplit" para usuarios autenticados.');
+    }
+  }
+
+  $('btnConfig').addEventListener('click', ()=>openModal('modalConfig'));
+
+  $('btnFbConnect').addEventListener('click', ()=>{
+    const cfg = {
+      apiKey: $('fb-apiKey').value.trim(),
+      authDomain: $('fb-authDomain').value.trim(),
+      projectId: $('fb-projectId').value.trim(),
+      storageBucket: $('fb-storageBucket').value.trim(),
+      messagingSenderId: $('fb-messagingSenderId').value.trim(),
+      appId: $('fb-appId').value.trim(),
+    };
+    if(!cfg.apiKey || !cfg.projectId){ alert('Completa al menos apiKey y projectId (los mismos de tu app de finanzas).'); return; }
+    connectFirebase(cfg, false);
+  });
+  $('btnAuthLogin').addEventListener('click', ()=>{
+    const pin = $('auth-pin').value.trim();
+    if(!pin || pin.length < 6){ alert('Ingresa tu código de acceso (mínimo 6 caracteres).'); return; }
+    firebase.auth().signInWithEmailAndPassword(ACCESS_EMAIL, pin).catch(err=>{
+      alert('Código incorrecto o error de conexión: ' + err.message);
+    });
+  });
+  $('btnAuthLogout').addEventListener('click', ()=> firebase.auth().signOut());
+
+  /* ================= RESPALDO LOCAL (.json) ================= */
+  function snapshotDatos(){
+    return {
+      tipo: 'respaldo_diagnostico_minisplit',
+      version: 3,
+      exportado: new Date().toISOString(),
+      catalogo: catalogoLocal, clientesLocal, tiposTrabajo: tiposTrabajoLocal, trabajos: trabajosLocal,
+      fotosLocalMap
+    };
+  }
+
+  function restaurarDatos(data, origen){
+    if(!data || data.tipo !== 'respaldo_diagnostico_minisplit'){
+      alert('El archivo no parece ser un respaldo válido de esta app.');
+      return false;
+    }
+    if(!confirm(`Esto reemplazará tus datos locales actuales con el respaldo ${origen ? 'de '+origen : ''} del ${new Date(data.exportado).toLocaleString('es-MX')}. ¿Continuar?`)) return false;
+    catalogoLocal = data.catalogo || [];
+    clientesLocal = data.clientesLocal || [];
+    tiposTrabajoLocal = (data.tiposTrabajo && data.tiposTrabajo.length) ? data.tiposTrabajo : DEFAULT_TIPOS.slice();
+    trabajosLocal = data.trabajos || [];
+    fotosLocalMap = data.fotosLocalMap || {};
+    saveCatalogo(); saveClientesLocal(); saveTipos(); saveTrabajos(); saveFotosLocalMap();
+    if(!modoCloud){ clientesActivos = clientesLocal; catalogo = catalogoLocal; tiposTrabajo = tiposTrabajoLocal; trabajos = trabajosLocal; }
+    renderCatalogoDatalist(); renderClientesSelects(); renderTipoSelect();
+    mostrarToast(modoCloud ? '✔ Respaldo restaurado en este dispositivo' : '✔ Datos restaurados correctamente');
+    return true;
+  }
+
+  $('btnRespaldo').addEventListener('click', ()=>{ renderGdLista(); openModal('modalRespaldo'); });
+
+  $('btnExportLocal').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(snapshotDatos(), null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'respaldo_minisplit_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+  });
+
+  $('inputImportLocal').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{ restaurarDatos(JSON.parse(reader.result), 'archivo local'); }
+      catch(err){ alert('No se pudo leer el archivo: ' + err.message); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  /* ================= RESPALDO Y FOTOS EN GOOGLE DRIVE ================= */
+  const LS_GD_CLIENTID = 'msd_gd_clientid_v1';
+  const GD_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+  let gdTokenClient = null;
+  let gdAccessToken = null;
+  let gdFotosFolderId = null;
+
+  const savedClientId = localStorage.getItem(LS_GD_CLIENTID);
+  if(savedClientId) $('gd_clientid').value = savedClientId;
+
+  function setGdStatus(dotClass, text){
+    $('gdStatusText').innerHTML = '';
+    const dot = document.createElement('span');
+    dot.className = 'status-dot ' + dotClass;
+    $('gdStatusText').appendChild(dot);
+    $('gdStatusText').append(' ' + text);
+  }
+
+  function initGdTokenClient(clientId){
+    if(typeof google === 'undefined' || !google.accounts){
+      setGdStatus('off', 'No se pudo cargar Google Identity Services. Revisa tu conexión e intenta de nuevo.');
+      return null;
+    }
+    return google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: GD_SCOPE,
+      callback: (resp) => {
+        if(resp.error){ setGdStatus('off', 'Error de autorización: ' + resp.error); return; }
+        gdAccessToken = resp.access_token;
+        setGdStatus('on', 'Conectado a Google Drive.');
+        $('gdActions').classList.remove('hidden');
+        renderGdLista();
+      }
+    });
+  }
+
+  $('btnGdConnect').addEventListener('click', ()=>{
+    const clientId = $('gd_clientid').value.trim();
+    if(!clientId){ alert('Pega primero tu Client ID de Google Cloud Console.'); return; }
+    localStorage.setItem(LS_GD_CLIENTID, clientId);
+    gdTokenClient = initGdTokenClient(clientId);
+    if(gdTokenClient) gdTokenClient.requestAccessToken({ prompt: gdAccessToken ? '' : 'consent' });
+  });
+
+  async function gdSaveBackup(){
+    if(!gdAccessToken){ alert('Conecta primero con Google Drive.'); return; }
+    const data = snapshotDatos();
+    const filename = 'respaldo_minisplit_' + new Date().toISOString().replace(/[:.]/g,'-') + '.json';
+    const metadata = { name: filename, mimeType: 'application/json' };
+    const boundary = 'msdboundary';
+    const body =
+      `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+      `--${boundary}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(data)}\r\n` +
+      `--${boundary}--`;
+    try{
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': `multipart/related; boundary=${boundary}` },
+        body
+      });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      mostrarToast('✔ Respaldo guardado en tu Google Drive');
+      renderGdLista();
+    }catch(e){ alert('No se pudo guardar en Drive: ' + e.message); }
+  }
+  $('btnGdSave').addEventListener('click', gdSaveBackup);
+
+  async function gdListarBackups(){
+    if(!gdAccessToken) return [];
+    try{
+      const q = encodeURIComponent("name contains 'respaldo_minisplit_' and trashed = false");
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=createdTime desc&fields=files(id,name,createdTime)&pageSize=20`, {
+        headers: { 'Authorization': 'Bearer ' + gdAccessToken }
+      });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      return json.files || [];
+    }catch(e){ setGdStatus('off', 'Error listando respaldos: ' + e.message); return []; }
+  }
+
+  async function renderGdLista(){
+    if(!gdAccessToken){ $('gdLista').innerHTML = ''; return; }
+    const files = await gdListarBackups();
+    if(files.length === 0){ $('gdLista').innerHTML = '<p class="text-slate-400 py-2">Sin respaldos en Drive todavía.</p>'; return; }
+    $('gdLista').innerHTML = files.map(f=>`
+      <div class="flex items-center justify-between py-2">
+        <span class="text-slate-600 dark:text-slate-300">${new Date(f.createdTime).toLocaleString('es-MX')}</span>
+        <button data-id="${f.id}" class="restaurarGd text-sky-600 dark:text-sky-400 font-semibold">Restaurar</button>
+      </div>`).join('');
+    $('gdLista').querySelectorAll('.restaurarGd').forEach(b=>{
+      b.addEventListener('click', ()=>gdRestaurar(b.dataset.id));
+    });
+  }
+
+  async function gdRestaurar(fileId){
+    try{
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: { 'Authorization': 'Bearer ' + gdAccessToken } });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      restaurarDatos(data, 'Google Drive');
+    }catch(e){ alert('No se pudo restaurar desde Drive: ' + e.message); }
+  }
+
+  async function gdObtenerCarpetaFotos(){
+    if(gdFotosFolderId) return gdFotosFolderId;
+    const q = encodeURIComponent("name = 'Fotos_Diagnostico_Minisplit' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`, { headers: { 'Authorization': 'Bearer ' + gdAccessToken } });
+    const json = await res.json();
+    if(json.files && json.files.length){ gdFotosFolderId = json.files[0].id; return gdFotosFolderId; }
+    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Fotos_Diagnostico_Minisplit', mimeType: 'application/vnd.google-apps.folder' })
+    });
+    const created = await createRes.json();
+    gdFotosFolderId = created.id;
+    return gdFotosFolderId;
+  }
+
+  async function gdSubirFoto(dataUrl, nombreArchivo){
+    if(!gdAccessToken) throw new Error('Google Drive no está conectado.');
+    const folderId = await gdObtenerCarpetaFotos();
+    const blob = await (await fetch(dataUrl)).blob();
+    const metadata = { name: nombreArchivo, mimeType: 'image/jpeg', parents: [folderId] };
+    const boundary = 'msdfotoboundary';
+    const metaPart = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n`;
+    const filePartHeader = `--${boundary}\r\nContent-Type: image/jpeg\r\n\r\n`;
+    const closing = `\r\n--${boundary}--`;
+    const body = new Blob([metaPart, filePartHeader, blob, closing]);
+    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': `multipart/related; boundary=${boundary}` },
+      body
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const file = await res.json();
+    await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}/permissions`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'reader', type: 'anyone' })
+    });
+    return {
+      id: file.id,
+      viewLink: `https://drive.google.com/file/d/${file.id}/view`,
+      embedLink: `https://drive.google.com/uc?export=view&id=${file.id}`
+    };
+  }
+
+  /* ================= CATÁLOGO DE EQUIPOS (marca / modelo / línea + datos de placa) ================= */
+  function renderCatalogoDatalist(){
+    const marcas = [...new Set(catalogo.map(c=>c.marca).filter(Boolean))];
+    $('listaMarcas').innerHTML = marcas.map(m=>`<option value="${esc(m)}">`).join('');
+    const modelos = [...new Set(catalogo.map(c=>c.modelo).filter(Boolean))];
+    $('listaModelos').innerHTML = modelos.map(m=>`<option value="${esc(m)}">`).join('');
+    const lineas = [...new Set(catalogo.map(c=>c.linea).filter(Boolean))];
+    $('listaLineas').innerHTML = lineas.map(m=>`<option value="${esc(m)}">`).join('');
+  }
+
+  function aplicarCatalogoAEquipo(c, i){
+    $(`eq${i}_marca`).value = c.marca || '';
+    $(`eq${i}_modelo`).value = c.modelo || '';
+    if(c.linea) $(`eq${i}_linea`).value = c.linea;
+    if(c.largo) $(`eq${i}_largo`).value = c.largo;
+    if(c.ancho) $(`eq${i}_ancho`).value = c.ancho;
+    if(c.ampNominal) $(`eq${i}_ampNominal`).value = c.ampNominal;
+    if(c.voltaje) $(`eq${i}_voltaje`).value = c.voltaje;
+    if(c.refrigTipo) $(`eq${i}_refrigTipo`).value = c.refrigTipo;
+    if(c.refrigCant) $(`eq${i}_refrigCant`).value = c.refrigCant;
+    $(`eq${i}_autofillMsg`).classList.remove('hidden');
+    mostrarToast(`✔ Datos aplicados al Equipo ${i}`);
+  }
+
+  function renderCatalogoLista(){
+    if(catalogo.length === 0){ $('catalogoLista').innerHTML = '<p class="text-slate-400 py-3">Sin equipos registrados todavía.</p>'; return; }
+    $('catalogoLista').innerHTML = catalogo.map(c=>`
+      <div class="flex items-center justify-between py-2 gap-2">
+        <div class="min-w-0">
+          <p class="font-semibold text-slate-700 dark:text-slate-200">${esc(c.marca)} — ${esc(c.modelo)} ${c.linea ? '<span class=\"text-sky-500\">('+esc(c.linea)+')</span>' : ''}</p>
+          <p class="text-[11px] text-slate-400">
+            ${(c.largo && c.ancho) ? `Difusor: ${c.largo} × ${c.ancho} cm` : 'Difusor: —'}
+            ${c.ampNominal ? ' · ' + c.ampNominal + 'A' : ''}${c.voltaje ? ' · ' + c.voltaje + 'V' : ''}${c.refrigTipo ? ' · ' + esc(c.refrigTipo) : ''}${c.refrigCant ? ' (' + c.refrigCant + 'gr)' : ''}
+          </p>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button data-id="${c.id}" class="usarCatalogo text-sky-600 dark:text-sky-400 text-xs font-semibold">Usar en Equipo ${catalogoEquipoActivo}</button>
+          <button data-id="${c.id}" class="delCatalogo text-red-500 text-xs font-semibold">Borrar</button>
+        </div>
+      </div>`).join('');
+    $('catalogoLista').querySelectorAll('.usarCatalogo').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const c = catalogo.find(x=>x.id===b.dataset.id);
+        if(c){ aplicarCatalogoAEquipo(c, catalogoEquipoActivo); closeModal('modalCatalogo'); }
+      });
+    });
+    $('catalogoLista').querySelectorAll('.delCatalogo').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(modoCloud && db){
+          db.collection('catalogo_equipos').doc(b.dataset.id).delete().catch(e=>alert('No se pudo borrar: '+e.message));
+        } else {
+          catalogoLocal = catalogoLocal.filter(c=>c.id !== b.dataset.id);
+          saveCatalogo(); catalogo = catalogoLocal;
+          renderCatalogoLista(); renderCatalogoDatalist();
+        }
+      });
+    });
+  }
+
+  let catalogoEquipoActivo = 1;
+
+  $('btnAddCatalogo').addEventListener('click', async ()=>{
+    const marca = txt('cat_marca');
+    const modelo = txt('cat_modelo');
+    if(!marca || !modelo){ alert('Marca y Modelo son obligatorios.'); return; }
+    const nuevo = {
+      marca, modelo,
+      linea: txt('cat_linea') || null,
+      largo: num('cat_largo'), ancho: num('cat_ancho'),
+      ampNominal: num('cat_ampNominal'), voltaje: num('cat_voltaje'),
+      refrigTipo: txt('cat_refrigTipo') || null, refrigCant: num('cat_refrigCant')
+    };
+    if(modoCloud && db){
+      try{ await db.collection('catalogo_equipos').add(nuevo); }
+      catch(e){ alert('No se pudo guardar en la nube: ' + e.message); return; }
+    } else {
+      catalogoLocal.push({ id: uid(), ...nuevo });
+      saveCatalogo(); catalogo = catalogoLocal;
+      renderCatalogoLista(); renderCatalogoDatalist();
+    }
+    ['cat_marca','cat_modelo','cat_linea','cat_largo','cat_ancho','cat_ampNominal','cat_voltaje','cat_refrigTipo','cat_refrigCant'].forEach(id=>$(id).value='');
+  });
+
+  function buscarEnCatalogo(marca, modeloOLinea){
+    if(!marca || !modeloOLinea) return null;
+    const norm = s => String(s||'').trim().toLowerCase();
+    return catalogo.find(c => norm(c.marca) === norm(marca) && (norm(c.modelo) === norm(modeloOLinea) || norm(c.linea) === norm(modeloOLinea))) || null;
+  }
+
+  function intentarAutocompletar(i){
+    const marca = $(`eq${i}_marca`).value;
+    const modelo = $(`eq${i}_modelo`).value;
+    const linea = $(`eq${i}_linea`).value;
+    const match = buscarEnCatalogo(marca, modelo) || buscarEnCatalogo(marca, linea);
+    if(match){
+      if(match.largo) $(`eq${i}_largo`).value = match.largo;
+      if(match.ancho) $(`eq${i}_ancho`).value = match.ancho;
+      if(match.linea && !linea) $(`eq${i}_linea`).value = match.linea;
+      if(match.ampNominal) $(`eq${i}_ampNominal`).value = match.ampNominal;
+      if(match.voltaje) $(`eq${i}_voltaje`).value = match.voltaje;
+      if(match.refrigTipo) $(`eq${i}_refrigTipo`).value = match.refrigTipo;
+      if(match.refrigCant) $(`eq${i}_refrigCant`).value = match.refrigCant;
+      $(`eq${i}_autofillMsg`).classList.remove('hidden');
+    } else {
+      $(`eq${i}_autofillMsg`).classList.add('hidden');
+    }
+  }
+
+  /* ================= CLIENTES ================= */
+  function nombreCompleto(c){ return [c.nombre, c.apellido].filter(Boolean).join(' '); }
+
+  function renderClientesSelects(){
+    const prevSel = $('clienteSel').value;
+    const prevFil = $('filtroCliente') ? $('filtroCliente').value : '';
+    const opts = clientesActivos.map(c=>`<option value="${c.id}">${esc(nombreCompleto(c))}</option>`).join('');
+    $('clienteSel').innerHTML = '<option value="">— Sin cliente —</option>' + opts;
+    $('clienteSel').value = clientesActivos.some(c=>c.id===prevSel) ? prevSel : '';
+    if($('filtroCliente')){
+      $('filtroCliente').innerHTML = '<option value="">Todos los clientes</option>' + opts;
+      $('filtroCliente').value = clientesActivos.some(c=>c.id===prevFil) ? prevFil : '';
+    }
+  }
+
+  function renderClientesModalLista(){
+    $('clienteFbNote').textContent = modoCloud
+      ? '✔ Conectado a Firestore: estos clientes son los mismos que ves en tu app de finanzas.'
+      : 'Modo local: estos clientes solo existen en este dispositivo. Conecta Firestore (⚙️) para compartirlos con tu app de finanzas.';
+    if(clientesActivos.length === 0){ $('clientesLista').innerHTML = '<p class="text-slate-400 py-3">Sin clientes registrados.</p>'; return; }
+    $('clientesLista').innerHTML = clientesActivos.map(c=>`
+      <div class="flex items-center justify-between py-2">
+        <div>
+          <p class="font-semibold text-slate-700 dark:text-slate-200">${esc(nombreCompleto(c))}</p>
+          <p class="text-[11px] text-slate-400">${esc(c.telefono||c.tel||'')} ${c.direccion ? '· '+esc(c.direccion) : ''}</p>
+        </div>
+        ${modoCloud ? '' : `<button data-id="${c.id}" class="delCliente text-red-500 text-xs font-semibold">Borrar</button>`}
+      </div>`).join('');
+    $('clientesLista').querySelectorAll('.delCliente').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        clientesLocal = clientesLocal.filter(c=>c.id !== b.dataset.id);
+        saveClientesLocal(); renderClientesModalLista(); renderClientesSelects();
+      });
+    });
+  }
+
+  $('btnNuevoCliente').addEventListener('click', ()=>{ renderClientesModalLista(); openModal('modalClientes'); });
+
+  $('btnAddCliente').addEventListener('click', async ()=>{
+    const nombre = txt('cli_nombre');
+    const apellido = txt('cli_apellido');
+    const telefono = txt('cli_tel');
+    const direccion = txt('cli_dir');
+    if(!nombre){ alert('El nombre es obligatorio.'); return; }
+    const nuevo = { nombre, apellido, telefono, direccion };
+    if(modoCloud && db){
+      try{ await db.collection('clientes').add(nuevo); }
+      catch(e){ alert('No se pudo guardar en Firestore: ' + e.message); return; }
+    } else {
+      clientesLocal.push({ id: uid(), ...nuevo });
+      saveClientesLocal();
+      clientesActivos = clientesLocal;
+      renderClientesModalLista(); renderClientesSelects();
+    }
+    $('cli_nombre').value=''; $('cli_apellido').value=''; $('cli_tel').value=''; $('cli_dir').value='';
+  });
+
+  /* ================= TIPOS DE TRABAJO ================= */
+  function renderTipoSelect(){
+    const prev = $('tipoTrabajoSel').value;
+    $('tipoTrabajoSel').innerHTML = tiposTrabajo.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+    if(tiposTrabajo.includes(prev)) $('tipoTrabajoSel').value = prev;
+    if($('filtroTipo')){
+      const prevF = $('filtroTipo').value;
+      $('filtroTipo').innerHTML = '<option value="">Todos los tipos</option>' + tiposTrabajo.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+      $('filtroTipo').value = prevF;
+    }
+  }
+  function renderTiposLista(){
+    $('tiposLista').innerHTML = tiposTrabajo.map((t,i)=>`
+      <div class="flex items-center justify-between py-2">
+        <span>${esc(t)}</span>
+        <button data-i="${i}" class="delTipo text-red-500 text-xs font-semibold">Borrar</button>
+      </div>`).join('');
+    $('tiposLista').querySelectorAll('.delTipo').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const idx = parseInt(b.dataset.i);
+        if(modoCloud && db){
+          const nuevos = tiposTrabajo.filter((_,i)=>i!==idx);
+          db.collection('config').doc('tipos_trabajo').set({ items: nuevos }).catch(e=>alert('No se pudo guardar: '+e.message));
+        } else {
+          tiposTrabajoLocal.splice(idx,1);
+          saveTipos(); tiposTrabajo = tiposTrabajoLocal;
+          renderTiposLista(); renderTipoSelect();
+        }
+      });
+    });
+  }
+  $('btnEditarTipos').addEventListener('click', ()=>{ renderTiposLista(); openModal('modalTipos'); });
+  $('btnAddTipo').addEventListener('click', ()=>{
+    const v = txt('nuevoTipo');
+    if(!v) return;
+    if(modoCloud && db){
+      if(tiposTrabajo.includes(v)) { $('nuevoTipo').value=''; return; }
+      db.collection('config').doc('tipos_trabajo').set({ items: [...tiposTrabajo, v] }).catch(e=>alert('No se pudo guardar: '+e.message));
+    } else {
+      if(!tiposTrabajoLocal.includes(v)) tiposTrabajoLocal.push(v);
+      saveTipos(); tiposTrabajo = tiposTrabajoLocal;
+      renderTiposLista(); renderTipoSelect();
+    }
+    $('nuevoTipo').value='';
+  });
+
+  /* ================= MIS COMENTARIOS / PENDIENTE / ICS ================= */
+  $('tienePendiente').addEventListener('change', e=>{
+    $('pendienteFechaWrap').classList.toggle('hidden', !e.target.checked);
+  });
+
+  function generarICS(fechaStr, horaStr, titulo, descripcion){
+    const hora = horaStr || '09:00';
+    const inicio = fechaStr.replace(/-/g,'') + 'T' + hora.replace(':','') + '00';
+    const finDate = new Date(fechaStr + 'T' + hora + ':00');
+    finDate.setHours(finDate.getHours()+1);
+    const pad = n => String(n).padStart(2,'0');
+    const fin = `${finDate.getFullYear()}${pad(finDate.getMonth()+1)}${pad(finDate.getDate())}T${pad(finDate.getHours())}${pad(finDate.getMinutes())}00`;
+    const now = new Date();
+    const dtstamp = now.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+    const escIcs = s => String(s||'').replace(/\n/g,'\\n');
+    const ics = [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//ServiciosRoberts//DiagnosticoMinisplit//ES',
+      'BEGIN:VEVENT',
+      'UID:msd-' + uid() + '@serviciosroberts',
+      'DTSTAMP:' + dtstamp,
+      'DTSTART:' + inicio,
+      'DTEND:' + fin,
+      'SUMMARY:' + escIcs(titulo),
+      'DESCRIPTION:' + escIcs(descripcion),
+      'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:Recordatorio','TRIGGER:-P1D','END:VALARM',
+      'END:VEVENT','END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics], {type:'text/calendar'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'recordatorio_' + fechaStr + '.ics';
+    a.click();
+  }
+
+  $('btnAgregarICS').addEventListener('click', ()=>{
+    const fecha = $('pendienteFecha').value;
+    if(!fecha){ alert('Elige la fecha del pendiente primero.'); return; }
+    const clienteId = $('clienteSel').value;
+    const cliente = clientesActivos.find(c=>c.id===clienteId);
+    const titulo = 'Regresar' + (cliente ? ' con ' + nombreCompleto(cliente) : '') + ' — Servicios Robert\'s';
+    const desc = $('misComentarios').value || 'Pendiente de servicio de minisplit.';
+    generarICS(fecha, $('pendienteHora').value, titulo, desc);
+    mostrarToast('✔ Recordatorio descargado — ábrelo para agregarlo a tu calendario');
+  });
+
+  /* ================= EQUIPOS: CREACIÓN DE TARJETAS (1 a 5) ================= */
+  function crearEquipoCardHTML(i){
+    return `
+    <section class="equipo-card bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm ${i>1?'oculto':''}" data-equipo="${i}" id="eqCard_${i}">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-3">❄ Equipo ${i}</h2>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Marca</label>
+          <input id="eq${i}_marca" list="listaMarcas" type="text" placeholder="Ej. Mirage" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Modelo</label>
+          <input id="eq${i}_modelo" list="listaModelos" type="text" placeholder="Ej. MIS12" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Línea / Seudónimo</label>
+          <input id="eq${i}_linea" list="listaLineas" type="text" placeholder="Ej. XP, Titanium, X3" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+        <div class="flex items-end gap-2">
+          <button data-eq="${i}" class="btnCatalogoEq ml-auto text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-2">📚 Catálogo</button>
+        </div>
+      </div>
+      <p id="eq${i}_autofillMsg" class="text-[11px] text-emerald-600 dark:text-emerald-400 hidden mt-1">✔ Datos auto-completados del catálogo</p>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+        <div>
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Capacidad nominal</label>
+          <select id="eq${i}_capNominalSel" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+            <option value="9000">9,000 BTU/h</option>
+            <option value="12000" selected>12,000 BTU/h</option>
+            <option value="18000">18,000 BTU/h</option>
+            <option value="24000">24,000 BTU/h</option>
+            <option value="36000">36,000 BTU/h</option>
+            <option value="custom">Otro (libre)</option>
+          </select>
+        </div>
+        <div id="eq${i}_capCustomWrap" class="hidden">
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Capacidad libre (BTU/h)</label>
+          <input id="eq${i}_capCustom" type="number" placeholder="Ej. 15000" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Largo difusor (cm)</label>
+          <input id="eq${i}_largo" type="number" value="70" step="0.1" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Ancho difusor (cm)</label>
+          <input id="eq${i}_ancho" type="number" value="8" step="0.1" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+        <div>
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Amperaje nominal (A) — opcional</label>
+          <input id="eq${i}_ampNominal" type="number" step="0.1" placeholder="Ej. 5.5" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Voltaje (V) — opcional</label>
+          <input id="eq${i}_voltaje" type="number" step="1" placeholder="Ej. 127" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Refrigerante (tipo) — opcional</label>
+          <input id="eq${i}_refrigTipo" type="text" placeholder="Ej. R410A" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Refrigerante (gr) — opcional</label>
+          <input id="eq${i}_refrigCant" type="number" step="1" placeholder="Ej. 450" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Foto de la placa de datos (opcional)</label>
+        <div class="flex flex-wrap items-center gap-3">
+          <label class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-2 cursor-pointer">
+            📷 Tomar / Subir foto
+            <input id="eq${i}_fotoPlacaInput" type="file" accept="image/*" capture="environment" class="hidden">
+          </label>
+          <button id="eq${i}_btnQuitarFotoPlaca" class="hidden text-xs font-semibold text-red-500">Quitar foto</button>
+          <span id="eq${i}_fotoPlacaCargando" class="hidden text-xs text-slate-400">Procesando imagen…</span>
+        </div>
+        <img id="eq${i}_fotoPlacaPreview" class="hidden mt-2 max-h-40 rounded-lg border border-sky-200 dark:border-slate-700">
+      </div>
+
+      <!-- ANTES -->
+      <div class="mt-4 pt-4 border-t border-sky-100 dark:border-slate-800">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-3">🔧 Antes del servicio</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">T° entrada (°C)</label><input id="eq${i}_a_te" type="number" step="0.1" placeholder="26" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">HR entrada (%)</label><input id="eq${i}_a_hre" type="number" step="0.1" placeholder="55" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">T° salida (°C)</label><input id="eq${i}_a_ts" type="number" step="0.1" placeholder="18" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">HR salida (%)</label><input id="eq${i}_a_hrs" type="number" step="0.1" placeholder="90" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Vel. aire (m/s)</label><input id="eq${i}_a_v" type="number" step="0.1" placeholder="2.5" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Presión baja (PSI)</label><input id="eq${i}_a_psi" type="number" step="0.1" placeholder="opcional" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Amperaje (A)</label><input id="eq${i}_a_amp" type="number" step="0.1" placeholder="opcional" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></div>
+        </div>
+        <div class="mt-2">
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[11px] text-slate-500 dark:text-slate-400">Comentarios (opcional) — ej. faltaba tornillos, aleta quebrada</label>
+            <button data-target="eq${i}_a_comentario" class="btnVineta text-[11px] font-semibold bg-amber-100 dark:bg-slate-800 text-amber-700 dark:text-amber-300 rounded px-2 py-0.5">• Viñeta</button>
+          </div>
+          <textarea id="eq${i}_a_comentario" rows="2" placeholder="• Detalle 1&#10;• Detalle 2" class="w-full bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></textarea>
+        </div>
+        <div class="mt-3">
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Foto antes del servicio (opcional)</label>
+          <div class="flex flex-wrap items-center gap-3">
+            <label class="text-xs font-semibold bg-amber-100 dark:bg-slate-800 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-slate-700 rounded-lg px-3 py-2 cursor-pointer">
+              📷 Tomar / Subir foto
+              <input id="eq${i}_fotoAntesInput" type="file" accept="image/*" capture="environment" class="hidden">
+            </label>
+            <button id="eq${i}_btnQuitarFotoAntes" class="hidden text-xs font-semibold text-red-500">Quitar foto</button>
+            <span id="eq${i}_fotoAntesCargando" class="hidden text-xs text-slate-400">Procesando imagen…</span>
+          </div>
+          <img id="eq${i}_fotoAntesPreview" class="hidden mt-2 max-h-40 rounded-lg border border-amber-200 dark:border-slate-700">
+        </div>
+      </div>
+
+      <!-- DESPUES -->
+      <div class="mt-4 pt-4 border-t border-sky-100 dark:border-slate-800">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">✅ Después del servicio <span class="text-slate-400 font-normal normal-case">(opcional)</span></h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">T° entrada (°C)</label><input id="eq${i}_d_te" type="number" step="0.1" placeholder="26" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">HR entrada (%)</label><input id="eq${i}_d_hre" type="number" step="0.1" placeholder="55" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">T° salida (°C)</label><input id="eq${i}_d_ts" type="number" step="0.1" placeholder="15" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">HR salida (%)</label><input id="eq${i}_d_hrs" type="number" step="0.1" placeholder="92" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Vel. aire (m/s)</label><input id="eq${i}_d_v" type="number" step="0.1" placeholder="4.0" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Presión baja (PSI)</label><input id="eq${i}_d_psi" type="number" step="0.1" placeholder="opcional" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+          <div><label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Amperaje (A)</label><input id="eq${i}_d_amp" type="number" step="0.1" placeholder="opcional" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></div>
+        </div>
+        <div class="mt-2">
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[11px] text-slate-500 dark:text-slate-400">Comentarios (opcional)</label>
+            <button data-target="eq${i}_d_comentario" class="btnVineta text-[11px] font-semibold bg-emerald-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 rounded px-2 py-0.5">• Viñeta</button>
+          </div>
+          <textarea id="eq${i}_d_comentario" rows="2" placeholder="• Detalle 1&#10;• Detalle 2" class="w-full bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"></textarea>
+        </div>
+        <div class="mt-3">
+          <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Foto después del servicio (opcional)</label>
+          <div class="flex flex-wrap items-center gap-3">
+            <label class="text-xs font-semibold bg-emerald-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-slate-700 rounded-lg px-3 py-2 cursor-pointer">
+              📷 Tomar / Subir foto
+              <input id="eq${i}_fotoDespuesInput" type="file" accept="image/*" capture="environment" class="hidden">
+            </label>
+            <button id="eq${i}_btnQuitarFotoDespues" class="hidden text-xs font-semibold text-red-500">Quitar foto</button>
+            <span id="eq${i}_fotoDespuesCargando" class="hidden text-xs text-slate-400">Procesando imagen…</span>
+          </div>
+          <img id="eq${i}_fotoDespuesPreview" class="hidden mt-2 max-h-40 rounded-lg border border-emerald-200 dark:border-slate-700">
+        </div>
+      </div>
+    </section>`;
+  }
+
+  const TIPOS_FOTO = ['Placa','Antes','Despues'];
+  let fotosActuales = {};      // fotosActuales[i][tipo] = dataURL de esta sesión
+  let fotosLinksActuales = {}; // fotosLinksActuales[i][tipo] = {id,viewLink,embedLink}
+  for(let i=1;i<=NUM_EQUIPOS_MAX;i++){ fotosActuales[i]={}; fotosLinksActuales[i]={}; }
+
+  function comprimirImagen(file, maxDim, calidad){
+    return new Promise((resolve, reject)=>{
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = () => { img.src = reader.result; };
+      reader.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim){ height = Math.round(height * maxDim/width); width = maxDim; }
+        else if (height > maxDim){ width = Math.round(width * maxDim/height); height = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', calidad));
+      };
+      img.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function mostrarPreviewFotoEq(i, tipo, src){
+    const img = $(`eq${i}_foto${tipo}Preview`);
+    const btn = $(`eq${i}_btnQuitarFoto${tipo}`);
+    if(src){ img.src = src; img.classList.remove('hidden'); btn.classList.remove('hidden'); }
+    else { img.classList.add('hidden'); btn.classList.add('hidden'); }
+  }
+
+  function insertarVineta(textareaId){
+    const ta = $(textareaId);
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const before = ta.value.substring(0, start);
+    const needsNewline = before.length > 0 && !before.endsWith('\n');
+    const insert = (needsNewline ? '\n' : '') + '• ';
+    ta.value = before + insert + ta.value.substring(end);
+    const pos = start + insert.length;
+    ta.focus(); ta.setSelectionRange(pos,pos);
+  }
+
+  function bindEquipoCardEvents(i){
+    $(`eq${i}_capNominalSel`).addEventListener('change', e=>{
+      $(`eq${i}_capCustomWrap`).classList.toggle('hidden', e.target.value !== 'custom');
+    });
+    ['marca','modelo','linea'].forEach(campo=>{
+      $(`eq${i}_${campo}`).addEventListener('blur', ()=>intentarAutocompletar(i));
+      $(`eq${i}_${campo}`).addEventListener('change', ()=>intentarAutocompletar(i));
+    });
+    const btnCat = document.querySelector(`.btnCatalogoEq[data-eq="${i}"]`);
+    if(btnCat){
+      btnCat.addEventListener('click', ()=>{
+        catalogoEquipoActivo = i;
+        renderCatalogoLista();
+        openModal('modalCatalogo');
+      });
+    }
+    TIPOS_FOTO.forEach(tipo=>{
+      $(`eq${i}_foto${tipo}Input`).addEventListener('change', async (e)=>{
+        const file = e.target.files[0];
+        if(!file) return;
+        $(`eq${i}_foto${tipo}Cargando`).classList.remove('hidden');
+        try{
+          fotosActuales[i][tipo] = await comprimirImagen(file, 1000, 0.72);
+          fotosLinksActuales[i][tipo] = null;
+          mostrarPreviewFotoEq(i, tipo, fotosActuales[i][tipo]);
+        }catch(err){ alert('No se pudo procesar la imagen: ' + err.message); }
+        $(`eq${i}_foto${tipo}Cargando`).classList.add('hidden');
+        e.target.value = '';
+      });
+      $(`eq${i}_btnQuitarFoto${tipo}`).addEventListener('click', ()=>{
+        fotosActuales[i][tipo] = null;
+        fotosLinksActuales[i][tipo] = null;
+        mostrarPreviewFotoEq(i, tipo, null);
+      });
+    });
+    document.querySelectorAll(`#eqCard_${i} .btnVineta`).forEach(b=>{
+      b.addEventListener('click', ()=>insertarVineta(b.dataset.target));
+    });
+  }
+
+  function construirEquiposCards(){
+    const cont = $('equiposContainer');
+    let html = '';
+    for(let i=1;i<=NUM_EQUIPOS_MAX;i++) html += crearEquipoCardHTML(i);
+    cont.innerHTML = html;
+    for(let i=1;i<=NUM_EQUIPOS_MAX;i++) bindEquipoCardEvents(i);
+  }
+
+  $('numEquiposSel').addEventListener('change', e=>{
+    const n = parseInt(e.target.value);
+    for(let i=1;i<=NUM_EQUIPOS_MAX;i++){
+      $(`eqCard_${i}`).classList.toggle('oculto', i > n);
+    }
+  });
+
+  function numEquiposActivos(){ return parseInt($('numEquiposSel').value); }
+
+  /* ================= HISTORIAL DE TRABAJOS ================= */
+  function renderFiltroMarcas(){
+    const marcas = new Set();
+    trabajos.forEach(t=> (t.equipos||[]).forEach(e=>{ if(e.marca) marcas.add(e.marca); }));
+    $('filtroMarca').innerHTML = '<option value="">Todas las marcas</option>' + [...marcas].map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('');
+  }
+
+  function renderHistorialLista(){
+    renderFiltroMarcas();
+    const fc = $('filtroCliente').value, ft = $('filtroTipo').value, fm = $('filtroMarca').value, ff = $('filtroFecha').value;
+    let filtrados = trabajos.filter(t=>{
+      if(fc && t.clienteId !== fc) return false;
+      if(ft && t.tipoTrabajo !== ft) return false;
+      if(fm && !(t.equipos||[]).some(e=>e.marca===fm)) return false;
+      if(ff && t.fecha !== ff) return false;
+      return true;
+    }).sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||''));
+
+    if(filtrados.length === 0){ $('historialLista').innerHTML = '<p class="text-slate-400 py-3">Sin trabajos que coincidan.</p>'; return; }
+    $('historialLista').innerHTML = filtrados.map(t=>{
+      const cli = clientesActivos.find(c=>c.id===t.clienteId);
+      const equiposTxt = (t.equipos||[]).map(e=>[e.marca,e.modelo].filter(Boolean).join(' ')).filter(Boolean).join(', ') || '—';
+      const pendienteTxt = t.pendienteFecha ? `⏰ Pendiente: ${t.pendienteFecha}${t.pendienteHora?' '+t.pendienteHora:''}` : '';
+      return `<div class="flex items-center justify-between py-2 gap-2">
+        <div class="min-w-0">
+          <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${esc(t.tipoTrabajo||'—')} · ${esc(cli?nombreCompleto(cli):'Sin cliente')}</p>
+          <p class="text-[11px] text-slate-400">${esc(t.fecha||'')} · ${(t.equipos||[]).length} equipo(s): ${esc(equiposTxt)}</p>
+          ${pendienteTxt ? `<p class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">${pendienteTxt}</p>` : ''}
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button data-id="${t.id}" class="verTrabajo text-sky-600 dark:text-sky-400 text-xs font-semibold">Ver</button>
+          <button data-id="${t.id}" class="delTrabajo text-red-500 text-xs font-semibold">Borrar</button>
+        </div>
+      </div>`;
+    }).join('');
+    $('historialLista').querySelectorAll('.verTrabajo').forEach(b=>{ b.addEventListener('click', ()=>cargarTrabajo(b.dataset.id)); });
+    $('historialLista').querySelectorAll('.delTrabajo').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(!confirm('¿Borrar este trabajo del historial?')) return;
+        if(modoCloud && db){
+          db.collection('trabajos_minisplit').doc(b.dataset.id).delete().catch(e=>alert('No se pudo borrar: '+e.message));
+        } else {
+          trabajosLocal = trabajosLocal.filter(t=>t.id !== b.dataset.id);
+          saveTrabajos(); trabajos = trabajosLocal;
+          renderHistorialLista();
+        }
+      });
+    });
+  }
+
+  function cargarTrabajo(id){
+    const t = trabajos.find(x=>x.id===id);
+    if(!t) return;
+    $('clienteSel').value = t.clienteId || '';
+    $('tipoTrabajoSel').value = t.tipoTrabajo || '';
+    $('fechaTrabajo').value = t.fecha || '';
+    $('tecnico').value = t.tecnico || '';
+    $('misComentarios').value = t.misComentarios || '';
+    $('tienePendiente').checked = !!t.pendienteFecha;
+    $('pendienteFechaWrap').classList.toggle('hidden', !t.pendienteFecha);
+    $('pendienteFecha').value = t.pendienteFecha || '';
+    $('pendienteHora').value = t.pendienteHora || '09:00';
+
+    const equipos = t.equipos && t.equipos.length ? t.equipos : [{}];
+    const n = Math.min(equipos.length, NUM_EQUIPOS_MAX);
+    $('numEquiposSel').value = String(n);
+    for(let i=1;i<=NUM_EQUIPOS_MAX;i++) $(`eqCard_${i}`).classList.toggle('oculto', i > n);
+
+    const setIf = (id,val)=>{ if(val !== undefined && val !== null && val !== '') $(id).value = val; else $(id).value=''; };
+
+    equipos.slice(0, NUM_EQUIPOS_MAX).forEach((eqData, idx)=>{
+      const i = idx+1;
+      setIf(`eq${i}_marca`, eqData.marca);
+      setIf(`eq${i}_modelo`, eqData.modelo);
+      setIf(`eq${i}_linea`, eqData.linea);
+      setIf(`eq${i}_largo`, eqData.largo || 70);
+      setIf(`eq${i}_ancho`, eqData.ancho || 8);
+      setIf(`eq${i}_ampNominal`, eqData.ampNominal);
+      setIf(`eq${i}_voltaje`, eqData.voltaje);
+      setIf(`eq${i}_refrigTipo`, eqData.refrigTipo);
+      setIf(`eq${i}_refrigCant`, eqData.refrigCant);
+      if(eqData.capNominal && ['9000','12000','18000','24000','36000'].includes(String(eqData.capNominal))){
+        $(`eq${i}_capNominalSel`).value = String(eqData.capNominal);
+        $(`eq${i}_capCustomWrap`).classList.add('hidden');
+      } else if(eqData.capNominal){
+        $(`eq${i}_capNominalSel`).value = 'custom';
+        $(`eq${i}_capCustom`).value = eqData.capNominal;
+        $(`eq${i}_capCustomWrap`).classList.remove('hidden');
+      } else {
+        $(`eq${i}_capNominalSel`).value = '12000';
+        $(`eq${i}_capCustomWrap`).classList.add('hidden');
+      }
+      const a = eqData.entradas?.antes || {}, d = eqData.entradas?.despues || {};
+      setIf(`eq${i}_a_te`,a.te); setIf(`eq${i}_a_hre`,a.hre); setIf(`eq${i}_a_ts`,a.ts); setIf(`eq${i}_a_hrs`,a.hrs); setIf(`eq${i}_a_v`,a.v); setIf(`eq${i}_a_psi`,a.psi); setIf(`eq${i}_a_amp`,a.amp);
+      setIf(`eq${i}_a_comentario`, a.comentario);
+      setIf(`eq${i}_d_te`,d.te); setIf(`eq${i}_d_hre`,d.hre); setIf(`eq${i}_d_ts`,d.ts); setIf(`eq${i}_d_hrs`,d.hrs); setIf(`eq${i}_d_v`,d.v); setIf(`eq${i}_d_psi`,d.psi); setIf(`eq${i}_d_amp`,d.amp);
+      setIf(`eq${i}_d_comentario`, d.comentario);
+
+      TIPOS_FOTO.forEach(tipo=>{
+        const key = tipo.toLowerCase();
+        const linkField = 'foto' + tipo + 'Link';
+        const localCache = fotosLocalMap[t.id + '::' + i];
+        if(eqData[linkField]){
+          fotosLinksActuales[i][tipo] = eqData[linkField];
+          fotosActuales[i][tipo] = null;
+          mostrarPreviewFotoEq(i, tipo, eqData[linkField].embedLink);
+        } else if(localCache && localCache[key]){
+          fotosActuales[i][tipo] = localCache[key];
+          fotosLinksActuales[i][tipo] = null;
+          mostrarPreviewFotoEq(i, tipo, localCache[key]);
+        } else {
+          fotosActuales[i][tipo] = null;
+          fotosLinksActuales[i][tipo] = null;
+          mostrarPreviewFotoEq(i, tipo, null);
+        }
+      });
+    });
+    // Limpiar equipos sobrantes si el trabajo cargado tenía menos equipos que la sesión anterior
+    for(let i=equipos.length+1;i<=NUM_EQUIPOS_MAX;i++){
+      TIPOS_FOTO.forEach(tipo=>{ fotosActuales[i][tipo]=null; fotosLinksActuales[i][tipo]=null; mostrarPreviewFotoEq(i,tipo,null); });
+    }
+
+    closeModal('modalHistorial');
+    calcularYRenderizar();
+  }
+
+  $('btnHistorial').addEventListener('click', ()=>{ renderClientesSelects(); renderHistorialLista(); openModal('modalHistorial'); });
+  ['filtroCliente','filtroTipo','filtroMarca','filtroFecha'].forEach(id=>{
+    $(id).addEventListener('change', renderHistorialLista);
+  });
+
+  /* ================= MOTOR DE CÁLCULO (puro, sin depender de un equipo específico) ================= */
+  function entalpia(T, HR){
+    if (T === null || HR === null) return null;
+    const Psat = 0.61078 * Math.exp((17.27 * T) / (T + 237.3));
+    const Pv = Psat * (HR / 100);
+    const w = 0.622 * (Pv / (101.325 - Pv));
+    return (1.006 * T) + w * (2501 + 1.86 * T);
+  }
+
+  function calcBloque(te, hre, ts, hrs, v, psi, amp, A){
+    const out = { valid: false };
+    if (te !== null && ts !== null) out.deltaT = te - ts;
+    if (v !== null && A !== null){
+      const Q = v * A;
+      out.cfm = Q * 2118.88;
+      out.m3h = Q * 3600;
+    }
+    const hIn = entalpia(te, hre);
+    const hOut = entalpia(ts, hrs);
+    if (hIn !== null && hOut !== null){
+      out.hIn = hIn; out.hOut = hOut;
+      out.deltaH_kJ = hIn - hOut;
+      out.deltaH_BTUlb = out.deltaH_kJ / 2.326;
+    }
+    if (out.cfm !== undefined && out.deltaH_BTUlb !== undefined){
+      out.btuh = 4.5 * out.cfm * out.deltaH_BTUlb;
+    }
+    out.te=te; out.hre=hre; out.ts=ts; out.hrs=hrs; out.v=v; out.psi=psi; out.amp=amp;
+    out.valid = (te !== null && ts !== null) || (v !== null);
+    return out;
+  }
+
+  const TIPOS_ENFOQUE_REPARACION = ['reparación', 'reparacion', 'carga de refrigerante'];
+  function esEnfoqueReparacion(tipoTrabajo){
+    if (!tipoTrabajo) return false;
+    const t = tipoTrabajo.trim().toLowerCase();
+    return TIPOS_ENFOQUE_REPARACION.some(k => t.includes(k));
+  }
+
+  function generarDiagnostico(a, tipoTrabajo){
+    const reparacion = esEnfoqueReparacion(tipoTrabajo);
+    const hallazgos = [];
+    if (reparacion){
+      if (a.deltaT !== undefined && a.deltaT < 8) hallazgos.push('🔴 <strong>ΔT por debajo de lo normal</strong> — indicio de falta de carga de refrigerante, fuga en el sistema o serpentín saturado que impide el intercambio térmico correcto.');
+      if (a.psi !== null && a.psi !== undefined && a.psi < 60) hallazgos.push('🔴 <strong>Presión baja fuera de rango</strong> — compatible con fuga de refrigerante o carga insuficiente; se recomienda prueba de fugas antes de recargar.');
+      if (a.amp !== null && a.amp !== undefined) hallazgos.push('🟡 Amperaje registrado antes de la intervención como referencia para evaluar el estado del compresor/capacitor tras la reparación.');
+      if (a.v !== null && a.v < 3.0) hallazgos.push('🟡 También se detectó restricción de flujo de aire, que se corrige en la misma intervención junto con la falla técnica principal.');
+      if (hallazgos.length === 0) hallazgos.push('ℹ️ Se realizó revisión técnica del sistema; no se detectaron anomalías críticas adicionales con los datos capturados, se recomienda validar presiones y estado del compresor con manómetros.');
+    } else {
+      if (a.v !== null && a.v < 3.0) hallazgos.push('🔴 <strong>Restricción severa de flujo</strong> por acumulación de suciedad en turbina/filtros.');
+      if (a.deltaT !== undefined && a.deltaT > 12 && a.v !== null && a.v < 3.0) hallazgos.push('🟡 <strong>Sobre-enfriamiento localizado</strong> por aire lento (falta de volumen de expulsión).');
+      if (a.deltaT !== undefined && a.deltaT < 8) hallazgos.push('🔴 <strong>Bajo intercambio térmico</strong> — posible falta de refrigerante o serpentín saturado.');
+      if (a.v !== null && a.v >= 3.5 && a.v <= 4.5 && a.deltaT !== undefined && a.deltaT >= 8 && a.deltaT <= 12) hallazgos.push('🟢 Parámetros de flujo y salto térmico dentro de rango aceptable.');
+      if (hallazgos.length === 0) hallazgos.push('ℹ️ No se detectaron anomalías críticas con los datos capturados; se recomienda validar con manómetros para diagnóstico completo de refrigerante.');
+    }
+    return hallazgos;
+  }
+
+  function badge(label, value, unit, estado){
+    const colores = {
+      ok: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300',
+      warn: 'bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-300',
+      bad: 'bg-red-50 dark:bg-red-500/10 border-red-300 dark:border-red-500/40 text-red-700 dark:text-red-300',
+      neutral: 'bg-sky-50 dark:bg-slate-800 border-sky-200 dark:border-slate-700 text-sky-700 dark:text-sky-300'
+    };
+    return `<div class="border rounded-xl p-3 text-center ${colores[estado]}">
+      <p class="text-[10px] uppercase tracking-wider font-bold opacity-80">${label}</p>
+      <p class="text-lg font-extrabold mt-1">${value}<span class="text-xs font-medium ml-0.5">${unit}</span></p>
+    </div>`;
+  }
+
+  function filaTabla(nombre, av, dv, ref, dHas){
+    return `<tr>
+      <td class="py-2 pr-2 text-slate-600 dark:text-slate-300">${nombre}</td>
+      <td class="py-2 px-2 text-center font-semibold text-slate-700 dark:text-slate-200">${av}</td>
+      <td class="py-2 px-2 text-center font-semibold ${dHas ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-300 dark:text-slate-600'}">${dv}</td>
+      <td class="py-2 pl-2 text-slate-400 text-[11px]">${ref}</td>
+    </tr>`;
+  }
+
+  /* ================= PROCESAR UN EQUIPO (lee sus inputs y calcula todo) ================= */
+  function procesarEquipo(i, tipoTrabajo){
+    const marca = txt(`eq${i}_marca`);
+    const modelo = txt(`eq${i}_modelo`);
+    const linea = txt(`eq${i}_linea`);
+    const largo = num(`eq${i}_largo`);
+    const ancho = num(`eq${i}_ancho`);
+    const A = (largo !== null && ancho !== null) ? (largo/100) * (ancho/100) * 0.82 : null;
+    const capSel = $(`eq${i}_capNominalSel`).value;
+    const capNominal = capSel === 'custom' ? num(`eq${i}_capCustom`) : parseFloat(capSel);
+    const ampNominal = num(`eq${i}_ampNominal`);
+    const voltaje = num(`eq${i}_voltaje`);
+    const refrigTipo = txt(`eq${i}_refrigTipo`);
+    const refrigCant = num(`eq${i}_refrigCant`);
+
+    const antes = calcBloque(num(`eq${i}_a_te`), num(`eq${i}_a_hre`), num(`eq${i}_a_ts`), num(`eq${i}_a_hrs`), num(`eq${i}_a_v`), num(`eq${i}_a_psi`), num(`eq${i}_a_amp`), A);
+    const dInputs = [num(`eq${i}_d_te`), num(`eq${i}_d_hre`), num(`eq${i}_d_ts`), num(`eq${i}_d_hrs`), num(`eq${i}_d_v`), num(`eq${i}_d_psi`), num(`eq${i}_d_amp`)];
+    const tieneDespues = dInputs.some(v => v !== null);
+    const despues = tieneDespues ? calcBloque(...dInputs, A) : null;
+
+    const comentarioAntes = txt(`eq${i}_a_comentario`);
+    const comentarioDespues = txt(`eq${i}_d_comentario`);
+
+    const vacio = !marca && !modelo && !antes.valid;
+    if(vacio) return null;
+
+    const hallazgos = generarDiagnostico(antes, tipoTrabajo);
+    let gananciaCFM = null, gananciaBTU = null, resumenSimpleTxt = '', resumenElectricoTxt = '';
+    if (despues && antes.cfm && despues.cfm && antes.btuh && despues.btuh){
+      gananciaCFM = ((despues.cfm - antes.cfm) / antes.cfm) * 100;
+      gananciaBTU = ((despues.btuh - antes.btuh) / antes.btuh) * 100;
+      resumenSimpleTxt = `Este equipo ahora enfría un ${r(Math.abs(gananciaBTU),0)}% ${gananciaBTU>=0?'mejor':'menos'} que antes del servicio, y mueve un ${r(Math.abs(gananciaCFM),0)}% ${gananciaCFM>=0?'más':'menos'} de aire fresco.`;
+    } else {
+      resumenSimpleTxt = `Diagnóstico preliminar (antes del servicio). El equipo entrega aproximadamente ${capNominal ? r((antes.btuh/capNominal)*100,0)+'% de su capacidad nominal' : Math.round(antes.btuh||0)+' BTU/h de enfriamiento real'}.`;
+    }
+    const ampAntes = antes.amp, ampDespues = despues?.amp;
+    if (ampAntes !== null && ampAntes !== undefined && ampDespues !== null && ampDespues !== undefined){
+      const cambioAmp = ((ampDespues - ampAntes) / ampAntes) * 100;
+      if (cambioAmp < -1) resumenElectricoTxt = `⚡ Además, consume un ${r(Math.abs(cambioAmp),0)}% menos de corriente (${r(ampAntes,1)}A → ${r(ampDespues,1)}A), lo cual puede reflejarse en ahorro en el recibo de luz.`;
+      else if (cambioAmp > 1) resumenElectricoTxt = `⚡ El amperaje subió de ${r(ampAntes,1)}A a ${r(ampDespues,1)}A (+${r(cambioAmp,0)}%). Puede ser normal con carga completa de refrigerante; si es muy alto conviene revisar el estado eléctrico.`;
+      else resumenElectricoTxt = `⚡ El consumo eléctrico se mantuvo prácticamente igual (${r(ampAntes,1)}A → ${r(ampDespues,1)}A).`;
+    }
+
+    return {
+      i, marca, modelo, linea, capNominal, largo, ancho, ampNominal, voltaje, refrigTipo, refrigCant,
+      antes, despues, hallazgos, gananciaCFM, gananciaBTU, resumenSimpleTxt, resumenElectricoTxt,
+      comentarioAntes, comentarioDespues,
+      fotos: {
+        Placa: fotosActuales[i].Placa || (fotosLinksActuales[i].Placa && fotosLinksActuales[i].Placa.embedLink) || null,
+        Antes: fotosActuales[i].Antes || (fotosLinksActuales[i].Antes && fotosLinksActuales[i].Antes.embedLink) || null,
+        Despues: fotosActuales[i].Despues || (fotosLinksActuales[i].Despues && fotosLinksActuales[i].Despues.embedLink) || null
+      }
+    };
+  }
+
+  function renderEquipoReporteHTML(d){
+    const estadoV = v => v===null ? 'neutral' : (v>=3.5&&v<=4.5?'ok':(v<3.0?'bad':'warn'));
+    const estadoDT = dt => dt===undefined ? 'neutral' : (dt>=8&&dt<=12?'ok':(dt<8?'bad':'warn'));
+    let gauges = '';
+    gauges += badge('ΔT Antes', r(d.antes.deltaT,1), '°C', estadoDT(d.antes.deltaT));
+    gauges += badge('Vel. aire Antes', r(d.antes.v,2), 'm/s', estadoV(d.antes.v));
+    gauges += badge('Capacidad Antes', r(d.antes.btuh,0), 'BTU/h', 'neutral');
+    gauges += d.despues ? badge('Capacidad Después', r(d.despues.btuh,0), 'BTU/h', 'ok') : badge('Capacidad Nominal', d.capNominal ? d.capNominal.toLocaleString('es-MX') : '—', 'BTU/h', 'neutral');
+
+    let tbody = '';
+    tbody += filaTabla('Temp. Entrada / Retorno (°C)', r(d.antes.te,1)+'°C', d.despues? r(d.despues.te,1)+'°C':'—', '—', !!d.despues?.te);
+    tbody += filaTabla('HR Entrada (%)', r(d.antes.hre,1)+'%', d.despues? r(d.despues.hre,1)+'%':'—', '—', !!d.despues?.hre);
+    tbody += filaTabla('Temp. Salida / Inyección (°C)', r(d.antes.ts,1)+'°C', d.despues? r(d.despues.ts,1)+'°C':'—', '—', !!d.despues?.ts);
+    tbody += filaTabla('HR Salida (%)', r(d.antes.hrs,1)+'%', d.despues? r(d.despues.hrs,1)+'%':'—', '—', !!d.despues?.hrs);
+    tbody += filaTabla('Salto Térmico ΔT (°C)', r(d.antes.deltaT,1)+'°C', d.despues? r(d.despues.deltaT,1)+'°C':'—', '8.0 – 12.0 °C', d.despues?.deltaT!==undefined);
+    tbody += filaTabla('Velocidad del Aire (m/s)', r(d.antes.v,2), d.despues? r(d.despues.v,2):'—', '3.5 – 4.5 m/s', !!d.despues?.v);
+    tbody += filaTabla('Flujo de Aire (CFM)', r(d.antes.cfm,0), d.despues? r(d.despues.cfm,0):'—', '—', !!d.despues?.cfm);
+    tbody += filaTabla('Flujo de Aire (m³/h)', r(d.antes.m3h,0), d.despues? r(d.despues.m3h,0):'—', '—', !!d.despues?.m3h);
+    tbody += filaTabla('Capacidad Real Antes/Después (BTU/h)', r(d.antes.btuh,0), d.despues? r(d.despues.btuh,0):'—', d.capNominal? 'Nominal: '+d.capNominal.toLocaleString('es-MX'):'—', !!d.despues?.btuh);
+    const hayPsi = (d.antes.psi!==null && d.antes.psi!==undefined) || (d.despues?.psi!==null && d.despues?.psi!==undefined);
+    const hayAmp = (d.antes.amp!==null && d.antes.amp!==undefined) || (d.despues?.amp!==null && d.despues?.amp!==undefined);
+    if (hayPsi) tbody += filaTabla('Presión Baja (PSI)', r(d.antes.psi,1), d.despues? r(d.despues.psi,1):'—', 'Referencial, varía según refrigerante', d.despues?.psi!==null && d.despues?.psi!==undefined);
+    if (hayAmp) tbody += filaTabla('Amperaje (A)', r(d.antes.amp,1), d.despues? r(d.despues.amp,1):'—', d.ampNominal!==null ? 'Nom: '+r(d.ampNominal,1)+' A' : 'Solo registro', d.despues?.amp!==null && d.despues?.amp!==undefined);
+    if (d.voltaje) tbody += filaTabla('Voltaje (V)', r(d.voltaje,0), '—', 'Dato de placa', false);
+    if (d.refrigTipo || d.refrigCant) tbody += filaTabla('Refrigerante', esc(d.refrigTipo||'—') + (d.refrigCant?` (${d.refrigCant} gr)`:''), '—', 'Dato de placa', false);
+
+    let mejorasHTML = '';
+    if (d.gananciaCFM !== null){
+      let evalTxt = '';
+      if (d.capNominal){
+        const pctNominal = (d.despues.btuh / d.capNominal) * 100;
+        evalTxt = `Operación ${pctNominal>=90?'óptima':pctNominal>=75?'aceptable':'aún deficiente'} alcanzando el ${r(pctNominal,0)}% de la capacidad nominal (${d.capNominal.toLocaleString('es-MX')} BTU/h).`;
+      } else {
+        evalTxt = 'Servicio completado con mejora medible en flujo y capacidad de enfriamiento.';
+      }
+      mejorasHTML = `
+      <div class="mb-4">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">Mejoras obtenidas</h4>
+        <div class="grid grid-cols-2 gap-3 mb-2">
+          <div class="bg-sky-50 dark:bg-slate-800 rounded-lg p-3 text-center">
+            <p class="text-[11px] text-slate-400">Ganancia de Flujo</p>
+            <p class="text-xl font-extrabold ${d.gananciaCFM>=0?'text-emerald-600 dark:text-emerald-400':'text-red-500'}">${d.gananciaCFM>=0?'+':''}${r(d.gananciaCFM,1)}%</p>
+          </div>
+          <div class="bg-sky-50 dark:bg-slate-800 rounded-lg p-3 text-center">
+            <p class="text-[11px] text-slate-400">Ganancia de Capacidad</p>
+            <p class="text-xl font-extrabold ${d.gananciaBTU>=0?'text-emerald-600 dark:text-emerald-400':'text-red-500'}">${d.gananciaBTU>=0?'+':''}${r(d.gananciaBTU,1)}%</p>
+          </div>
+        </div>
+        <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-300">${evalTxt}</p>
+      </div>`;
+    }
+
+    const fotosHTML = ['Placa','Antes','Despues'].filter(t=>d.fotos[t]).map(t=>`
+      <div class="foto-report">
+        <p class="text-[11px] text-slate-400 mb-1">${t==='Placa'?'Placa de datos':t==='Antes'?'Antes del servicio':'Después del servicio'}</p>
+        <img src="${d.fotos[t]}" class="w-full max-h-56 object-contain rounded-lg border border-sky-200 dark:border-slate-700">
+      </div>`).join('');
+
+    const comentariosHTML = (d.comentarioAntes || d.comentarioDespues) ? `
+      <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        ${d.comentarioAntes ? `<div><p class="text-[11px] font-bold text-amber-600 dark:text-amber-400 mb-1">Comentarios antes</p><p class="text-sm whitespace-pre-line text-slate-600 dark:text-slate-300">${esc(d.comentarioAntes)}</p></div>` : ''}
+        ${d.comentarioDespues ? `<div><p class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mb-1">Comentarios después</p><p class="text-sm whitespace-pre-line text-slate-600 dark:text-slate-300">${esc(d.comentarioDespues)}</p></div>` : ''}
+      </div>` : '';
+
+    const titulo = [d.marca, d.modelo, d.linea ? '('+d.linea+')' : ''].filter(Boolean).join(' ') || `Equipo ${d.i}`;
+
+    return `
+    <div class="equipo-report-block border border-sky-100 dark:border-slate-800 rounded-xl p-4">
+      <h3 class="text-sm font-extrabold text-slate-700 dark:text-slate-200 mb-3">❄ Equipo ${d.i} — ${esc(titulo)}</h3>
+      ${fotosHTML ? `<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">${fotosHTML}</div>` : ''}
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">${gauges}</div>
+      <div class="mb-4 bg-sky-50 dark:bg-slate-800/60 border border-sky-200 dark:border-slate-700 rounded-xl p-4">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-2">💡 En palabras simples</h4>
+        <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-200">${d.resumenSimpleTxt}</p>
+        ${d.resumenElectricoTxt ? `<p class="text-sm leading-relaxed text-slate-700 dark:text-slate-200 mt-2">${d.resumenElectricoTxt}</p>` : ''}
+      </div>
+      <div class="mb-4 overflow-x-auto">
+        <table class="w-full text-xs border-collapse">
+          <thead><tr class="text-slate-400 border-b border-sky-200 dark:border-slate-700">
+            <th class="text-left py-2 pr-2">Parámetro</th><th class="text-center py-2 px-2">Antes</th><th class="text-center py-2 px-2">Después</th><th class="text-left py-2 pl-2">Referencia</th>
+          </tr></thead>
+          <tbody class="divide-y divide-sky-100 dark:divide-slate-800">${tbody}</tbody>
+        </table>
+      </div>
+      <div class="mb-4">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2">Diagnóstico y hallazgos (antes del servicio)</h4>
+        <ul class="text-sm space-y-1.5 list-disc list-inside text-slate-700 dark:text-slate-200">${d.hallazgos.map(h=>`<li>${h}</li>`).join('')}</ul>
+      </div>
+      ${comentariosHTML}
+      ${mejorasHTML}
+    </div>`;
+  }
+
+  function calcularYRenderizar(){
+    const n = numEquiposActivos();
+    const tipoTrabajo = $('tipoTrabajoSel').value;
+    const resultados = [];
+    for(let i=1;i<=n;i++){
+      const d = procesarEquipo(i, tipoTrabajo);
+      if(d) resultados.push(d);
+    }
+    if(resultados.length === 0){
+      alert('Ingresa al menos temperaturas de entrada/salida o velocidad de aire en el Equipo 1 para calcular.');
+      return;
+    }
+
+    const clienteId = $('clienteSel').value;
+    const cliente = clientesActivos.find(c=>c.id===clienteId);
+    const tecnico = txt('tecnico');
+    if(!$('fechaTrabajo').value) $('fechaTrabajo').value = new Date().toISOString().slice(0,10);
+
+    const metaParts = [];
+    if (cliente) metaParts.push('Cliente: ' + nombreCompleto(cliente));
+    if (tipoTrabajo) metaParts.push('Trabajo: ' + tipoTrabajo);
+    metaParts.push(resultados.length + ' equipo' + (resultados.length>1?'s':''));
+    if (tecnico) metaParts.push('Técnico: ' + tecnico);
+    $('rep_meta').textContent = metaParts.join('  ·  ');
+    $('rep_fecha').textContent = new Date($('fechaTrabajo').value + 'T12:00:00').toLocaleDateString('es-MX', {year:'numeric', month:'long', day:'numeric'});
+
+    $('reportEquiposContainer').innerHTML = resultados.map(renderEquipoReporteHTML).join('');
+
+    const recos = [
+      '🧼 Limpieza de filtros plásticos cada 30 días en uso residencial, cada 15 días en uso comercial/intensivo.',
+      '🌡️ Mantener temperatura de confort sugerida entre 24°C y 25°C para eficiencia energética óptima.',
+      '🔍 Revisión de nivel de refrigerante y presiones al menos una vez al año.',
+      '🧹 Lavado de turbina y serpentín evaporador en servicio preventivo anual.',
+      '⚡ Verificar consumo eléctrico y estado de conexiones para prevenir fallas prematuras.'
+    ];
+    $('recoList').innerHTML = recos.map(t => `<li>${t}</li>`).join('');
+
+    $('reportCard').classList.remove('hidden');
+    $('reportCard').scrollIntoView({behavior:'smooth', block:'start'});
+
+    window.__lastReport = { resultados, cliente, tecnico, tipoTrabajo };
+  }
+
+  function textoPlano(){
+    const d = window.__lastReport;
+    if (!d) return '';
+    let t = '';
+    t += `📋 *REPORTE DE DIAGNÓSTICO Y RENDIMIENTO TÉCNICO*\n`;
+    t += `_Servicios Robert's — Refrigeración/Eléctrico/Plomería_\n`;
+    t += `📅 ${new Date($('fechaTrabajo').value + 'T12:00:00').toLocaleDateString('es-MX')}\n`;
+    if (d.cliente) t += `👤 Cliente: ${nombreCompleto(d.cliente)}\n`;
+    if (d.tipoTrabajo) t += `🛠 Trabajo: ${d.tipoTrabajo}\n`;
+    if (d.tecnico) t += `🧑‍🔧 Técnico: ${d.tecnico}\n`;
+
+    d.resultados.forEach(eq=>{
+      const titulo = [eq.marca, eq.modelo, eq.linea ? '('+eq.linea+')' : ''].filter(Boolean).join(' ') || `Equipo ${eq.i}`;
+      t += `\n━━━━━━━━━━━━━━\n❄️ *EQUIPO ${eq.i} — ${titulo}*\n`;
+      if (eq.capNominal) t += `📐 Capacidad nominal: ${eq.capNominal.toLocaleString('es-MX')} BTU/h\n`;
+      if (eq.voltaje || eq.refrigTipo) t += `🔌 ${eq.voltaje?eq.voltaje+'V':''} ${eq.refrigTipo?'· '+eq.refrigTipo:''}${eq.refrigCant?' ('+eq.refrigCant+'gr)':''}\n`;
+
+      t += `\n*💡 En palabras simples:* ${eq.resumenSimpleTxt}\n`;
+      if (eq.resumenElectricoTxt) t += `${eq.resumenElectricoTxt}\n`;
+
+      t += `\n*Parámetros técnicos:*\n`;
+      t += `▫️ T° Entrada: ${r(eq.antes.te,1)}°C ${eq.despues? '→ '+r(eq.despues.te,1)+'°C':''}\n`;
+      t += `▫️ HR Entrada: ${r(eq.antes.hre,1)}% ${eq.despues? '→ '+r(eq.despues.hre,1)+'%':''}\n`;
+      t += `▫️ T° Salida: ${r(eq.antes.ts,1)}°C ${eq.despues? '→ '+r(eq.despues.ts,1)+'°C':''}\n`;
+      t += `▫️ HR Salida: ${r(eq.antes.hrs,1)}% ${eq.despues? '→ '+r(eq.despues.hrs,1)+'%':''}\n`;
+      t += `▫️ ΔT: ${r(eq.antes.deltaT,1)}°C ${eq.despues? '→ '+r(eq.despues.deltaT,1)+'°C':''} (ideal 8–12°C)\n`;
+      t += `▫️ Vel. aire: ${r(eq.antes.v,2)} m/s ${eq.despues? '→ '+r(eq.despues.v,2)+' m/s':''} (ideal 3.5–4.5)\n`;
+      t += `▫️ Flujo: ${r(eq.antes.cfm,0)} CFM ${eq.despues? '→ '+r(eq.despues.cfm,0)+' CFM':''}\n`;
+      t += `▫️ Capacidad real: ${r(eq.antes.btuh,0)} BTU/h ${eq.despues? '→ '+r(eq.despues.btuh,0)+' BTU/h':''}\n`;
+      if (eq.antes.psi!==null || eq.despues?.psi!==null) t += `▫️ Presión baja: ${r(eq.antes.psi,1)} PSI ${eq.despues? '→ '+r(eq.despues.psi,1)+' PSI':''}\n`;
+      if (eq.antes.amp!==null || eq.despues?.amp!==null) t += `▫️ Amperaje: ${r(eq.antes.amp,1)} A ${eq.despues? '→ '+r(eq.despues.amp,1)+' A':''}\n`;
+
+      t += `\n*Diagnóstico:*\n`;
+      eq.hallazgos.forEach(h => { t += `${h.replace(/<\/?strong>/g,'*')}\n`; });
+
+      if (eq.gananciaCFM !== null){
+        t += `\n*Mejoras obtenidas:*\n`;
+        t += `📈 Ganancia de flujo: ${eq.gananciaCFM>=0?'+':''}${r(eq.gananciaCFM,1)}%\n`;
+        t += `📈 Ganancia de capacidad: ${eq.gananciaBTU>=0?'+':''}${r(eq.gananciaBTU,1)}%\n`;
+        if (eq.capNominal){
+          const pctNominal = (eq.despues.btuh / eq.capNominal) * 100;
+          t += `✅ Operación al ${r(pctNominal,0)}% de capacidad nominal.\n`;
+        }
+      }
+      if (eq.comentarioAntes) t += `\n*Comentarios antes:*\n${eq.comentarioAntes}\n`;
+      if (eq.comentarioDespues) t += `\n*Comentarios después:*\n${eq.comentarioDespues}\n`;
+    });
+
+    t += `\n━━━━━━━━━━━━━━\n*Recomendaciones:*\n`;
+    t += `🧼 Limpieza de filtros cada 30 días (residencial) / 15 días (comercial)\n`;
+    t += `🌡️ Temperatura de confort sugerida: 24°C – 25°C\n`;
+    t += `🔍 Revisión anual de refrigerante y presiones\n`;
+    t += `🧹 Lavado de turbina y serpentín en servicio preventivo\n`;
+    t += `\n_Reporte generado automáticamente_ ❄️`;
+    return t;
+  }
+
+  /* ================= GUARDAR EN HISTORIAL ================= */
+  $('btnGuardar').addEventListener('click', async ()=>{
+    if (!window.__lastReport) calcularYRenderizar();
+    if (!window.__lastReport) return;
+    const idLocal = uid();
+    const n = numEquiposActivos();
+
+    const equiposData = [];
+    for(let i=1;i<=n;i++){
+      const marca = txt(`eq${i}_marca`), modelo = txt(`eq${i}_modelo`);
+      const capSel = $(`eq${i}_capNominalSel`).value;
+      const capNominal = capSel === 'custom' ? num(`eq${i}_capCustom`) : parseFloat(capSel);
+      const largo = num(`eq${i}_largo`), ancho = num(`eq${i}_ancho`);
+      const antesRaw = { te:num(`eq${i}_a_te`), hre:num(`eq${i}_a_hre`), ts:num(`eq${i}_a_ts`), hrs:num(`eq${i}_a_hrs`), v:num(`eq${i}_a_v`), psi:num(`eq${i}_a_psi`), amp:num(`eq${i}_a_amp`), comentario: txt(`eq${i}_a_comentario`) };
+      if(!marca && !modelo && antesRaw.te===null && antesRaw.ts===null && antesRaw.v===null) continue; // equipo vacío, se omite
+      const eqObj = {
+        marca, modelo, linea: txt(`eq${i}_linea`),
+        capNominal, largo, ancho,
+        ampNominal: num(`eq${i}_ampNominal`), voltaje: num(`eq${i}_voltaje`),
+        refrigTipo: txt(`eq${i}_refrigTipo`), refrigCant: num(`eq${i}_refrigCant`),
+        entradas: {
+          antes: antesRaw,
+          despues: { te:num(`eq${i}_d_te`), hre:num(`eq${i}_d_hre`), ts:num(`eq${i}_d_ts`), hrs:num(`eq${i}_d_hrs`), v:num(`eq${i}_d_v`), psi:num(`eq${i}_d_psi`), amp:num(`eq${i}_d_amp`), comentario: txt(`eq${i}_d_comentario`) }
+        },
+        _i: i
+      };
+      // Auto-agregar al catálogo si es nuevo
+      if (eqObj.marca && eqObj.modelo && !buscarEnCatalogo(eqObj.marca, eqObj.modelo) && eqObj.largo && eqObj.ancho){
+        const nuevoCat = { marca: eqObj.marca, modelo: eqObj.modelo, linea: eqObj.linea||null, largo: eqObj.largo, ancho: eqObj.ancho, ampNominal: eqObj.ampNominal, voltaje: eqObj.voltaje, refrigTipo: eqObj.refrigTipo||null, refrigCant: eqObj.refrigCant };
+        if(modoCloud && db){ db.collection('catalogo_equipos').add(nuevoCat).catch(()=>{}); }
+        else { catalogoLocal.push({ id: uid(), ...nuevoCat }); saveCatalogo(); catalogo = catalogoLocal; renderCatalogoDatalist(); }
+      }
+      equiposData.push(eqObj);
+    }
+
+    const trabajoBase = {
+      fecha: $('fechaTrabajo').value || new Date().toISOString().slice(0,10),
+      clienteId: $('clienteSel').value || null,
+      tipoTrabajo: $('tipoTrabajoSel').value || null,
+      tecnico: txt('tecnico'),
+      misComentarios: txt('misComentarios'),
+      pendienteFecha: $('tienePendiente').checked ? ($('pendienteFecha').value || null) : null,
+      pendienteHora: $('tienePendiente').checked ? ($('pendienteHora').value || null) : null,
+      equipos: equiposData.map(({_i, ...rest})=>rest)
+    };
+
+    if(modoCloud && db && gdAccessToken){
+      mostrarToast('⏳ Guardando y subiendo fotos…');
+      try{
+        for(const eqObj of equiposData){
+          const i = eqObj._i;
+          for(const tipo of TIPOS_FOTO){
+            if(fotosActuales[i][tipo]){
+              const nombreArchivo = `eq${i}_${tipo.toLowerCase()}_${eqObj.marca||'equipo'}_${trabajoBase.fecha}.jpg`;
+              const link = await gdSubirFoto(fotosActuales[i][tipo], nombreArchivo);
+              trabajoBase.equipos[equiposData.indexOf(eqObj)]['foto'+tipo+'Link'] = link;
+            } else if(fotosLinksActuales[i][tipo]){
+              trabajoBase.equipos[equiposData.indexOf(eqObj)]['foto'+tipo+'Link'] = fotosLinksActuales[i][tipo];
+            }
+          }
+        }
+        await db.collection('trabajos_minisplit').add(trabajoBase);
+        mostrarToast('✔ Trabajo y fotos guardados en la nube');
+      }catch(e){ alert('No se pudo guardar en la nube: ' + e.message); }
+    } else if(modoCloud && db){
+      try{
+        const ref = await db.collection('trabajos_minisplit').add(trabajoBase);
+        equiposData.forEach(eqObj=>{
+          const i = eqObj._i;
+          const fotosParaGuardar = {};
+          TIPOS_FOTO.forEach(t=>{ if(fotosActuales[i][t]) fotosParaGuardar[t.toLowerCase()] = fotosActuales[i][t]; });
+          if(Object.keys(fotosParaGuardar).length){ fotosLocalMap[ref.id + '::' + i] = fotosParaGuardar; }
+        });
+        saveFotosLocalMap();
+        mostrarToast('✔ Trabajo guardado en la nube (fotos solo en este dispositivo — conecta Drive para verlas en todos lados)');
+      }catch(e){ alert('No se pudo guardar en la nube: ' + e.message); }
+    } else {
+      const trabajo = { id: idLocal, ...trabajoBase };
+      trabajosLocal.push(trabajo);
+      equiposData.forEach(eqObj=>{
+        const i = eqObj._i;
+        const fotosParaGuardar = {};
+        TIPOS_FOTO.forEach(t=>{ if(fotosActuales[i][t]) fotosParaGuardar[t.toLowerCase()] = fotosActuales[i][t]; });
+        if(Object.keys(fotosParaGuardar).length){ fotosLocalMap[idLocal + '::' + i] = fotosParaGuardar; }
+      });
+      try{
+        saveTrabajos(); saveFotosLocalMap();
+        trabajos = trabajosLocal;
+        mostrarToast('✔ Trabajo guardado en el historial (local)');
+      }catch(err){
+        trabajosLocal.pop();
+        alert('No se pudo guardar: el almacenamiento local está lleno (probablemente por fotos). Haz un respaldo y limpia registros antiguos, o conecta Google Drive.');
+      }
+    }
+  });
+
+  $('btnCalc').addEventListener('click', calcularYRenderizar);
+
+  async function compartirTextoWA(texto){
+    try{
+      if(navigator.share){ await navigator.share({ text: texto, title: 'Reporte de diagnóstico' }); return; }
+    }catch(e){ if(e.name === 'AbortError') return; }
+    try{ await navigator.clipboard.writeText(texto); mostrarToast('✔ Reporte copiado al portapapeles (no se pudo abrir el panel de compartir)'); }
+    catch(e){}
+  }
+
+  $('btnCopy').addEventListener('click', () => {
+    if (!window.__lastReport) calcularYRenderizar();
+    if (!window.__lastReport) return;
+    $('previewWATexto').textContent = textoPlano();
+    openModal('modalPreviewWA');
+  });
+  $('btnCopiarDesdePreview').addEventListener('click', async ()=>{
+    const txtVal = $('previewWATexto').textContent;
+    try{ await navigator.clipboard.writeText(txtVal); }
+    catch(e){
+      const ta = document.createElement('textarea');
+      ta.value = txtVal; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    mostrarToast('✔ Reporte copiado al portapapeles');
+  });
+  $('btnCompartirDesdePreview').addEventListener('click', ()=>compartirTextoWA($('previewWATexto').textContent));
+
+  $('btnPrint').addEventListener('click', () => {
+    if (!window.__lastReport) calcularYRenderizar();
+    if ($('reportCard').classList.contains('hidden')) return;
+    window.print();
+  });
+
+  /* ================= INIT ================= */
+  $('fechaTrabajo').value = new Date().toISOString().slice(0,10);
+  construirEquiposCards();
+  renderCatalogoDatalist();
+  renderClientesSelects();
+  renderTipoSelect();
+  tryLoadFbConfig();
+
+  /* ================= PWA: service worker + botón instalar ================= */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    });
+  }
+  let deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const btn = document.createElement('button');
+    btn.id = 'btnInstalarApp';
+    btn.textContent = '⬇️ Instalar app';
+    btn.className = 'text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-2.5 py-1.5';
+    document.querySelector('header .flex.items-center.gap-2').prepend(btn);
+    btn.addEventListener('click', async () => {
+      btn.remove();
+      if (deferredInstallPrompt) await deferredInstallPrompt.prompt();
+    });
+  });
+})();
+</script>
+</body>
+</html>
