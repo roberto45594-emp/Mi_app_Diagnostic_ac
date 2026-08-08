@@ -65,14 +65,22 @@
 
 <main class="max-w-6xl mx-auto px-4 py-5 space-y-5">
 
-  <!-- DATOS GENERALES DEL SERVICIO -->
+  <!-- DATOS GENERALES DE LA ORDEN -->
   <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
     <div class="flex items-center justify-between mb-3">
-      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">Datos generales del servicio</h2>
+      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">Datos generales de la orden</h2>
       <span id="fbStatusBadge" class="text-[10px] flex items-center gap-1 text-slate-400"><span class="status-dot off"></span> Local</span>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">N° de Orden</label>
+        <input id="numOrden" type="text" placeholder="SR-000001" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Fecha</label>
+        <input id="fechaTrabajo" type="date" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+      </div>
       <div class="col-span-2">
         <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Cliente</label>
         <div class="flex gap-1">
@@ -82,26 +90,75 @@
           <button id="btnNuevoCliente" class="shrink-0 bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 text-sm font-bold">+</button>
         </div>
       </div>
-      <div>
-        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Tipo de trabajo</label>
-        <div class="flex gap-1">
-          <select id="tipoTrabajoSel" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"></select>
-          <button id="btnEditarTipos" class="shrink-0 bg-slate-500 hover:bg-slate-400 text-white rounded-lg px-2 text-sm">✎</button>
-        </div>
-      </div>
-      <div>
-        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Fecha</label>
-        <input id="fechaTrabajo" type="date" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
-      </div>
     </div>
+
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
       <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Tipo de trabajo</label>
+        <select id="categoriaSel" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+          <option value="Refrigeración / HVAC">❄️ Refrigeración / HVAC</option>
+          <option value="Electricidad">⚡ Electricidad</option>
+          <option value="Plomería">🔧 Plomería</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Equipo / Sistema</label>
+        <div class="flex gap-1">
+          <select id="equipoSistemaSel" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"></select>
+          <button id="btnEditarSistemas" class="shrink-0 bg-slate-500 hover:bg-slate-400 text-white rounded-lg px-2 text-sm">✎</button>
+        </div>
+      </div>
+      <div class="col-span-2">
         <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Técnico</label>
         <input id="tecnico" type="text" placeholder="Nombre del técnico" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
       </div>
+    </div>
+    <datalist id="listaMarcas"></datalist>
+    <datalist id="listaModelos"></datalist>
+    <datalist id="listaLineas"></datalist>
+    <datalist id="listaUnidades"></datalist>
+  </section>
+
+  <!-- MÓDULO 2: DIAGNÓSTICO Y CAUSA RAÍZ -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-3">Diagnóstico y causa raíz <span class="text-slate-400 font-normal normal-case">(todo opcional)</span></h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
       <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Comentario / queja del cliente</label>
+        <textarea id="comentarioCliente" rows="2" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"></textarea>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Diagnóstico técnico</label>
+        <textarea id="diagnosticoTecnico" rows="2" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"></textarea>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Causa raíz</label>
+        <textarea id="causaRaiz" rows="2" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"></textarea>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Trabajo realizado</label>
+        <textarea id="trabajoRealizado" rows="2" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"></textarea>
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Observaciones / comentarios adicionales</label>
+        <textarea id="observaciones" rows="2" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN HVAC: lecturas psicrométricas (solo si Categoría = Refrigeración / HVAC) -->
+  <div id="hvacWrapper" class="space-y-5">
+    <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">❄️ Lecturas psicrométricas de A/C <span class="text-slate-400 font-normal normal-case">(opcional)</span></h2>
+        <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+          <input id="incluirPsicrometria" type="checkbox" class="rounded" checked>
+          Incluir
+        </label>
+      </div>
+      <div id="numEquiposWrap" class="mt-3">
         <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Número de equipos en este servicio</label>
-        <select id="numEquiposSel" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+        <select id="numEquiposSel" class="w-full md:w-64 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
           <option value="1" selected>1 equipo</option>
           <option value="2">2 equipos</option>
           <option value="3">3 equipos</option>
@@ -109,10 +166,65 @@
           <option value="5">5 equipos</option>
         </select>
       </div>
+    </section>
+    <div id="equiposContainer" class="space-y-5"></div>
+  </div>
+
+  <!-- MÓDULO 3: MATERIALES -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">🧰 Materiales utilizados <span class="text-slate-400 font-normal normal-case">(opcional)</span></h2>
+      <button id="btnAddMaterial" class="text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-1.5">+ Agregar material</button>
     </div>
-    <datalist id="listaMarcas"></datalist>
-    <datalist id="listaModelos"></datalist>
-    <datalist id="listaLineas"></datalist>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs">
+        <thead><tr class="text-slate-400 text-left">
+          <th class="pb-1 pr-1 w-16">Cant.</th><th class="pb-1 pr-1">Descripción</th><th class="pb-1 pr-1 w-24">N° Parte</th><th class="pb-1 pr-1 w-24">P. Unit.</th><th class="pb-1 pr-1 w-24">Subtotal</th><th class="pb-1 w-8"></th>
+        </tr></thead>
+        <tbody id="materialesBody"></tbody>
+      </table>
+    </div>
+    <p class="text-right text-sm font-bold text-slate-700 dark:text-slate-200 mt-2">Total materiales: <span id="totalMaterialesTxt">$0.00</span></p>
+  </section>
+
+  <!-- MÓDULO 4: MANO DE OBRA -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">👷 Mano de obra</h2>
+      <button id="btnAddManoObra" class="text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-1.5">+ Agregar servicio</button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs">
+        <thead><tr class="text-slate-400 text-left">
+          <th class="pb-1 pr-1 w-16">Cant.</th><th class="pb-1 pr-1 w-24">Unidad</th><th class="pb-1 pr-1">Descripción</th><th class="pb-1 pr-1 w-24">Costo Unit.</th><th class="pb-1 pr-1 w-24">Subtotal</th><th class="pb-1 w-8"></th>
+        </tr></thead>
+        <tbody id="manoObraBody"></tbody>
+      </table>
+    </div>
+    <p class="text-right text-sm font-bold text-slate-700 dark:text-slate-200 mt-2">Total mano de obra: <span id="totalManoObraTxt">$0.00</span></p>
+  </section>
+
+  <!-- MÓDULO 5: OTROS GASTOS Y TOTALES -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">🧾 Otros conceptos / gastos extra <span class="text-slate-400 font-normal normal-case">(opcional)</span></h2>
+      <button id="btnAddOtro" class="text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-1.5">+ Agregar gasto</button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs">
+        <thead><tr class="text-slate-400 text-left">
+          <th class="pb-1 pr-1">Concepto</th><th class="pb-1 pr-1 w-24">Precio</th><th class="pb-1 w-8"></th>
+        </tr></thead>
+        <tbody id="otrosBody"></tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 bg-sky-50 dark:bg-slate-800/60 border border-sky-200 dark:border-slate-700 rounded-xl p-4 space-y-1">
+      <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Total materiales</span><span id="resTotalMateriales">$0.00</span></div>
+      <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Total mano de obra</span><span id="resTotalManoObra">$0.00</span></div>
+      <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Otros gastos</span><span id="resTotalOtros">$0.00</span></div>
+      <div class="flex justify-between text-base font-extrabold text-sky-700 dark:text-sky-300 pt-2 border-t border-sky-200 dark:border-slate-700"><span>GRAN TOTAL</span><span id="resGranTotal">$0.00</span></div>
+    </div>
   </section>
 
   <!-- MIS COMENTARIOS (privado, no sale en el reporte al cliente) -->
@@ -133,9 +245,6 @@
     <p class="text-[10px] text-slate-400 mt-1">El recordatorio se descarga como archivo de calendario (.ics) con alarma 1 día antes — tu app de Calendario del teléfono se encarga de avisarte, incluso si esta página está cerrada.</p>
   </section>
 
-  <!-- EQUIPOS -->
-  <div id="equiposContainer" class="space-y-5"></div>
-
   <!-- BOTONES -->
   <section class="flex flex-wrap gap-2 no-print">
     <button id="btnCalc" class="flex-1 min-w-[150px] bg-sky-500 hover:bg-sky-400 text-white font-bold text-sm rounded-lg px-4 py-3 transition">⚡ Calcular y Generar Reporte</button>
@@ -150,7 +259,7 @@
   <section id="reportCard" class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-5 print-border hidden shadow-sm">
     <div class="flex items-center justify-between border-b border-sky-200 dark:border-slate-700 pb-3 mb-4">
       <div>
-        <h2 class="text-base font-extrabold text-sky-600 dark:text-sky-400">📋 REPORTE DE DIAGNÓSTICO Y RENDIMIENTO TÉCNICO</h2>
+        <h2 id="rep_titulo" class="text-base font-extrabold text-sky-600 dark:text-sky-400">📋 ORDEN DE SERVICIO</h2>
         <p id="rep_meta" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"></p>
       </div>
       <div class="text-right text-[11px] text-slate-400">
@@ -159,10 +268,14 @@
       </div>
     </div>
 
+    <div id="reportDiagnosticoContainer" class="hidden mb-6 space-y-3"></div>
+
     <div id="reportEquiposContainer" class="space-y-8"></div>
 
-    <!-- Recomendaciones (compartidas) -->
-    <div class="mt-6">
+    <div id="reportCostosContainer" class="hidden mt-6 space-y-4"></div>
+
+    <!-- Recomendaciones (solo HVAC) -->
+    <div id="reportRecosWrap" class="mt-6 hidden">
       <h3 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-2">Recomendaciones para el cliente</h3>
       <ul id="recoList" class="text-sm space-y-1.5 list-disc list-inside text-slate-600 dark:text-slate-300"></ul>
     </div>
@@ -240,16 +353,17 @@
   </div>
 </div>
 
-<!-- ============ MODAL: TIPOS DE TRABAJO ============ -->
+<!-- ============ MODAL: EQUIPO / SISTEMA (catálogo dinámico por categoría) ============ -->
 <div id="modalTipos" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
   <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-md max-h-[85vh] flex flex-col shadow-xl">
     <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
-      <h3 class="font-bold text-sky-700 dark:text-sky-300">🛠 Tipos de trabajo</h3>
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">🛠 Equipo / Sistema — <span id="tiposModalCategoria"></span></h3>
       <button data-close="modalTipos" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
     </div>
     <div class="p-4 overflow-y-auto space-y-3">
+      <p class="text-[11px] text-slate-400">Esta lista es específica de la categoría seleccionada arriba.</p>
       <div class="flex gap-2">
-        <input id="nuevoTipo" placeholder="Ej. Instalación" class="flex-1 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="nuevoTipo" placeholder="Ej. Cuarto Frío" class="flex-1 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
         <button id="btnAddTipo" class="bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Agregar</button>
       </div>
       <div id="tiposLista" class="text-sm divide-y divide-sky-100 dark:divide-slate-800"></div>
@@ -267,7 +381,12 @@
     <div class="p-4 overflow-y-auto space-y-3">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
         <select id="filtroCliente" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs"><option value="">Todos los clientes</option></select>
-        <select id="filtroTipo" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs"><option value="">Todos los tipos</option></select>
+        <select id="filtroTipo" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+          <option value="">Todas las categorías</option>
+          <option value="Refrigeración / HVAC">❄️ Refrigeración / HVAC</option>
+          <option value="Electricidad">⚡ Electricidad</option>
+          <option value="Plomería">🔧 Plomería</option>
+        </select>
         <select id="filtroMarca" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs"><option value="">Todas las marcas</option></select>
         <input id="filtroFecha" type="date" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
       </div>
@@ -384,22 +503,31 @@
   /* ================= DATOS LOCALES ================= */
   const LS_CATALOGO = 'msd_catalogo_v1';
   const LS_CLIENTES = 'msd_clientes_local_v1';
-  const LS_TIPOS = 'msd_tipos_v1';
+  const LS_SISTEMAS = 'msd_sistemas_v1';
   const LS_TRABAJOS = 'msd_trabajos_v1';
   const LS_FB = 'msd_fbconfig_v1';
   const LS_FOTOS_LOCAL = 'msd_fotos_local_v1';
+  const LS_UNIDADES = 'msd_unidades_v1';
+  const LS_ORDEN_COUNTER = 'msd_orden_counter_v1';
 
-  const DEFAULT_TIPOS = ['Mantenimiento preventivo','Instalación','Diagnóstico','Reparación','Carga de refrigerante','Otro'];
+  const CATEGORIAS = ['Refrigeración / HVAC', 'Electricidad', 'Plomería'];
+  const DEFAULT_SISTEMAS = {
+    'Refrigeración / HVAC': ['Minisplit','Aire Central','Refrigerador','Cuarto Frío','Otro'],
+    'Electricidad': ['Centro de Carga','Instalación Residencial','Cortocircuito','Subestación','Otro'],
+    'Plomería': ['Hidroneumático','Cisterna','Tinaco','Boiler','Fosa Séptica','Otro']
+  };
+  const DEFAULT_UNIDADES = ['Servicio','Hora','Metro','Pza','Lote','Puntos Eléctricos'];
   const NUM_EQUIPOS_MAX = 5;
 
   let catalogoLocal = JSON.parse(localStorage.getItem(LS_CATALOGO) || '[]');
   let clientesLocal = JSON.parse(localStorage.getItem(LS_CLIENTES) || '[]');
-  let tiposTrabajoLocal = JSON.parse(localStorage.getItem(LS_TIPOS) || 'null') || DEFAULT_TIPOS.slice();
+  let sistemasLocal = JSON.parse(localStorage.getItem(LS_SISTEMAS) || 'null') || JSON.parse(JSON.stringify(DEFAULT_SISTEMAS));
   let trabajosLocal = JSON.parse(localStorage.getItem(LS_TRABAJOS) || '[]');
   let fotosLocalMap = JSON.parse(localStorage.getItem(LS_FOTOS_LOCAL) || '{}');
+  let unidadesLocal = JSON.parse(localStorage.getItem(LS_UNIDADES) || 'null') || DEFAULT_UNIDADES.slice();
 
   let catalogo = catalogoLocal;        // apunta a Firestore si conecta
-  let tiposTrabajo = tiposTrabajoLocal;
+  let sistemas = sistemasLocal;        // { categoria: [equipo/sistema, ...] }
   let trabajos = trabajosLocal;
   let clientesActivos = clientesLocal; // apunta a Firestore si conecta
   let modoCloud = false;
@@ -407,34 +535,56 @@
 
   function saveCatalogo(){ localStorage.setItem(LS_CATALOGO, JSON.stringify(catalogoLocal)); }
   function saveClientesLocal(){ localStorage.setItem(LS_CLIENTES, JSON.stringify(clientesLocal)); }
-  function saveTipos(){ localStorage.setItem(LS_TIPOS, JSON.stringify(tiposTrabajoLocal)); }
+  function saveSistemas(){ localStorage.setItem(LS_SISTEMAS, JSON.stringify(sistemasLocal)); }
   function saveTrabajos(){ localStorage.setItem(LS_TRABAJOS, JSON.stringify(trabajosLocal)); }
   function saveFotosLocalMap(){ try{ localStorage.setItem(LS_FOTOS_LOCAL, JSON.stringify(fotosLocalMap)); }catch(e){ /* espacio lleno, se ignora */ } }
+  function saveUnidades(){ localStorage.setItem(LS_UNIDADES, JSON.stringify(unidadesLocal)); }
 
-  // Normaliza UN trabajo del formato viejo (un solo equipo por trabajo) al nuevo formato equipos[].
+  // Normaliza UN trabajo de formatos viejos (sin equipos[] y/o sin los campos de orden de servicio nuevos).
   function normalizarUnTrabajo(t){
-    if(t.equipos) return t;
-    const equipo = {
-      marca: t.marca || '', modelo: t.modelo || '', linea: null,
-      capNominal: (t.capNominal !== undefined ? t.capNominal : null),
-      largo: (t.largo !== undefined ? t.largo : null), ancho: (t.ancho !== undefined ? t.ancho : null),
-      ampNominal: (t.ampNominal !== undefined ? t.ampNominal : null),
-      voltaje: null, refrigTipo: null, refrigCant: null,
-      entradas: t.entradas || { antes:{}, despues:{} },
-      fotoPlacaLink: t.fotoPlacaLink || null, fotoAntesLink: t.fotoAntesLink || null, fotoDespuesLink: t.fotoDespuesLink || null
-    };
+    let base = t;
+    if(!t.equipos){
+      const equipo = {
+        marca: t.marca || '', modelo: t.modelo || '', linea: null,
+        capNominal: (t.capNominal !== undefined ? t.capNominal : null),
+        largo: (t.largo !== undefined ? t.largo : null), ancho: (t.ancho !== undefined ? t.ancho : null),
+        ampNominal: (t.ampNominal !== undefined ? t.ampNominal : null),
+        voltaje: null, refrigTipo: null, refrigCant: null,
+        entradas: t.entradas || { antes:{}, despues:{} },
+        fotoPlacaLink: t.fotoPlacaLink || null, fotoAntesLink: t.fotoAntesLink || null, fotoDespuesLink: t.fotoDespuesLink || null
+      };
+      base = {
+        id: t.id, fecha: t.fecha, clienteId: t.clienteId, tecnico: t.tecnico,
+        misComentarios: t.misComentarios || '', pendienteFecha: t.pendienteFecha || null, pendienteHora: t.pendienteHora || null,
+        equipos: [equipo]
+      };
+    }
+    // Campos de orden de servicio (Módulos 1-5) — con default sensato para trabajos viejos, todos eran de A/C.
     return {
-      id: t.id, fecha: t.fecha, clienteId: t.clienteId, tipoTrabajo: t.tipoTrabajo, tecnico: t.tecnico,
-      misComentarios: t.misComentarios || '', pendienteFecha: t.pendienteFecha || null, pendienteHora: t.pendienteHora || null,
-      equipos: [equipo]
+      ...base,
+      numOrden: base.numOrden || '',
+      categoria: base.categoria || base.tipoTrabajo || 'Refrigeración / HVAC',
+      equipoSistema: base.equipoSistema || (base.equipos && base.equipos[0] && base.equipos[0].marca ? 'Minisplit' : ''),
+      comentarioCliente: base.comentarioCliente || '',
+      diagnosticoTecnico: base.diagnosticoTecnico || '',
+      causaRaiz: base.causaRaiz || '',
+      trabajoRealizado: base.trabajoRealizado || '',
+      observaciones: base.observaciones || '',
+      materiales: base.materiales || [],
+      manoObra: base.manoObra || [],
+      otros: base.otros || [],
+      totalMateriales: base.totalMateriales || 0,
+      totalManoObra: base.totalManoObra || 0,
+      totalOtros: base.totalOtros || 0,
+      granTotal: base.granTotal || 0
     };
   }
 
-  // Migra trabajos LOCALES guardados con el formato viejo al nuevo formato equipos[] (además reubica sus fotos locales).
+  // Migra trabajos LOCALES guardados con el formato viejo al nuevo formato (además reubica sus fotos locales).
   function normalizarTrabajosLocales(){
     let cambiado = false;
     trabajosLocal = trabajosLocal.map(t=>{
-      if(t.equipos) return t;
+      if(t.equipos && t.categoria !== undefined) return t;
       cambiado = true;
       if(fotosLocalMap[t.id] && !fotosLocalMap[t.id + '::1']){
         fotosLocalMap[t.id + '::1'] = fotosLocalMap[t.id];
@@ -518,12 +668,12 @@
       }, err=>{ setFbStatus('off', 'Error leyendo catálogo: ' + err.message); });
 
       if(unsubTipos) unsubTipos();
-      unsubTipos = db.collection('config').doc('tipos_trabajo').onSnapshot(doc=>{
-        const items = doc.exists ? doc.data().items : null;
-        tiposTrabajo = (items && items.length) ? items : DEFAULT_TIPOS.slice();
-        renderTipoSelect();
-        if(!$('modalTipos').classList.contains('hidden')) renderTiposLista();
-      }, err=>{ setFbStatus('off', 'Error leyendo tipos de trabajo: ' + err.message); });
+      unsubTipos = db.collection('config').doc('sistemas_por_categoria').onSnapshot(doc=>{
+        const data = doc.exists ? doc.data().data : null;
+        sistemas = (data && Object.keys(data).length) ? data : JSON.parse(JSON.stringify(DEFAULT_SISTEMAS));
+        renderEquipoSistemaSelect();
+        if(!$('modalTipos').classList.contains('hidden')) renderSistemasLista();
+      }, err=>{ setFbStatus('off', 'Error leyendo catálogo Equipo/Sistema: ' + err.message); });
 
       if(unsubTrabajos) unsubTrabajos();
       unsubTrabajos = db.collection('trabajos_minisplit').onSnapshot(snap=>{
@@ -536,7 +686,7 @@
       modoCloud = false;
       clientesActivos = clientesLocal;
       catalogo = catalogoLocal;
-      tiposTrabajo = tiposTrabajoLocal;
+      sistemas = sistemasLocal;
       trabajos = trabajosLocal;
       setFbStatus('off', 'Conectado al proyecto, sin sesión. Ingresa tu código.');
       $('authLoginFields').classList.remove('hidden');
@@ -544,7 +694,7 @@
       renderClientesSelects();
       renderClientesModalLista();
       renderCatalogoDatalist();
-      renderTipoSelect();
+      renderEquipoSistemaSelect();
     }
   }
 
@@ -553,11 +703,11 @@
     try{
       const [snapCat, snapTip, snapTra] = await Promise.all([
         db.collection('catalogo_equipos').limit(1).get(),
-        db.collection('config').doc('tipos_trabajo').get(),
+        db.collection('config').doc('sistemas_por_categoria').get(),
         db.collection('trabajos_minisplit').limit(1).get()
       ]);
       const nubeVacia = snapCat.empty && !snapTip.exists && snapTra.empty;
-      const hayDatosLocales = catalogoLocal.length || trabajosLocal.length || (tiposTrabajoLocal.length && JSON.stringify(tiposTrabajoLocal) !== JSON.stringify(DEFAULT_TIPOS));
+      const hayDatosLocales = catalogoLocal.length || trabajosLocal.length || (JSON.stringify(sistemasLocal) !== JSON.stringify(DEFAULT_SISTEMAS));
       if(nubeVacia && hayDatosLocales){
         if(confirm(`Encontré datos guardados solo en este dispositivo (${catalogoLocal.length} equipos, ${trabajosLocal.length} trabajos en historial). ¿Quieres subirlos ahora a la nube para verlos desde cualquier dispositivo?`)){
           await migrarDatosLocalesACloud();
@@ -573,7 +723,7 @@
         const { id, ...rest } = eqc;
         await db.collection('catalogo_equipos').add(rest);
       }
-      await db.collection('config').doc('tipos_trabajo').set({ items: tiposTrabajoLocal });
+      await db.collection('config').doc('sistemas_por_categoria').set({ data: sistemasLocal });
       for(const tr of trabajosLocal){
         const { id, ...rest } = tr;
         const ref = await db.collection('trabajos_minisplit').add(rest);
@@ -612,9 +762,9 @@
   function snapshotDatos(){
     return {
       tipo: 'respaldo_diagnostico_minisplit',
-      version: 3,
+      version: 4,
       exportado: new Date().toISOString(),
-      catalogo: catalogoLocal, clientesLocal, tiposTrabajo: tiposTrabajoLocal, trabajos: trabajosLocal,
+      catalogo: catalogoLocal, clientesLocal, sistemas: sistemasLocal, unidades: unidadesLocal, trabajos: trabajosLocal,
       fotosLocalMap
     };
   }
@@ -627,12 +777,13 @@
     if(!confirm(`Esto reemplazará tus datos locales actuales con el respaldo ${origen ? 'de '+origen : ''} del ${new Date(data.exportado).toLocaleString('es-MX')}. ¿Continuar?`)) return false;
     catalogoLocal = data.catalogo || [];
     clientesLocal = data.clientesLocal || [];
-    tiposTrabajoLocal = (data.tiposTrabajo && data.tiposTrabajo.length) ? data.tiposTrabajo : DEFAULT_TIPOS.slice();
-    trabajosLocal = data.trabajos || [];
+    sistemasLocal = (data.sistemas && Object.keys(data.sistemas).length) ? data.sistemas : JSON.parse(JSON.stringify(DEFAULT_SISTEMAS));
+    unidadesLocal = (data.unidades && data.unidades.length) ? data.unidades : DEFAULT_UNIDADES.slice();
+    trabajosLocal = (data.trabajos || []).map(normalizarUnTrabajo);
     fotosLocalMap = data.fotosLocalMap || {};
-    saveCatalogo(); saveClientesLocal(); saveTipos(); saveTrabajos(); saveFotosLocalMap();
-    if(!modoCloud){ clientesActivos = clientesLocal; catalogo = catalogoLocal; tiposTrabajo = tiposTrabajoLocal; trabajos = trabajosLocal; }
-    renderCatalogoDatalist(); renderClientesSelects(); renderTipoSelect();
+    saveCatalogo(); saveClientesLocal(); saveSistemas(); saveUnidades(); saveTrabajos(); saveFotosLocalMap();
+    if(!modoCloud){ clientesActivos = clientesLocal; catalogo = catalogoLocal; sistemas = sistemasLocal; trabajos = trabajosLocal; }
+    renderCatalogoDatalist(); renderClientesSelects(); renderEquipoSistemaSelect(); renderUnidadesDatalist();
     mostrarToast(modoCloud ? '✔ Respaldo restaurado en este dispositivo' : '✔ Datos restaurados correctamente');
     return true;
   }
@@ -972,19 +1123,23 @@
     $('cli_nombre').value=''; $('cli_apellido').value=''; $('cli_tel').value=''; $('cli_dir').value='';
   });
 
-  /* ================= TIPOS DE TRABAJO ================= */
-  function renderTipoSelect(){
-    const prev = $('tipoTrabajoSel').value;
-    $('tipoTrabajoSel').innerHTML = tiposTrabajo.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
-    if(tiposTrabajo.includes(prev)) $('tipoTrabajoSel').value = prev;
-    if($('filtroTipo')){
-      const prevF = $('filtroTipo').value;
-      $('filtroTipo').innerHTML = '<option value="">Todos los tipos</option>' + tiposTrabajo.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
-      $('filtroTipo').value = prevF;
-    }
+  /* ================= CATEGORÍA / EQUIPO-SISTEMA ================= */
+  function categoriaActual(){ return $('categoriaSel').value; }
+
+  function renderEquipoSistemaSelect(){
+    const cat = categoriaActual();
+    const lista = sistemas[cat] || [];
+    const prev = $('equipoSistemaSel').value;
+    $('equipoSistemaSel').innerHTML = lista.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    if(lista.includes(prev)) $('equipoSistemaSel').value = prev;
+    $('tiposModalCategoria').textContent = cat;
   }
-  function renderTiposLista(){
-    $('tiposLista').innerHTML = tiposTrabajo.map((t,i)=>`
+
+  function renderSistemasLista(){
+    const cat = categoriaActual();
+    const lista = sistemas[cat] || [];
+    $('tiposModalCategoria').textContent = cat;
+    $('tiposLista').innerHTML = lista.map((t,i)=>`
       <div class="flex items-center justify-between py-2">
         <span>${esc(t)}</span>
         <button data-i="${i}" class="delTipo text-red-500 text-xs font-semibold">Borrar</button>
@@ -992,31 +1147,72 @@
     $('tiposLista').querySelectorAll('.delTipo').forEach(b=>{
       b.addEventListener('click', ()=>{
         const idx = parseInt(b.dataset.i);
+        const nuevaLista = (sistemas[cat] || []).filter((_,i)=>i!==idx);
         if(modoCloud && db){
-          const nuevos = tiposTrabajo.filter((_,i)=>i!==idx);
-          db.collection('config').doc('tipos_trabajo').set({ items: nuevos }).catch(e=>alert('No se pudo guardar: '+e.message));
+          const nuevos = { ...sistemas, [cat]: nuevaLista };
+          db.collection('config').doc('sistemas_por_categoria').set({ data: nuevos }).catch(e=>alert('No se pudo guardar: '+e.message));
         } else {
-          tiposTrabajoLocal.splice(idx,1);
-          saveTipos(); tiposTrabajo = tiposTrabajoLocal;
-          renderTiposLista(); renderTipoSelect();
+          sistemasLocal[cat] = nuevaLista;
+          saveSistemas(); sistemas = sistemasLocal;
+          renderSistemasLista(); renderEquipoSistemaSelect();
         }
       });
     });
   }
-  $('btnEditarTipos').addEventListener('click', ()=>{ renderTiposLista(); openModal('modalTipos'); });
+  $('btnEditarSistemas').addEventListener('click', ()=>{ renderSistemasLista(); openModal('modalTipos'); });
   $('btnAddTipo').addEventListener('click', ()=>{
     const v = txt('nuevoTipo');
     if(!v) return;
+    const cat = categoriaActual();
+    const listaActual = sistemas[cat] || [];
     if(modoCloud && db){
-      if(tiposTrabajo.includes(v)) { $('nuevoTipo').value=''; return; }
-      db.collection('config').doc('tipos_trabajo').set({ items: [...tiposTrabajo, v] }).catch(e=>alert('No se pudo guardar: '+e.message));
+      if(listaActual.includes(v)) { $('nuevoTipo').value=''; return; }
+      const nuevos = { ...sistemas, [cat]: [...listaActual, v] };
+      db.collection('config').doc('sistemas_por_categoria').set({ data: nuevos }).catch(e=>alert('No se pudo guardar: '+e.message));
     } else {
-      if(!tiposTrabajoLocal.includes(v)) tiposTrabajoLocal.push(v);
-      saveTipos(); tiposTrabajo = tiposTrabajoLocal;
-      renderTiposLista(); renderTipoSelect();
+      if(!sistemasLocal[cat]) sistemasLocal[cat] = [];
+      if(!sistemasLocal[cat].includes(v)) sistemasLocal[cat].push(v);
+      saveSistemas(); sistemas = sistemasLocal;
+      renderSistemasLista(); renderEquipoSistemaSelect();
     }
     $('nuevoTipo').value='';
   });
+
+  function actualizarVisibilidadHVAC(){
+    const esHVAC = categoriaActual() === 'Refrigeración / HVAC';
+    $('hvacWrapper').classList.toggle('hidden', !esHVAC);
+    if(!esHVAC) $('incluirPsicrometria').checked = false;
+  }
+  $('categoriaSel').addEventListener('change', ()=>{
+    renderEquipoSistemaSelect();
+    actualizarVisibilidadHVAC();
+  });
+  $('incluirPsicrometria').addEventListener('change', e=>{
+    $('numEquiposWrap').classList.toggle('hidden', !e.target.checked);
+    $('equiposContainer').classList.toggle('hidden', !e.target.checked);
+  });
+
+  /* ================= UNIDADES (mano de obra) ================= */
+  function renderUnidadesDatalist(){
+    $('listaUnidades').innerHTML = unidadesLocal.map(u=>`<option value="${esc(u)}">`).join('');
+  }
+  function agregarUnidadSiNueva(u){
+    if(u && !unidadesLocal.includes(u)){ unidadesLocal.push(u); saveUnidades(); renderUnidadesDatalist(); }
+  }
+
+  /* ================= N° DE ORDEN ================= */
+  function sugerirNumOrden(){
+    let n = parseInt(localStorage.getItem(LS_ORDEN_COUNTER) || '0') + 1;
+    return 'SR-' + String(n).padStart(6,'0');
+  }
+  function confirmarNumOrdenUsado(){
+    const actual = $('numOrden').value.match(/SR-(\d+)/);
+    if(actual){
+      const n = parseInt(actual[1]);
+      const guardado = parseInt(localStorage.getItem(LS_ORDEN_COUNTER) || '0');
+      if(n > guardado) localStorage.setItem(LS_ORDEN_COUNTER, String(n));
+    }
+  }
 
   /* ================= MIS COMENTARIOS / PENDIENTE / ICS ================= */
   $('tienePendiente').addEventListener('change', e=>{
@@ -1314,6 +1510,106 @@
 
   function numEquiposActivos(){ return parseInt($('numEquiposSel').value); }
 
+  /* ================= MÓDULOS 3-5: MATERIALES / MANO DE OBRA / OTROS ================= */
+  let materialesRows = [];
+  let manoObraRows = [];
+  let otrosRows = [];
+
+  function money(n){ return '$' + (isNaN(n)?0:n).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+  function renderMateriales(){
+    $('materialesBody').innerHTML = materialesRows.map((row,i)=>{
+      const subtotal = (row.cantidad||0) * (row.precioUnit||0);
+      row.subtotal = subtotal;
+      return `<tr class="border-b border-sky-100 dark:border-slate-800">
+        <td class="py-1 pr-1"><input type="number" step="0.1" value="${row.cantidad??''}" data-i="${i}" data-f="cantidad" class="matInput w-14 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><input type="text" value="${esc(row.descripcion||'')}" data-i="${i}" data-f="descripcion" class="matInput w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><input type="text" value="${esc(row.parte||'')}" data-i="${i}" data-f="parte" class="matInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><input type="number" step="0.01" value="${row.precioUnit??''}" data-i="${i}" data-f="precioUnit" class="matInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1 font-semibold text-slate-600 dark:text-slate-300">${money(subtotal)}</td>
+        <td class="py-1"><button data-i="${i}" class="delMaterial text-red-500 font-bold">✕</button></td>
+      </tr>`;
+    }).join('');
+    $('materialesBody').querySelectorAll('.matInput').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        const i = parseInt(inp.dataset.i), f = inp.dataset.f;
+        materialesRows[i][f] = (f==='cantidad'||f==='precioUnit') ? (parseFloat(inp.value)||0) : inp.value;
+        recalcularTotales();
+        // Redibujar solo el subtotal de esa fila sin perder el foco de los demás campos
+        const fila = inp.closest('tr');
+        fila.children[4].textContent = money((materialesRows[i].cantidad||0)*(materialesRows[i].precioUnit||0));
+      });
+    });
+    $('materialesBody').querySelectorAll('.delMaterial').forEach(b=>{
+      b.addEventListener('click', ()=>{ materialesRows.splice(parseInt(b.dataset.i),1); renderMateriales(); recalcularTotales(); });
+    });
+  }
+
+  function renderManoObra(){
+    $('manoObraBody').innerHTML = manoObraRows.map((row,i)=>{
+      const subtotal = (row.cantidad||0) * (row.costoUnit||0);
+      row.subtotal = subtotal;
+      return `<tr class="border-b border-sky-100 dark:border-slate-800">
+        <td class="py-1 pr-1"><input type="number" step="0.1" value="${row.cantidad??''}" data-i="${i}" data-f="cantidad" class="moInput w-14 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><input type="text" list="listaUnidades" value="${esc(row.unidad||'')}" data-i="${i}" data-f="unidad" class="moInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><input type="text" value="${esc(row.descripcion||'')}" data-i="${i}" data-f="descripcion" class="moInput w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><input type="number" step="0.01" value="${row.costoUnit??''}" data-i="${i}" data-f="costoUnit" class="moInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1 font-semibold text-slate-600 dark:text-slate-300">${money(subtotal)}</td>
+        <td class="py-1"><button data-i="${i}" class="delManoObra text-red-500 font-bold">✕</button></td>
+      </tr>`;
+    }).join('');
+    $('manoObraBody').querySelectorAll('.moInput').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        const i = parseInt(inp.dataset.i), f = inp.dataset.f;
+        manoObraRows[i][f] = (f==='cantidad'||f==='costoUnit') ? (parseFloat(inp.value)||0) : inp.value;
+        recalcularTotales();
+        const fila = inp.closest('tr');
+        fila.children[4].textContent = money((manoObraRows[i].cantidad||0)*(manoObraRows[i].costoUnit||0));
+      });
+      inp.addEventListener('change', ()=>{ if(inp.dataset.f==='unidad') agregarUnidadSiNueva(inp.value.trim()); });
+    });
+    $('manoObraBody').querySelectorAll('.delManoObra').forEach(b=>{
+      b.addEventListener('click', ()=>{ manoObraRows.splice(parseInt(b.dataset.i),1); renderManoObra(); recalcularTotales(); });
+    });
+  }
+
+  function renderOtros(){
+    $('otrosBody').innerHTML = otrosRows.map((row,i)=>`
+      <tr class="border-b border-sky-100 dark:border-slate-800">
+        <td class="py-1 pr-1"><input type="text" value="${esc(row.concepto||'')}" data-i="${i}" data-f="concepto" class="otInput w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><input type="number" step="0.01" value="${row.precio??''}" data-i="${i}" data-f="precio" class="otInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1"><button data-i="${i}" class="delOtro text-red-500 font-bold">✕</button></td>
+      </tr>`).join('');
+    $('otrosBody').querySelectorAll('.otInput').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        const i = parseInt(inp.dataset.i), f = inp.dataset.f;
+        otrosRows[i][f] = (f==='precio') ? (parseFloat(inp.value)||0) : inp.value;
+        recalcularTotales();
+      });
+    });
+    $('otrosBody').querySelectorAll('.delOtro').forEach(b=>{
+      b.addEventListener('click', ()=>{ otrosRows.splice(parseInt(b.dataset.i),1); renderOtros(); recalcularTotales(); });
+    });
+  }
+
+  function recalcularTotales(){
+    const totalMat = materialesRows.reduce((s,r)=>s+((r.cantidad||0)*(r.precioUnit||0)),0);
+    const totalMO = manoObraRows.reduce((s,r)=>s+((r.cantidad||0)*(r.costoUnit||0)),0);
+    const totalOt = otrosRows.reduce((s,r)=>s+(r.precio||0),0);
+    const gran = totalMat + totalMO + totalOt;
+    $('totalMaterialesTxt').textContent = money(totalMat);
+    $('totalManoObraTxt').textContent = money(totalMO);
+    $('resTotalMateriales').textContent = money(totalMat);
+    $('resTotalManoObra').textContent = money(totalMO);
+    $('resTotalOtros').textContent = money(totalOt);
+    $('resGranTotal').textContent = money(gran);
+    return { totalMat, totalMO, totalOt, gran };
+  }
+
+  $('btnAddMaterial').addEventListener('click', ()=>{ materialesRows.push({cantidad:1, descripcion:'', parte:'', precioUnit:0}); renderMateriales(); recalcularTotales(); });
+  $('btnAddManoObra').addEventListener('click', ()=>{ manoObraRows.push({cantidad:1, unidad:'Servicio', descripcion:'', costoUnit:0}); renderManoObra(); recalcularTotales(); });
+  $('btnAddOtro').addEventListener('click', ()=>{ otrosRows.push({concepto:'', precio:0}); renderOtros(); recalcularTotales(); });
+
   /* ================= HISTORIAL DE TRABAJOS ================= */
   function renderFiltroMarcas(){
     const marcas = new Set();
@@ -1326,7 +1622,7 @@
     const fc = $('filtroCliente').value, ft = $('filtroTipo').value, fm = $('filtroMarca').value, ff = $('filtroFecha').value;
     let filtrados = trabajos.filter(t=>{
       if(fc && t.clienteId !== fc) return false;
-      if(ft && t.tipoTrabajo !== ft) return false;
+      if(ft && t.categoria !== ft) return false;
       if(fm && !(t.equipos||[]).some(e=>e.marca===fm)) return false;
       if(ff && t.fecha !== ff) return false;
       return true;
@@ -1335,12 +1631,12 @@
     if(filtrados.length === 0){ $('historialLista').innerHTML = '<p class="text-slate-400 py-3">Sin trabajos que coincidan.</p>'; return; }
     $('historialLista').innerHTML = filtrados.map(t=>{
       const cli = clientesActivos.find(c=>c.id===t.clienteId);
-      const equiposTxt = (t.equipos||[]).map(e=>[e.marca,e.modelo].filter(Boolean).join(' ')).filter(Boolean).join(', ') || '—';
       const pendienteTxt = t.pendienteFecha ? `⏰ Pendiente: ${t.pendienteFecha}${t.pendienteHora?' '+t.pendienteHora:''}` : '';
+      const iconoCat = t.categoria === 'Electricidad' ? '⚡' : t.categoria === 'Plomería' ? '🔧' : '❄️';
       return `<div class="flex items-center justify-between py-2 gap-2">
         <div class="min-w-0">
-          <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${esc(t.tipoTrabajo||'—')} · ${esc(cli?nombreCompleto(cli):'Sin cliente')}</p>
-          <p class="text-[11px] text-slate-400">${esc(t.fecha||'')} · ${(t.equipos||[]).length} equipo(s): ${esc(equiposTxt)}</p>
+          <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${iconoCat} ${esc(t.equipoSistema||t.categoria||'—')} · ${esc(cli?nombreCompleto(cli):'Sin cliente')}</p>
+          <p class="text-[11px] text-slate-400">${esc(t.numOrden||'')} ${esc(t.fecha||'')} · ${esc(t.categoria||'')}${t.granTotal ? ' · Total: '+money(t.granTotal) : ''}</p>
           ${pendienteTxt ? `<p class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">${pendienteTxt}</p>` : ''}
         </div>
         <div class="flex gap-2 shrink-0">
@@ -1367,15 +1663,34 @@
   function cargarTrabajo(id){
     const t = trabajos.find(x=>x.id===id);
     if(!t) return;
+    $('numOrden').value = t.numOrden || '';
     $('clienteSel').value = t.clienteId || '';
-    $('tipoTrabajoSel').value = t.tipoTrabajo || '';
+    $('categoriaSel').value = t.categoria || 'Refrigeración / HVAC';
+    renderEquipoSistemaSelect();
+    $('equipoSistemaSel').value = t.equipoSistema || '';
+    actualizarVisibilidadHVAC();
     $('fechaTrabajo').value = t.fecha || '';
     $('tecnico').value = t.tecnico || '';
+    $('comentarioCliente').value = t.comentarioCliente || '';
+    $('diagnosticoTecnico').value = t.diagnosticoTecnico || '';
+    $('causaRaiz').value = t.causaRaiz || '';
+    $('trabajoRealizado').value = t.trabajoRealizado || '';
+    $('observaciones').value = t.observaciones || '';
     $('misComentarios').value = t.misComentarios || '';
     $('tienePendiente').checked = !!t.pendienteFecha;
     $('pendienteFechaWrap').classList.toggle('hidden', !t.pendienteFecha);
     $('pendienteFecha').value = t.pendienteFecha || '';
     $('pendienteHora').value = t.pendienteHora || '09:00';
+
+    materialesRows = (t.materiales || []).map(r=>({...r}));
+    manoObraRows = (t.manoObra || []).map(r=>({...r}));
+    otrosRows = (t.otros || []).map(r=>({...r}));
+    renderMateriales(); renderManoObra(); renderOtros(); recalcularTotales();
+
+    const incluyePsicro = t.categoria === 'Refrigeración / HVAC';
+    $('incluirPsicrometria').checked = incluyePsicro;
+    $('numEquiposWrap').classList.toggle('hidden', !$('incluirPsicrometria').checked);
+    $('equiposContainer').classList.toggle('hidden', !$('incluirPsicrometria').checked);
 
     const equipos = t.equipos && t.equipos.length ? t.equipos : [{}];
     const n = Math.min(equipos.length, NUM_EQUIPOS_MAX);
@@ -1551,7 +1866,7 @@
     const vacio = !marca && !modelo && !antes.valid;
     if(vacio) return null;
 
-    const hallazgos = generarDiagnostico(antes, tipoTrabajo);
+    const hallazgos = generarDiagnostico(antes, tipoTrabajo + ' ' + txt('diagnosticoTecnico') + ' ' + txt('causaRaiz'));
     let gananciaCFM = null, gananciaBTU = null, resumenSimpleTxt = '', resumenElectricoTxt = '';
     if (despues && antes.cfm && despues.cfm && antes.btuh && despues.btuh){
       gananciaCFM = ((despues.cfm - antes.cfm) / antes.cfm) * 100;
@@ -1674,15 +1989,26 @@
   }
 
   function calcularYRenderizar(){
-    const n = numEquiposActivos();
-    const tipoTrabajo = $('tipoTrabajoSel').value;
-    const resultados = [];
-    for(let i=1;i<=n;i++){
-      const d = procesarEquipo(i, tipoTrabajo);
-      if(d) resultados.push(d);
+    const categoria = categoriaActual();
+    const equipoSistema = $('equipoSistemaSel').value;
+    const esHVAC = categoria === 'Refrigeración / HVAC';
+    const incluyePsicro = esHVAC && $('incluirPsicrometria').checked;
+
+    let resultados = [];
+    if(incluyePsicro){
+      const n = numEquiposActivos();
+      for(let i=1;i<=n;i++){
+        const d = procesarEquipo(i, categoria);
+        if(d) resultados.push(d);
+      }
     }
-    if(resultados.length === 0){
-      alert('Ingresa al menos temperaturas de entrada/salida o velocidad de aire en el Equipo 1 para calcular.');
+
+    const hayDiagnostico = ['comentarioCliente','diagnosticoTecnico','causaRaiz','trabajoRealizado','observaciones'].some(id=>txt(id));
+    const { totalMat, totalMO, totalOt, gran } = recalcularTotales();
+    const hayCostos = materialesRows.length || manoObraRows.length || otrosRows.length;
+
+    if(resultados.length === 0 && !hayDiagnostico && !hayCostos){
+      alert('Ingresa al menos un diagnóstico, una lectura psicrométrica o un costo (material/mano de obra) para generar el reporte.');
       return;
     }
 
@@ -1690,42 +2016,112 @@
     const cliente = clientesActivos.find(c=>c.id===clienteId);
     const tecnico = txt('tecnico');
     if(!$('fechaTrabajo').value) $('fechaTrabajo').value = new Date().toISOString().slice(0,10);
+    if(!txt('numOrden')) $('numOrden').value = sugerirNumOrden();
+    const numOrden = txt('numOrden');
+    const iconoCat = categoria === 'Electricidad' ? '⚡' : categoria === 'Plomería' ? '🔧' : '❄️';
 
+    $('rep_titulo').textContent = `📋 ORDEN DE SERVICIO ${numOrden ? '— '+numOrden : ''}`;
     const metaParts = [];
     if (cliente) metaParts.push('Cliente: ' + nombreCompleto(cliente));
-    if (tipoTrabajo) metaParts.push('Trabajo: ' + tipoTrabajo);
-    metaParts.push(resultados.length + ' equipo' + (resultados.length>1?'s':''));
+    metaParts.push(iconoCat + ' ' + categoria);
+    if (equipoSistema) metaParts.push('Sistema: ' + equipoSistema);
     if (tecnico) metaParts.push('Técnico: ' + tecnico);
     $('rep_meta').textContent = metaParts.join('  ·  ');
     $('rep_fecha').textContent = new Date($('fechaTrabajo').value + 'T12:00:00').toLocaleDateString('es-MX', {year:'numeric', month:'long', day:'numeric'});
 
+    // Diagnóstico / causa raíz / trabajo realizado / observaciones
+    if(hayDiagnostico){
+      const bloque = (label, id) => txt(id) ? `<div><h4 class="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-1">${label}</h4><p class="text-sm whitespace-pre-line text-slate-700 dark:text-slate-200">${esc(txt(id))}</p></div>` : '';
+      $('reportDiagnosticoContainer').innerHTML = [
+        bloque('Comentario / queja del cliente', 'comentarioCliente'),
+        bloque('Diagnóstico técnico', 'diagnosticoTecnico'),
+        bloque('Causa raíz', 'causaRaiz'),
+        bloque('Trabajo realizado', 'trabajoRealizado'),
+        bloque('Observaciones', 'observaciones')
+      ].join('');
+      $('reportDiagnosticoContainer').classList.remove('hidden');
+    } else {
+      $('reportDiagnosticoContainer').classList.add('hidden');
+      $('reportDiagnosticoContainer').innerHTML = '';
+    }
+
     $('reportEquiposContainer').innerHTML = resultados.map(renderEquipoReporteHTML).join('');
 
-    const recos = [
-      '🧼 Limpieza de filtros plásticos cada 30 días en uso residencial, cada 15 días en uso comercial/intensivo.',
-      '🌡️ Mantener temperatura de confort sugerida entre 24°C y 25°C para eficiencia energética óptima.',
-      '🔍 Revisión de nivel de refrigerante y presiones al menos una vez al año.',
-      '🧹 Lavado de turbina y serpentín evaporador en servicio preventivo anual.',
-      '⚡ Verificar consumo eléctrico y estado de conexiones para prevenir fallas prematuras.'
-    ];
-    $('recoList').innerHTML = recos.map(t => `<li>${t}</li>`).join('');
+    // Materiales / Mano de obra / Otros / Totales
+    if(hayCostos){
+      const filaCosto = (cols) => `<tr class="border-b border-sky-100 dark:border-slate-800">${cols.map(c=>`<td class="py-1.5 pr-2">${c}</td>`).join('')}</tr>`;
+      let html = '';
+      if(materialesRows.length){
+        html += `<div><h4 class="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-2">🧰 Materiales</h4>
+        <table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="pb-1 pr-2">Cant.</th><th class="pb-1 pr-2">Descripción</th><th class="pb-1 pr-2">N° Parte</th><th class="pb-1 pr-2">P. Unit.</th><th class="pb-1">Subtotal</th></tr></thead>
+        <tbody>${materialesRows.map(r=>filaCosto([r.cantidad, esc(r.descripcion||''), esc(r.parte||'—'), money(r.precioUnit||0), money((r.cantidad||0)*(r.precioUnit||0))])).join('')}</tbody></table>
+        <p class="text-right text-sm font-bold mt-1">Total materiales: ${money(totalMat)}</p></div>`;
+      }
+      if(manoObraRows.length){
+        html += `<div><h4 class="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-2">👷 Mano de obra</h4>
+        <table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="pb-1 pr-2">Cant.</th><th class="pb-1 pr-2">Unidad</th><th class="pb-1 pr-2">Descripción</th><th class="pb-1 pr-2">Costo Unit.</th><th class="pb-1">Subtotal</th></tr></thead>
+        <tbody>${manoObraRows.map(r=>filaCosto([r.cantidad, esc(r.unidad||''), esc(r.descripcion||''), money(r.costoUnit||0), money((r.cantidad||0)*(r.costoUnit||0))])).join('')}</tbody></table>
+        <p class="text-right text-sm font-bold mt-1">Total mano de obra: ${money(totalMO)}</p></div>`;
+      }
+      if(otrosRows.length){
+        html += `<div><h4 class="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-2">🧾 Otros conceptos</h4>
+        <table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="pb-1 pr-2">Concepto</th><th class="pb-1">Precio</th></tr></thead>
+        <tbody>${otrosRows.map(r=>filaCosto([esc(r.concepto||''), money(r.precio||0)])).join('')}</tbody></table>
+        <p class="text-right text-sm font-bold mt-1">Otros gastos: ${money(totalOt)}</p></div>`;
+      }
+      html += `<div class="bg-sky-50 dark:bg-slate-800/60 border border-sky-200 dark:border-slate-700 rounded-xl p-4 space-y-1">
+        <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Total materiales</span><span>${money(totalMat)}</span></div>
+        <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Total mano de obra</span><span>${money(totalMO)}</span></div>
+        <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Otros gastos</span><span>${money(totalOt)}</span></div>
+        <div class="flex justify-between text-base font-extrabold text-sky-700 dark:text-sky-300 pt-2 border-t border-sky-200 dark:border-slate-700"><span>GRAN TOTAL</span><span>${money(gran)}</span></div>
+      </div>`;
+      $('reportCostosContainer').innerHTML = html;
+      $('reportCostosContainer').classList.remove('hidden');
+    } else {
+      $('reportCostosContainer').classList.add('hidden');
+      $('reportCostosContainer').innerHTML = '';
+    }
+
+    // Recomendaciones (solo si hubo lecturas psicrométricas de HVAC)
+    if(resultados.length){
+      const recos = [
+        '🧼 Limpieza de filtros plásticos cada 30 días en uso residencial, cada 15 días en uso comercial/intensivo.',
+        '🌡️ Mantener temperatura de confort sugerida entre 24°C y 25°C para eficiencia energética óptima.',
+        '🔍 Revisión de nivel de refrigerante y presiones al menos una vez al año.',
+        '🧹 Lavado de turbina y serpentín evaporador en servicio preventivo anual.',
+        '⚡ Verificar consumo eléctrico y estado de conexiones para prevenir fallas prematuras.'
+      ];
+      $('recoList').innerHTML = recos.map(t => `<li>${t}</li>`).join('');
+      $('reportRecosWrap').classList.remove('hidden');
+    } else {
+      $('reportRecosWrap').classList.add('hidden');
+    }
 
     $('reportCard').classList.remove('hidden');
     $('reportCard').scrollIntoView({behavior:'smooth', block:'start'});
 
-    window.__lastReport = { resultados, cliente, tecnico, tipoTrabajo };
+    window.__lastReport = { resultados, cliente, tecnico, categoria, equipoSistema, numOrden, totales:{totalMat,totalMO,totalOt,gran} };
   }
 
   function textoPlano(){
     const d = window.__lastReport;
     if (!d) return '';
+    const iconoCat = d.categoria === 'Electricidad' ? '⚡' : d.categoria === 'Plomería' ? '🔧' : '❄️';
     let t = '';
-    t += `📋 *REPORTE DE DIAGNÓSTICO Y RENDIMIENTO TÉCNICO*\n`;
+    t += `📋 *ORDEN DE SERVICIO*${d.numOrden ? ' — '+d.numOrden : ''}\n`;
     t += `_Servicios Robert's — Refrigeración/Eléctrico/Plomería_\n`;
     t += `📅 ${new Date($('fechaTrabajo').value + 'T12:00:00').toLocaleDateString('es-MX')}\n`;
     if (d.cliente) t += `👤 Cliente: ${nombreCompleto(d.cliente)}\n`;
-    if (d.tipoTrabajo) t += `🛠 Trabajo: ${d.tipoTrabajo}\n`;
+    t += `${iconoCat} Tipo de trabajo: ${d.categoria}\n`;
+    if (d.equipoSistema) t += `🔩 Equipo/Sistema: ${d.equipoSistema}\n`;
     if (d.tecnico) t += `🧑‍🔧 Técnico: ${d.tecnico}\n`;
+
+    const bloqueTxt = (label, id) => txt(id) ? `\n*${label}:*\n${txt(id)}\n` : '';
+    t += bloqueTxt('Comentario del cliente', 'comentarioCliente');
+    t += bloqueTxt('Diagnóstico técnico', 'diagnosticoTecnico');
+    t += bloqueTxt('Causa raíz', 'causaRaiz');
+    t += bloqueTxt('Trabajo realizado', 'trabajoRealizado');
+    t += bloqueTxt('Observaciones', 'observaciones');
 
     d.resultados.forEach(eq=>{
       const titulo = [eq.marca, eq.modelo, eq.linea ? '('+eq.linea+')' : ''].filter(Boolean).join(' ') || `Equipo ${eq.i}`;
@@ -1764,11 +2160,22 @@
       if (eq.comentarioDespues) t += `\n*Comentarios después:*\n${eq.comentarioDespues}\n`;
     });
 
-    t += `\n━━━━━━━━━━━━━━\n*Recomendaciones:*\n`;
-    t += `🧼 Limpieza de filtros cada 30 días (residencial) / 15 días (comercial)\n`;
-    t += `🌡️ Temperatura de confort sugerida: 24°C – 25°C\n`;
-    t += `🔍 Revisión anual de refrigerante y presiones\n`;
-    t += `🧹 Lavado de turbina y serpentín en servicio preventivo\n`;
+    if(d.resultados.length){
+      t += `\n━━━━━━━━━━━━━━\n*Recomendaciones:*\n`;
+      t += `🧼 Limpieza de filtros cada 30 días (residencial) / 15 días (comercial)\n`;
+      t += `🌡️ Temperatura de confort sugerida: 24°C – 25°C\n`;
+      t += `🔍 Revisión anual de refrigerante y presiones\n`;
+      t += `🧹 Lavado de turbina y serpentín en servicio preventivo\n`;
+    }
+
+    if(d.totales && (d.totales.totalMat || d.totales.totalMO || d.totales.totalOt)){
+      t += `\n━━━━━━━━━━━━━━\n*💵 COSTOS*\n`;
+      if(d.totales.totalMat) t += `🧰 Total materiales: ${money(d.totales.totalMat)}\n`;
+      if(d.totales.totalMO) t += `👷 Total mano de obra: ${money(d.totales.totalMO)}\n`;
+      if(d.totales.totalOt) t += `🧾 Otros gastos: ${money(d.totales.totalOt)}\n`;
+      t += `*GRAN TOTAL: ${money(d.totales.gran)}*\n`;
+    }
+
     t += `\n_Reporte generado automáticamente_ ❄️`;
     return t;
   }
@@ -1778,7 +2185,8 @@
     if (!window.__lastReport) calcularYRenderizar();
     if (!window.__lastReport) return;
     const idLocal = uid();
-    const n = numEquiposActivos();
+    const incluyePsicro = categoriaActual() === 'Refrigeración / HVAC' && $('incluirPsicrometria').checked;
+    const n = incluyePsicro ? numEquiposActivos() : 0;
 
     const equiposData = [];
     for(let i=1;i<=n;i++){
@@ -1808,11 +2216,29 @@
       equiposData.push(eqObj);
     }
 
+    if(!txt('numOrden')) $('numOrden').value = sugerirNumOrden();
+    confirmarNumOrdenUsado();
+    const { totalMat, totalMO, totalOt, gran } = recalcularTotales();
+
+    // Auto-agregar unidades nuevas de mano de obra al catálogo de unidades
+    manoObraRows.forEach(r=>agregarUnidadSiNueva((r.unidad||'').trim()));
+
     const trabajoBase = {
+      numOrden: txt('numOrden'),
       fecha: $('fechaTrabajo').value || new Date().toISOString().slice(0,10),
       clienteId: $('clienteSel').value || null,
-      tipoTrabajo: $('tipoTrabajoSel').value || null,
+      categoria: categoriaActual(),
+      equipoSistema: $('equipoSistemaSel').value || '',
       tecnico: txt('tecnico'),
+      comentarioCliente: txt('comentarioCliente'),
+      diagnosticoTecnico: txt('diagnosticoTecnico'),
+      causaRaiz: txt('causaRaiz'),
+      trabajoRealizado: txt('trabajoRealizado'),
+      observaciones: txt('observaciones'),
+      materiales: materialesRows.map(r=>({...r})),
+      manoObra: manoObraRows.map(r=>({...r})),
+      otros: otrosRows.map(r=>({...r})),
+      totalMateriales: totalMat, totalManoObra: totalMO, totalOtros: totalOt, granTotal: gran,
       misComentarios: txt('misComentarios'),
       pendienteFecha: $('tienePendiente').checked ? ($('pendienteFecha').value || null) : null,
       pendienteHora: $('tienePendiente').checked ? ($('pendienteHora').value || null) : null,
@@ -1905,10 +2331,14 @@
 
   /* ================= INIT ================= */
   $('fechaTrabajo').value = new Date().toISOString().slice(0,10);
+  $('numOrden').value = sugerirNumOrden();
   construirEquiposCards();
   renderCatalogoDatalist();
   renderClientesSelects();
-  renderTipoSelect();
+  renderEquipoSistemaSelect();
+  renderUnidadesDatalist();
+  actualizarVisibilidadHVAC();
+  renderMateriales(); renderManoObra(); renderOtros(); recalcularTotales();
   tryLoadFbConfig();
 
   /* ================= PWA: service worker + botón instalar ================= */
@@ -1935,3 +2365,4 @@
 </script>
 </body>
 </html>
+
