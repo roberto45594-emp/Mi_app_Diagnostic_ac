@@ -2237,14 +2237,6 @@
     window.__lastReport = { resultados, cliente, tecnico, categoria, equipoSistema, numOrden, totales:{totalMat,totalMO,totalOt,gran} };
   }
 
-  // Construye una "tabla" en texto monoespaciado (WhatsApp respeta el ancho dentro de ```) 
-  function filaMono(cols, anchos){
-    return cols.map((c,i)=>{
-      const s = String(c);
-      return s.length > anchos[i] ? s.slice(0, anchos[i]) : s.padEnd(anchos[i]);
-    }).join(' ');
-  }
-
   function textoPlano(){
     const d = window.__lastReport;
     if (!d) return '';
@@ -2323,50 +2315,52 @@
       t += `🧹 Lavado de turbina y serpentín en servicio preventivo\n`;
     }
 
-    // ===== DESGLOSE DE COSTOS (lo que más confianza le da al cliente) =====
+    // ===== RESUMEN PRESUPUESTO (desglose de costos) =====
     if(d.totales && (d.totales.totalMat || d.totales.totalMO || d.totales.totalOt)){
-      t += `\n━━━━━━━━━━━━━━━━━━━\n💰 *DESGLOSE DE COSTOS*\n`;
+      const num = (v, w) => String(v).length > w ? String(v).slice(0,w) : String(v).padStart(w);
+      const txt2 = (v, w) => String(v).length > w ? String(v).slice(0,w) : String(v).padEnd(w);
+
+      t += `\n━━━━━━━━━━━━━━━━━━━\n📊 *RESUMEN PRESUPUESTO*\n`;
 
       if(materialesRows.length){
-        t += `\n🧰 _Materiales_\n\`\`\`\n`;
-        t += filaMono(['Cant','Descripción','P.Unit','Subt.'], [4,14,7,8]) + '\n';
-        t += '-'.repeat(4+14+7+8+3) + '\n';
+        t += `\n🧰 *Materiales*\n\`\`\`\n`;
+        t += txt2('Cant',4)+' '+txt2('Descripción',13)+' '+num('P.Unit',7)+' '+num('Subt.',8) + '\n';
+        t += '-'.repeat(4+13+7+8+3) + '\n';
         materialesRows.forEach(row=>{
-          t += filaMono([row.cantidad||0, row.descripcion||'', money(row.precioUnit||0), money((row.cantidad||0)*(row.precioUnit||0))], [4,14,7,8]) + '\n';
+          t += txt2(row.cantidad||0,4)+' '+txt2(row.descripcion||'',13)+' '+num(money(row.precioUnit||0),7)+' '+num(money((row.cantidad||0)*(row.precioUnit||0)),8) + '\n';
         });
         t += '```\n';
-        t += `Total materiales: *${money(d.totales.totalMat)}*\n`;
+        t += `Subtotal materiales: *${money(d.totales.totalMat)}*\n`;
       }
 
       if(manoObraRows.length){
-        t += `\n👷 _Mano de obra_\n\`\`\`\n`;
-        t += filaMono(['Cant','Unid','Descripción','C.Unit','Subt.'], [4,6,10,7,8]) + '\n';
+        t += `\n👷 *Mano de obra*\n\`\`\`\n`;
+        t += txt2('Cant',4)+' '+txt2('Unid',6)+' '+txt2('Descripción',10)+' '+num('C.Unit',7)+' '+num('Subt.',8) + '\n';
         t += '-'.repeat(4+6+10+7+8+4) + '\n';
         manoObraRows.forEach(row=>{
-          t += filaMono([row.cantidad||0, row.unidad||'', row.descripcion||'', money(row.costoUnit||0), money((row.cantidad||0)*(row.costoUnit||0))], [4,6,10,7,8]) + '\n';
+          t += txt2(row.cantidad||0,4)+' '+txt2(row.unidad||'',6)+' '+txt2(row.descripcion||'',10)+' '+num(money(row.costoUnit||0),7)+' '+num(money((row.cantidad||0)*(row.costoUnit||0)),8) + '\n';
         });
         t += '```\n';
-        t += `Total mano de obra: *${money(d.totales.totalMO)}*\n`;
+        t += `Subtotal mano de obra: *${money(d.totales.totalMO)}*\n`;
       }
 
       if(otrosRows.length){
-        t += `\n🧾 _Otros conceptos_\n\`\`\`\n`;
-        t += filaMono(['Concepto','Precio'], [22,8]) + '\n';
-        t += '-'.repeat(22+8+1) + '\n';
+        t += `\n🧾 *Otros conceptos*\n\`\`\`\n`;
+        t += txt2('Concepto',21)+' '+num('Precio',8) + '\n';
+        t += '-'.repeat(21+8+1) + '\n';
         otrosRows.forEach(row=>{
-          t += filaMono([row.concepto||'', money(row.precio||0)], [22,8]) + '\n';
+          t += txt2(row.concepto||'',21)+' '+num(money(row.precio||0),8) + '\n';
         });
         t += '```\n';
         t += `Otros gastos: *${money(d.totales.totalOt)}*\n`;
       }
 
-      t += `\n\`\`\`\n`;
-      t += filaMono(['TOTAL MATERIALES', money(d.totales.totalMat)], [20,12]) + '\n';
-      t += filaMono(['TOTAL MANO DE OBRA', money(d.totales.totalMO)], [20,12]) + '\n';
-      t += filaMono(['OTROS GASTOS', money(d.totales.totalOt)], [20,12]) + '\n';
-      t += '='.repeat(33) + '\n';
-      t += filaMono(['GRAN TOTAL', money(d.totales.gran)], [20,12]) + '\n';
-      t += '```';
+      t += `\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n`;
+      if(d.totales.totalMat) t += `🧰 Materiales: *${money(d.totales.totalMat)}*\n`;
+      if(d.totales.totalMO) t += `👷 Mano de obra: *${money(d.totales.totalMO)}*\n`;
+      if(d.totales.totalOt) t += `🧾 Otros gastos: *${money(d.totales.totalOt)}*\n`;
+      t += `▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n`;
+      t += `💰 *GRAN TOTAL: ${money(d.totales.gran)}*\n`;
     }
 
     t += `\n\n_Reporte generado automáticamente_ ❄️`;
