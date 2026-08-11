@@ -63,7 +63,22 @@
   </div>
 </header>
 
+<!-- ============ NAVEGACIÓN PRINCIPAL DE MÓDULOS ============ -->
+<nav class="no-print sticky top-[57px] z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-sky-200 dark:border-slate-800">
+  <div class="max-w-6xl mx-auto px-2 flex gap-1 overflow-x-auto" style="scrollbar-width:none;">
+    <button data-screen="servicios" class="navBtn shrink-0 text-xs font-semibold px-3 py-2 border-b-2 border-sky-500 text-sky-600 dark:text-sky-400">🔧 Servicios</button>
+    <button data-screen="investigacion" class="navBtn shrink-0 text-xs font-semibold px-3 py-2 border-b-2 border-transparent text-slate-500 dark:text-slate-400">📚 Investigación</button>
+    <button data-screen="biblioteca" class="navBtn shrink-0 text-xs font-semibold px-3 py-2 border-b-2 border-transparent text-slate-500 dark:text-slate-400">📚 Biblioteca</button>
+    <button data-screen="materiales" class="navBtn shrink-0 text-xs font-semibold px-3 py-2 border-b-2 border-transparent text-slate-500 dark:text-slate-400">🧰 Materiales</button>
+    <button data-screen="kpi" class="navBtn shrink-0 text-xs font-semibold px-3 py-2 border-b-2 border-transparent text-slate-500 dark:text-slate-400">📊 KPI</button>
+    <button data-screen="manual" class="navBtn shrink-0 text-xs font-semibold px-3 py-2 border-b-2 border-transparent text-slate-500 dark:text-slate-400">📖 Manual</button>
+    <button data-screen="config" class="navBtn shrink-0 text-xs font-semibold px-3 py-2 border-b-2 border-transparent text-slate-500 dark:text-slate-400">⚙️ Configuración</button>
+  </div>
+</nav>
+
 <main class="max-w-6xl mx-auto px-4 py-5 space-y-5">
+<div id="screen-servicios" class="screen-panel space-y-5">
+
 
   <!-- DATOS GENERALES DE LA ORDEN -->
   <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
@@ -281,6 +296,12 @@
     <p class="text-[10px] text-slate-400 mt-1">El recordatorio se descarga como archivo de calendario (.ics) con alarma 1 día antes — tu app de Calendario del teléfono se encarga de avisarte, incluso si esta página está cerrada.</p>
   </section>
 
+  <!-- Relación inversa: investigaciones vinculadas a este servicio -->
+  <section id="investigacionesDelTrabajoWrap" class="hidden bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-2">📚 Investigaciones relacionadas con este servicio</h2>
+    <div id="investigacionesDelTrabajoLista" class="space-y-2"></div>
+  </section>
+
   <!-- BOTONES -->
   <section class="flex flex-wrap gap-2 no-print">
     <button id="btnCalc" class="flex-1 min-w-[150px] bg-sky-500 hover:bg-sky-400 text-white font-bold text-sm rounded-lg px-4 py-3 transition">⚡ Calcular y Generar Reporte</button>
@@ -320,6 +341,179 @@
       Reporte generado automáticamente · Servicios Robert's — Refrigeración, Eléctrico y Plomería
     </div>
   </section>
+
+</div>
+<!-- ===== FIN pantalla Servicios ===== -->
+
+<!-- ============ PANTALLA: INVESTIGACIÓN Y DESARROLLO ============ -->
+<div id="screen-investigacion" class="screen-panel hidden space-y-5">
+  <section id="invListaHeader" class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <div class="flex items-center justify-between mb-2">
+      <div>
+        <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400">📚 Investigación y Desarrollo</h2>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Registra hallazgos técnicos, pruebas y aprendizajes de campo para consultarlos después.</p>
+      </div>
+      <button id="btnNuevaInvestigacion" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Nueva investigación</button>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+      <input id="invBuscar" type="text" placeholder="🔍 Buscar..." class="col-span-2 md:col-span-1 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <div class="flex gap-1">
+        <select id="invFiltroTopico" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">Todos los tópicos</option></select>
+        <button id="btnEditarTopicos" class="shrink-0 bg-slate-500 hover:bg-slate-400 text-white rounded-lg px-2 text-sm">✎</button>
+      </div>
+      <select id="invFiltroEstado" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <option value="">Todos los estados</option>
+        <option>Pendiente</option><option>En investigación</option><option>Resuelto</option><option>Para profundizar</option><option>Archivado</option>
+      </select>
+      <select id="invOrdenarPor" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <option value="actualizacion">Ordenar: Última actualización</option>
+        <option value="creacion">Ordenar: Fecha de creación</option>
+        <option value="titulo">Ordenar: Título</option>
+      </select>
+    </div>
+  </section>
+  <section id="invListaWrap" class="space-y-3"></section>
+
+  <!-- Vista de detalle (solo lectura) -->
+  <section id="invDetalleWrap" class="hidden bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm space-y-3">
+    <div class="flex items-center justify-between border-b border-sky-200 dark:border-slate-700 pb-2">
+      <button id="btnRegresarInvestigacion" class="text-xs font-semibold text-sky-600 dark:text-sky-400">← Regresar</button>
+      <div class="flex gap-2">
+        <button id="btnEditarDesdeDetalle" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-1.5">✏️ Editar</button>
+        <button id="btnEliminarDesdeDetalle" class="text-xs font-semibold bg-red-50 dark:bg-slate-800 text-red-600 border border-red-200 dark:border-slate-700 rounded-lg px-3 py-1.5">🗑️ Eliminar</button>
+      </div>
+    </div>
+    <div id="invDetalleContenido" class="space-y-3 text-sm"></div>
+  </section>
+</div>
+
+<!-- ============ PANTALLA: BIBLIOTECA ============ -->
+<div id="screen-biblioteca" class="screen-panel hidden space-y-5">
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <div class="flex items-center justify-between mb-2">
+      <div>
+        <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400">📚 Biblioteca</h2>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Repositorio de datasheets, manuales, catálogos y procedimientos.</p>
+      </div>
+      <button id="btnNuevoDocumento" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Agregar documento</button>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+      <input id="bibBuscar" type="text" placeholder="🔍 Buscar..." class="col-span-2 md:col-span-1 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <select id="bibFiltroTipo" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <option value="">Todos los tipos</option>
+        <option>PDF</option><option>Datasheet</option><option>Manual</option><option>Catálogo</option><option>Procedimiento</option><option>Libro</option><option>Otro</option>
+      </select>
+      <select id="bibFiltroTopico" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">Todos los tópicos</option></select>
+    </div>
+  </section>
+  <section id="bibListaWrap" class="space-y-3"></section>
+</div>
+
+<!-- ============ PANTALLA: LISTA DE MATERIALES (catálogo histórico) ============ -->
+<div id="screen-materiales" class="screen-panel hidden space-y-5">
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400">🧰 Lista de materiales</h2>
+      <button id="btnNuevoMaterialCat" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Agregar material</button>
+    </div>
+    <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">Catálogo histórico de materiales — distinto de los materiales que registras dentro de cada orden de servicio.</p>
+    <input id="matCatBuscar" type="text" placeholder="🔍 Buscar material..." class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+  </section>
+  <section id="matCatListaWrap" class="space-y-3"></section>
+
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">📜 Historial de compras</h3>
+      <button id="btnNuevaCompra" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Registrar compra</button>
+    </div>
+    <div id="comprasListaWrap" class="space-y-2"></div>
+  </section>
+
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">🏪 Ferreterías</h3>
+      <button id="btnNuevaFerreteria" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Agregar ferretería</button>
+    </div>
+    <div id="ferreteriasListaWrap" class="space-y-2"></div>
+  </section>
+</div>
+
+<!-- ============ PANTALLA: KPI ============ -->
+<div id="screen-kpi" class="screen-panel hidden space-y-5">
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400">📊 KPI del negocio</h2>
+      <select id="kpiPeriodoSel" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <option>Diario</option><option selected>Semanal</option><option>Mensual</option><option>Rango personalizado</option>
+      </select>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💰 Ingresos</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💵 Cobrado</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💳 Pendiente</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💸 Costos</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">📈 Utilidad</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">📊 Margen</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">🔧 Trabajos</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
+    </div>
+  </section>
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">Ingresos / Costos / Utilidad</h3>
+    <div class="h-32 flex items-center justify-center border border-dashed border-sky-200 dark:border-slate-700 rounded-lg text-xs text-slate-400">📈 Gráfica próximamente</div>
+  </section>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">Trabajos por especialidad</h3>
+      <div class="h-28 flex items-center justify-center border border-dashed border-sky-200 dark:border-slate-700 rounded-lg text-xs text-slate-400">Próximamente</div>
+    </section>
+    <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">Utilidad por especialidad</h3>
+      <div class="h-28 flex items-center justify-center border border-dashed border-sky-200 dark:border-slate-700 rounded-lg text-xs text-slate-400">Próximamente</div>
+    </section>
+  </div>
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">Evolución mensual</h3>
+    <div class="h-32 flex items-center justify-center border border-dashed border-sky-200 dark:border-slate-700 rounded-lg text-xs text-slate-400">Próximamente</div>
+  </section>
+</div>
+
+<!-- ============ PANTALLA: MANUAL DE USUARIO ============ -->
+<div id="screen-manual" class="screen-panel hidden space-y-5">
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400 mb-3">📖 Manual de usuario</h2>
+    <div class="flex flex-wrap gap-2" id="manualNav"></div>
+  </section>
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <h3 id="manualTituloActivo" class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-2"></h3>
+    <p id="manualContenidoActivo" class="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line"></p>
+  </section>
+</div>
+
+<!-- ============ PANTALLA: CONFIGURACIÓN ============ -->
+<div id="screen-config" class="screen-panel hidden space-y-5">
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400 mb-3">⚙️ Configuración</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <button id="btnConfigDesdePantalla" class="text-left bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-4 hover:bg-sky-100 dark:hover:bg-slate-700">
+        <p class="font-bold text-sm text-slate-700 dark:text-slate-200">🔗 Conexión Firestore</p>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Sincroniza clientes, catálogo e historial entre dispositivos.</p>
+      </button>
+      <button id="btnRespaldoDesdePantalla" class="text-left bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-4 hover:bg-sky-100 dark:hover:bg-slate-700">
+        <p class="font-bold text-sm text-slate-700 dark:text-slate-200">☁️ Respaldo y Google Drive</p>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Respaldo local, restauración y fotos en Drive.</p>
+      </button>
+      <button id="btnTemaDesdePantalla" class="text-left bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-4 hover:bg-sky-100 dark:hover:bg-slate-700">
+        <p class="font-bold text-sm text-slate-700 dark:text-slate-200">🌙 Apariencia</p>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Cambiar entre modo claro y oscuro.</p>
+      </button>
+      <button id="btnHistorialDesdePantalla" class="text-left bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-4 hover:bg-sky-100 dark:hover:bg-slate-700">
+        <p class="font-bold text-sm text-slate-700 dark:text-slate-200">🗂 Historial de trabajos</p>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Ver, filtrar y restaurar órdenes de servicio guardadas.</p>
+      </button>
+    </div>
+    <p class="text-[11px] text-slate-400 mt-3">Más opciones de configuración (IVA, facturación, permisos) se agregarán en próximas etapas.</p>
+  </section>
+</div>
 
 </main>
 
@@ -492,6 +686,236 @@
       <button id="btnAuthLogout" class="hidden w-full bg-slate-500 hover:bg-slate-400 text-white rounded-lg px-3 py-2 text-sm font-bold mt-1">Cerrar sesión</button>
       <p id="fbStatusText" class="text-[11px] text-slate-500 dark:text-slate-400 pt-1 flex items-center gap-1"><span id="fbStatusDot" class="status-dot off"></span> Sin conectar — trabajando en modo local (en este dispositivo).</p>
       <p class="text-[11px] text-slate-400 pt-2 border-t border-sky-200 dark:border-slate-700">Nota: las fotos NO se guardan en Firestore. Si conectas Google Drive (☁️ Respaldo), las fotos viajan como un link ligero dentro del trabajo; si no, se quedan solo en este dispositivo.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: NUEVA INVESTIGACIÓN ============ -->
+<div id="modalInvestigacion" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 id="modalInvestigacionTitulo" class="font-bold text-sky-700 dark:text-sky-300">📚 Nueva investigación</h3>
+      <button data-close="modalInvestigacion" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-3 text-sm">
+      <input type="hidden" id="inv_editId">
+      <div class="grid grid-cols-1 gap-2">
+        <select id="inv_topico" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm"></select>
+        <select id="inv_estado" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm">
+          <option>Pendiente</option><option>En investigación</option><option>Resuelto</option><option>Para profundizar</option><option>Archivado</option>
+        </select>
+      </div>
+      <input id="inv_titulo" placeholder="Título *" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm">
+
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Problema / duda</label>
+        <textarea id="inv_problema" rows="3" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm"></textarea>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Objetivo de la investigación</label>
+        <textarea id="inv_objetivo" rows="2" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm"></textarea>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Apuntes</label>
+        <textarea id="inv_apuntes" rows="4" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm"></textarea>
+      </div>
+
+      <!-- Fuentes y enlaces -->
+      <div class="border border-sky-200 dark:border-slate-700 rounded-xl p-3">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-bold text-sky-700 dark:text-sky-300">🔗 Fuentes y enlaces</p>
+          <button id="btnAddFuente" type="button" class="text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-2.5 py-1.5">+ Agregar fuente</button>
+        </div>
+        <div id="fuentesListaTemp" class="space-y-2"></div>
+        <p id="fuentesVacioMsg" class="text-xs text-slate-400">Sin fuentes agregadas.</p>
+      </div>
+
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">🧠 Lo aprendido</label>
+        <textarea id="inv_aprendido" rows="3" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm"></textarea>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">🔧 Aplicación práctica</label>
+        <textarea id="inv_aplicacion" rows="2" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm"></textarea>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">✅ Conclusión</label>
+        <textarea id="inv_conclusion" rows="2" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm"></textarea>
+      </div>
+      <div>
+        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">📌 Pendientes</label>
+        <textarea id="inv_pendientes" rows="2" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm"></textarea>
+      </div>
+
+      <!-- Servicios relacionados -->
+      <div class="border border-sky-200 dark:border-slate-700 rounded-xl p-3">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-bold text-sky-700 dark:text-sky-300">🔧 Servicios relacionados</p>
+          <button id="btnVincularServicio" type="button" class="text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-2.5 py-1.5">+ Vincular servicio</button>
+        </div>
+        <div id="serviciosRelListaTemp" class="space-y-2"></div>
+        <p id="serviciosRelVacioMsg" class="text-xs text-slate-400">Sin servicios vinculados.</p>
+      </div>
+
+      <!-- Documentos relacionados -->
+      <div class="border border-sky-200 dark:border-slate-700 rounded-xl p-3">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-bold text-sky-700 dark:text-sky-300">📄 Documentos relacionados</p>
+          <button id="btnVincularDocumento" type="button" class="text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-2.5 py-1.5">+ Vincular documento</button>
+        </div>
+        <div id="documentosRelListaTemp" class="space-y-2"></div>
+        <p id="documentosRelVacioMsg" class="text-xs text-slate-400">Sin documentos vinculados.</p>
+      </div>
+
+      <button id="btnGuardarInvestigacion" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-3 text-sm font-bold">Guardar investigación</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: VINCULAR SERVICIO ============ -->
+<div id="modalVincularServicio" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">🔧 Vincular servicio</h3>
+      <button data-close="modalVincularServicio" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-2">
+      <div class="grid grid-cols-2 gap-2">
+        <input id="vs_buscar" placeholder="🔍 N° orden o cliente..." class="col-span-2 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="vs_fecha" type="date" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <select id="vs_categoria" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+          <option value="">Todas las categorías</option>
+          <option value="Refrigeración / HVAC">❄️ Refrigeración / HVAC</option>
+          <option value="Electricidad">⚡ Electricidad</option>
+          <option value="Plomería">🔧 Plomería</option>
+        </select>
+      </div>
+      <div id="vsListaWrap" class="space-y-2 pt-2"></div>
+      <button id="btnConfirmarVincularServicio" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2.5 text-sm font-bold mt-2">Agregar seleccionados</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: VINCULAR DOCUMENTO ============ -->
+<div id="modalVincularDocumento" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">📄 Vincular documento</h3>
+      <button data-close="modalVincularDocumento" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-2">
+      <input id="vd_buscar" placeholder="🔍 Buscar documento..." class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <div id="vdListaWrap" class="space-y-2 pt-2"></div>
+      <button id="btnConfirmarVincularDocumento" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2.5 text-sm font-bold mt-2">Agregar seleccionados</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: TÓPICOS DE INVESTIGACIÓN (catálogo editable) ============ -->
+<div id="modalTopicos" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-md max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">🏷 Tópicos</h3>
+      <button data-close="modalTopicos" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-3">
+      <input type="hidden" id="topico_editId">
+      <input id="topico_nombre" placeholder="Nombre del tópico *" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <textarea id="topico_descripcion" rows="2" placeholder="Descripción (opcional)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
+      <div class="flex gap-2">
+        <button id="btnGuardarTopico" class="flex-1 bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar tópico</button>
+        <button id="btnCancelarTopico" class="hidden text-xs font-semibold text-slate-500 px-3">Cancelar edición</button>
+      </div>
+      <div id="topicosLista" class="text-sm divide-y divide-sky-100 dark:divide-slate-800 pt-2"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============ MODAL: NUEVO DOCUMENTO (BIBLIOTECA) ============ -->
+<div id="modalDocumento" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-xl max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">📚 Nuevo documento</h3>
+      <button data-close="modalDocumento" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-2 text-sm">
+      <p class="text-[11px] text-slate-400">La subida directa a Google Drive se agregará en una etapa posterior — por ahora puedes pegar un link si ya lo tienes.</p>
+      <input id="bib_nombre" placeholder="Nombre" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <div class="grid grid-cols-2 gap-2">
+        <select id="bib_tipo" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+          <option>PDF</option><option>Datasheet</option><option>Manual</option><option>Catálogo</option><option>Procedimiento</option><option>Libro</option><option>Otro</option>
+        </select>
+        <select id="bib_topico" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></select>
+      </div>
+      <textarea id="bib_descripcion" rows="2" placeholder="Descripción" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
+      <input id="bib_etiquetas" placeholder="Etiquetas (separadas por coma)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <input id="bib_urlDrive" placeholder="URL de Google Drive (opcional, manual por ahora)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <label class="flex items-center gap-1.5 text-xs"><input id="bib_favorito" type="checkbox" class="rounded"> Marcar como favorito</label>
+      <button id="btnGuardarDocumento" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar documento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: NUEVO MATERIAL (CATÁLOGO HISTÓRICO) ============ -->
+<div id="modalMaterialCat" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-xl max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">🧰 Nuevo material</h3>
+      <button data-close="modalMaterialCat" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-2 text-sm">
+      <input id="matcat_descripcion" placeholder="Descripción" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <div class="grid grid-cols-2 gap-2">
+        <input id="matcat_parte" placeholder="N° de parte" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="matcat_marca" placeholder="Marca" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="matcat_categoria" placeholder="Categoría" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="matcat_unidad" placeholder="Unidad" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      </div>
+      <textarea id="matcat_especificaciones" rows="2" placeholder="Especificaciones" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
+      <textarea id="matcat_comentarios" rows="2" placeholder="Comentarios" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
+      <button id="btnGuardarMaterialCat" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar material</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: NUEVA COMPRA ============ -->
+<div id="modalCompra" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">📜 Registrar compra</h3>
+      <button data-close="modalCompra" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-2 text-sm">
+      <select id="compra_material" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">— Selecciona un material del catálogo —</option></select>
+      <div class="grid grid-cols-2 gap-2">
+        <input id="compra_fecha" type="date" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <select id="compra_ferreteria" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">— Ferretería —</option></select>
+        <input id="compra_cantidad" type="number" step="0.01" placeholder="Cantidad" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="compra_precioUnit" type="number" step="0.01" placeholder="Precio unitario" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      </div>
+      <textarea id="compra_comentarios" rows="2" placeholder="Comentarios" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
+      <button id="btnGuardarCompra" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar compra</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: NUEVA FERRETERÍA ============ -->
+<div id="modalFerreteria" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">🏪 Nueva ferretería</h3>
+      <button data-close="modalFerreteria" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-2 text-sm">
+      <input id="ferr_nombre" placeholder="Nombre" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <div class="grid grid-cols-2 gap-2">
+        <input id="ferr_telefono" placeholder="Teléfono" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="ferr_contacto" placeholder="Contacto" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      </div>
+      <input id="ferr_direccion" placeholder="Dirección" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <textarea id="ferr_comentarios" rows="2" placeholder="Comentarios" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
+      <button id="btnGuardarFerreteria" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar ferretería</button>
     </div>
   </div>
 </div>
@@ -1764,6 +2188,7 @@
   function cargarTrabajo(id){
     const t = trabajos.find(x=>x.id===id);
     if(!t) return;
+    trabajoActualId = t.id;
     $('numOrden').value = t.numOrden || '';
     $('clienteSel').value = t.clienteId || '';
     $('categoriaSel').value = t.categoria || 'Refrigeración / HVAC';
@@ -1872,6 +2297,7 @@
 
     closeModal('modalHistorial');
     calcularYRenderizar();
+    actualizarInvestigacionesDelTrabajo();
   }
 
   $('btnHistorial').addEventListener('click', ()=>{ renderClientesSelects(); renderHistorialLista(); openModal('modalHistorial'); });
@@ -2456,12 +2882,15 @@
             trabajoBase['fotoOrden'+tipo.charAt(0).toUpperCase()+tipo.slice(1)+'Link'] = fotoOrdenLinkActual[tipo];
           }
         }
-        await db.collection('trabajos_minisplit').add(trabajoBase);
+        const ref = await db.collection('trabajos_minisplit').add(trabajoBase);
+        trabajoActualId = ref.id;
         mostrarToast('✔ Trabajo y fotos guardados en la nube');
+        actualizarInvestigacionesDelTrabajo();
       }catch(e){ alert('No se pudo guardar en la nube: ' + e.message); }
     } else if(modoCloud && db){
       try{
         const ref = await db.collection('trabajos_minisplit').add(trabajoBase);
+        trabajoActualId = ref.id;
         equiposData.forEach(eqObj=>{
           const i = eqObj._i;
           const fotosParaGuardar = {};
@@ -2473,6 +2902,7 @@
         if(Object.keys(fotosOrdenGuardar).length){ fotosLocalMap[ref.id + '::orden'] = fotosOrdenGuardar; }
         saveFotosLocalMap();
         mostrarToast('✔ Trabajo guardado en la nube (fotos solo en este dispositivo — conecta Drive para verlas en todos lados)');
+        actualizarInvestigacionesDelTrabajo();
       }catch(e){ alert('No se pudo guardar en la nube: ' + e.message); }
     } else {
       const trabajo = { id: idLocal, ...trabajoBase };
@@ -2489,7 +2919,9 @@
       try{
         saveTrabajos(); saveFotosLocalMap();
         trabajos = trabajosLocal;
+        trabajoActualId = idLocal;
         mostrarToast('✔ Trabajo guardado en el historial (local)');
+        actualizarInvestigacionesDelTrabajo();
       }catch(err){
         trabajosLocal.pop();
         alert('No se pudo guardar: el almacenamiento local está lleno (probablemente por fotos). Haz un respaldo y limpia registros antiguos, o conecta Google Drive.');
@@ -2539,6 +2971,664 @@
     window.print();
   });
 
+  /* ================= NAVEGACIÓN PRINCIPAL DE MÓDULOS ================= */
+  const PANTALLAS = ['servicios','investigacion','biblioteca','materiales','kpi','manual','config'];
+  function irAPantalla(nombre){
+    PANTALLAS.forEach(p=>{
+      $(`screen-${p}`).classList.toggle('hidden', p !== nombre);
+    });
+    document.querySelectorAll('.navBtn').forEach(b=>{
+      const activo = b.dataset.screen === nombre;
+      b.classList.toggle('border-sky-500', activo);
+      b.classList.toggle('text-sky-600', activo);
+      b.classList.toggle('dark:text-sky-400', activo);
+      b.classList.toggle('border-transparent', !activo);
+      b.classList.toggle('text-slate-500', !activo);
+      b.classList.toggle('dark:text-slate-400', !activo);
+    });
+    if(nombre==='investigacion') renderInvestigaciones();
+    if(nombre==='biblioteca') renderBiblioteca();
+    if(nombre==='materiales'){ renderMaterialesCatalogo(); renderCompras(); renderFerreterias(); }
+    if(nombre==='manual' && !manualInicializado) inicializarManual();
+  }
+  document.querySelectorAll('.navBtn').forEach(b=>{
+    b.addEventListener('click', ()=>irAPantalla(b.dataset.screen));
+  });
+
+  /* ================= MÓDULO: INVESTIGACIÓN Y DESARROLLO (Etapa 2) ================= */
+  // Persistencia: mismas claves de la Etapa 1 (no se cambian).
+  const LS_TOPICOS = 'msd_topicos_v1';
+  const LS_INVESTIGACIONES = 'msd_investigaciones_v1';
+  const DEFAULT_TOPICOS = ['Refrigeración','Electricidad','Electrónica','Termodinámica','Sensores y medición','Automatización y control','Herramientas y equipos','Dispositivos y tecnologías nuevas','Seguridad','Otros'];
+
+  let topicosLocal = JSON.parse(localStorage.getItem(LS_TOPICOS) || 'null') || DEFAULT_TOPICOS.slice();
+  let investigaciones = JSON.parse(localStorage.getItem(LS_INVESTIGACIONES) || '[]');
+
+  // Migración no destructiva: tópicos de la Etapa 1 eran strings; ahora son objetos {id,nombre,descripcion,estado}.
+  // Las investigaciones ya guardadas seguían usando el NOMBRE como valor de tópico; se conserva así por compatibilidad
+  // (resolverTopico() busca primero por id y si no encuentra, por nombre, para que nada se pierda).
+  let topicosMigrados = false;
+  topicosLocal = topicosLocal.map(t=>{
+    if(typeof t === 'string'){ topicosMigrados = true; return { id: uid(), nombre: t, descripcion: '', estado: 'Activo' }; }
+    return t;
+  });
+  function saveTopicos(){ localStorage.setItem(LS_TOPICOS, JSON.stringify(topicosLocal)); }
+  if(topicosMigrados) saveTopicos();
+  function saveInvestigaciones(){ localStorage.setItem(LS_INVESTIGACIONES, JSON.stringify(investigaciones)); }
+
+  function resolverTopico(valor){
+    if(!valor) return null;
+    return topicosLocal.find(t=>t.id===valor) || topicosLocal.find(t=>t.nombre===valor) || null;
+  }
+  function nombreTopico(valor){ const t = resolverTopico(valor); return t ? t.nombre : (valor || '—'); }
+
+  function topicoTieneInvestigaciones(topico){
+    return investigaciones.some(inv => inv.topico === topico.id || inv.topico === topico.nombre);
+  }
+
+  function renderTopicosSelects(){
+    const activos = topicosLocal.filter(t=>t.estado !== 'Inactivo');
+    const optsActivos = activos.map(t=>`<option value="${t.id}">${esc(t.nombre)}</option>`).join('');
+    const optsTodos = topicosLocal.map(t=>`<option value="${t.id}">${esc(t.nombre)}${t.estado==='Inactivo'?' (inactivo)':''}</option>`).join('');
+    // Selects para CREAR (solo tópicos activos)
+    ['inv_topico','bib_topico'].forEach(id=>{
+      const el = $(id); const prev = el.value;
+      el.innerHTML = optsActivos;
+      if([...el.options].some(o=>o.value===prev)) el.value = prev;
+    });
+    // Selects de FILTRO (todos, para no perder investigaciones viejas con tópico inactivo)
+    ['invFiltroTopico','bibFiltroTopico'].forEach(id=>{
+      const el = $(id); const prev = el.value;
+      el.innerHTML = '<option value="">Todos los tópicos</option>' + optsTodos;
+      if([...el.options].some(o=>o.value===prev)) el.value = prev;
+    });
+  }
+
+  function renderTopicosLista(){
+    if(topicosLocal.length===0){ $('topicosLista').innerHTML = '<p class="text-slate-400 py-3">Sin tópicos todavía.</p>'; return; }
+    $('topicosLista').innerHTML = topicosLocal.map(t=>`
+      <div class="py-2">
+        <div class="flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <span class="text-sm ${t.estado==='Inactivo'?'text-slate-400':'text-slate-700 dark:text-slate-200'}">${esc(t.nombre)}</span>
+            ${t.estado==='Inactivo' ? '<span class="text-[10px] ml-1 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">inactivo</span>' : ''}
+          </div>
+          <div class="flex gap-2 shrink-0 text-xs font-semibold">
+            <button data-id="${t.id}" class="editarTopico text-sky-600 dark:text-sky-400">Editar</button>
+            <button data-id="${t.id}" class="toggleTopico text-amber-600 dark:text-amber-400">${t.estado==='Inactivo'?'Activar':'Desactivar'}</button>
+            <button data-id="${t.id}" class="delTopico text-red-500">Eliminar</button>
+          </div>
+        </div>
+        ${t.descripcion ? `<p class="text-[11px] text-slate-400 mt-0.5">${esc(t.descripcion)}</p>` : ''}
+      </div>`).join('');
+    $('topicosLista').querySelectorAll('.editarTopico').forEach(b=>b.addEventListener('click', ()=>{
+      const t = topicosLocal.find(x=>x.id===b.dataset.id);
+      if(!t) return;
+      $('topico_editId').value = t.id;
+      $('topico_nombre').value = t.nombre;
+      $('topico_descripcion').value = t.descripcion || '';
+      $('btnCancelarTopico').classList.remove('hidden');
+    }));
+    $('topicosLista').querySelectorAll('.toggleTopico').forEach(b=>b.addEventListener('click', ()=>{
+      const t = topicosLocal.find(x=>x.id===b.dataset.id);
+      if(!t) return;
+      t.estado = t.estado === 'Inactivo' ? 'Activo' : 'Inactivo';
+      saveTopicos(); renderTopicosLista(); renderTopicosSelects();
+    }));
+    $('topicosLista').querySelectorAll('.delTopico').forEach(b=>b.addEventListener('click', ()=>{
+      const t = topicosLocal.find(x=>x.id===b.dataset.id);
+      if(!t) return;
+      if(topicoTieneInvestigaciones(t)){
+        alert(`"${t.nombre}" tiene investigaciones relacionadas — no se puede eliminar. Desactívalo en su lugar para que deje de aparecer al crear nuevas investigaciones.`);
+        return;
+      }
+      if(!confirm(`¿Eliminar el tópico "${t.nombre}"?`)) return;
+      topicosLocal = topicosLocal.filter(x=>x.id!==t.id);
+      saveTopicos(); renderTopicosLista(); renderTopicosSelects();
+    }));
+  }
+  $('btnEditarTopicos').addEventListener('click', ()=>{
+    $('topico_editId').value=''; $('topico_nombre').value=''; $('topico_descripcion').value='';
+    $('btnCancelarTopico').classList.add('hidden');
+    renderTopicosLista(); openModal('modalTopicos');
+  });
+  $('btnCancelarTopico').addEventListener('click', ()=>{
+    $('topico_editId').value=''; $('topico_nombre').value=''; $('topico_descripcion').value='';
+    $('btnCancelarTopico').classList.add('hidden');
+  });
+  $('btnGuardarTopico').addEventListener('click', ()=>{
+    const nombre = txt('topico_nombre');
+    if(!nombre){ alert('El nombre del tópico es obligatorio.'); return; }
+    const editId = txt('topico_editId');
+    if(editId){
+      const t = topicosLocal.find(x=>x.id===editId);
+      if(t){ t.nombre = nombre; t.descripcion = txt('topico_descripcion'); }
+    } else {
+      if(topicosLocal.some(t=>t.nombre.toLowerCase()===nombre.toLowerCase())){ alert('Ya existe un tópico con ese nombre.'); return; }
+      topicosLocal.push({ id: uid(), nombre, descripcion: txt('topico_descripcion'), estado: 'Activo' });
+    }
+    saveTopicos();
+    $('topico_editId').value=''; $('topico_nombre').value=''; $('topico_descripcion').value='';
+    $('btnCancelarTopico').classList.add('hidden');
+    renderTopicosLista(); renderTopicosSelects();
+  });
+
+  /* ---- Listado principal de investigaciones ---- */
+  function renderInvestigaciones(){
+    const q = txt('invBuscar').toLowerCase();
+    const ft = $('invFiltroTopico').value, fe = $('invFiltroEstado').value, orden = $('invOrdenarPor').value;
+    let filtradas = investigaciones.filter(inv=>{
+      if(ft && inv.topico !== ft) return false;
+      if(fe && inv.estado !== fe) return false;
+      if(q && !(inv.titulo||'').toLowerCase().includes(q) && !(inv.problema||'').toLowerCase().includes(q)) return false;
+      return true;
+    });
+    if(orden==='titulo') filtradas.sort((a,b)=>(a.titulo||'').localeCompare(b.titulo||''));
+    else if(orden==='creacion') filtradas.sort((a,b)=>(b.fechaCreacion||'').localeCompare(a.fechaCreacion||''));
+    else filtradas.sort((a,b)=>(b.fechaActualizacion||'').localeCompare(a.fechaActualizacion||''));
+
+    if(filtradas.length===0){ $('invListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-6">Sin investigaciones registradas todavía.</p>'; return; }
+    const colorEstado = {Pendiente:'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300', 'En investigación':'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300', Resuelto:'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300', 'Para profundizar':'bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300', Archivado:'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'};
+    $('invListaWrap').innerHTML = filtradas.map(inv=>`
+      <div class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+        <div class="flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <p class="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">${esc(inv.titulo||'(sin título)')}</p>
+            <p class="text-[11px] text-slate-400">${esc(nombreTopico(inv.topico))} · Actualizado ${esc(inv.fechaActualizacion||inv.fechaCreacion||'')}</p>
+          </div>
+          <span class="text-[10px] font-semibold px-2 py-1 rounded-full shrink-0 ${colorEstado[inv.estado]||''}">${esc(inv.estado||'')}</span>
+        </div>
+        ${inv.problema ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">${esc(inv.problema)}</p>` : ''}
+        <div class="flex gap-3 mt-2 text-xs font-semibold">
+          <button data-id="${inv.id}" class="verInvestigacionBtn text-slate-600 dark:text-slate-300">👁️ Ver</button>
+          <button data-id="${inv.id}" class="editarInvestigacion text-sky-600 dark:text-sky-400">✏️ Editar</button>
+          <button data-id="${inv.id}" class="borrarInvestigacion text-red-500">🗑️ Eliminar</button>
+        </div>
+      </div>`).join('');
+    $('invListaWrap').querySelectorAll('.verInvestigacionBtn').forEach(b=>b.addEventListener('click', ()=>verInvestigacion(b.dataset.id)));
+    $('invListaWrap').querySelectorAll('.editarInvestigacion').forEach(b=>b.addEventListener('click', ()=>abrirInvestigacion(b.dataset.id)));
+    $('invListaWrap').querySelectorAll('.borrarInvestigacion').forEach(b=>b.addEventListener('click', ()=>eliminarInvestigacion(b.dataset.id)));
+  }
+  ['invBuscar','invFiltroTopico','invFiltroEstado','invOrdenarPor'].forEach(id=>{
+    $(id).addEventListener('input', renderInvestigaciones);
+    $(id).addEventListener('change', renderInvestigaciones);
+  });
+
+  function eliminarInvestigacion(id){
+    if(!confirm('¿Eliminar esta investigación? Esta acción no se puede deshacer.')) return;
+    investigaciones = investigaciones.filter(i=>i.id!==id);
+    saveInvestigaciones();
+    $('invDetalleWrap').classList.add('hidden');
+    $('invListaHeader').classList.remove('hidden');
+    $('invListaWrap').classList.remove('hidden');
+    renderInvestigaciones();
+    actualizarInvestigacionesDelTrabajo();
+    mostrarToast('✔ Investigación eliminada');
+  }
+
+  /* ---- Fuentes, servicios y documentos relacionados (estado temporal mientras el modal está abierto) ---- */
+  let fuentesTemp = [];
+  let serviciosRelTemp = [];
+  let documentosRelTemp = [];
+
+  function renderFuentesTemp(){
+    $('fuentesVacioMsg').classList.toggle('hidden', fuentesTemp.length>0);
+    $('fuentesListaTemp').innerHTML = fuentesTemp.map((f,i)=>`
+      <div class="bg-sky-50 dark:bg-slate-800 rounded-lg p-2 flex items-start gap-2">
+        <div class="flex-1 min-w-0 space-y-1">
+          <input value="${esc(f.titulo)}" data-i="${i}" data-f="titulo" placeholder="Título" class="fuenteInput w-full bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-700 rounded px-2 py-1 text-xs">
+          <input value="${esc(f.url)}" data-i="${i}" data-f="url" placeholder="https://..." class="fuenteInput w-full bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-700 rounded px-2 py-1 text-xs">
+          <input value="${esc(f.descripcion||'')}" data-i="${i}" data-f="descripcion" placeholder="Descripción (opcional)" class="fuenteInput w-full bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-700 rounded px-2 py-1 text-xs">
+        </div>
+        <button data-i="${i}" class="delFuente text-red-500 font-bold px-1">✕</button>
+      </div>`).join('');
+    $('fuentesListaTemp').querySelectorAll('.fuenteInput').forEach(inp=>{
+      inp.addEventListener('input', ()=>{ fuentesTemp[inp.dataset.i][inp.dataset.f] = inp.value; });
+    });
+    $('fuentesListaTemp').querySelectorAll('.delFuente').forEach(b=>{
+      b.addEventListener('click', ()=>{ fuentesTemp.splice(parseInt(b.dataset.i),1); renderFuentesTemp(); });
+    });
+  }
+  $('btnAddFuente').addEventListener('click', ()=>{ fuentesTemp.push({titulo:'',url:'',descripcion:''}); renderFuentesTemp(); });
+
+  function esUrlRazonable(u){ return /^https?:\/\/[^\s]+\.[^\s]+/i.test(u) || /^www\.[^\s]+\.[^\s]+/i.test(u); }
+
+  function renderServiciosRelTemp(){
+    $('serviciosRelVacioMsg').classList.toggle('hidden', serviciosRelTemp.length>0);
+    $('serviciosRelListaTemp').innerHTML = serviciosRelTemp.map(tid=>{
+      const t = trabajos.find(x=>x.id===tid);
+      if(!t) return '';
+      const cli = clientesActivos.find(c=>c.id===t.clienteId);
+      return `<div class="flex items-center justify-between bg-sky-50 dark:bg-slate-800 rounded-lg p-2 text-xs">
+        <div class="min-w-0">
+          <button data-id="${tid}" class="abrirServicioRel font-bold text-sky-700 dark:text-sky-300 underline">${esc(t.numOrden||'(sin número)')}</button>
+          <span class="text-slate-500 dark:text-slate-400"> · ${esc(cli?nombreCompleto(cli):'Sin cliente')} · ${esc(t.fecha||'')} · ${esc(t.categoria||'')}</span>
+        </div>
+        <button data-id="${tid}" class="quitarServicioRel text-red-500 font-bold shrink-0 ml-2">✕</button>
+      </div>`;
+    }).join('');
+    $('serviciosRelListaTemp').querySelectorAll('.quitarServicioRel').forEach(b=>{
+      b.addEventListener('click', ()=>{ serviciosRelTemp = serviciosRelTemp.filter(id=>id!==b.dataset.id); renderServiciosRelTemp(); });
+    });
+    $('serviciosRelListaTemp').querySelectorAll('.abrirServicioRel').forEach(b=>{
+      b.addEventListener('click', ()=>{ closeModal('modalInvestigacion'); cargarTrabajo(b.dataset.id); irAPantalla('servicios'); });
+    });
+  }
+
+  function renderVinculoServicioLista(){
+    const q = txt('vs_buscar').toLowerCase();
+    const ffecha = $('vs_fecha').value, fcat = $('vs_categoria').value;
+    const filtrados = trabajos.filter(t=>{
+      if(serviciosRelTemp.includes(t.id)) return false; // ya vinculado
+      if(ffecha && t.fecha !== ffecha) return false;
+      if(fcat && t.categoria !== fcat) return false;
+      if(q){
+        const cli = clientesActivos.find(c=>c.id===t.clienteId);
+        const texto = ((t.numOrden||'')+' '+(cli?nombreCompleto(cli):'')).toLowerCase();
+        if(!texto.includes(q)) return false;
+      }
+      return true;
+    }).slice(0,40);
+    if(filtrados.length===0){ $('vsListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-4">Sin servicios que coincidan.</p>'; return; }
+    $('vsListaWrap').innerHTML = filtrados.map(t=>{
+      const cli = clientesActivos.find(c=>c.id===t.clienteId);
+      return `<label class="flex items-center gap-2 bg-sky-50 dark:bg-slate-800 rounded-lg p-2 text-xs cursor-pointer">
+        <input type="checkbox" value="${t.id}" class="vsCheck rounded">
+        <span><strong>${esc(t.numOrden||'—')}</strong> · ${esc(cli?nombreCompleto(cli):'Sin cliente')} · ${esc(t.fecha||'')} · ${esc(t.categoria||'')}</span>
+      </label>`;
+    }).join('');
+  }
+  ['vs_buscar','vs_fecha','vs_categoria'].forEach(id=>{
+    $(id).addEventListener('input', renderVinculoServicioLista);
+    $(id).addEventListener('change', renderVinculoServicioLista);
+  });
+  $('btnVincularServicio').addEventListener('click', ()=>{
+    $('vs_buscar').value=''; $('vs_fecha').value=''; $('vs_categoria').value='';
+    renderVinculoServicioLista();
+    openModal('modalVincularServicio');
+  });
+  $('btnConfirmarVincularServicio').addEventListener('click', ()=>{
+    $('vsListaWrap').querySelectorAll('.vsCheck:checked').forEach(chk=>{
+      if(!serviciosRelTemp.includes(chk.value)) serviciosRelTemp.push(chk.value);
+    });
+    renderServiciosRelTemp();
+    closeModal('modalVincularServicio');
+  });
+
+  function renderDocumentosRelTemp(){
+    $('documentosRelVacioMsg').classList.toggle('hidden', documentosRelTemp.length>0);
+    $('documentosRelListaTemp').innerHTML = documentosRelTemp.map(did=>{
+      const d = documentos.find(x=>x.id===did);
+      if(!d) return '';
+      return `<div class="flex items-center justify-between bg-sky-50 dark:bg-slate-800 rounded-lg p-2 text-xs">
+        <span class="min-w-0 truncate">${esc(d.nombre)} <span class="text-slate-400">· ${esc(d.tipo||'')}</span></span>
+        <button data-id="${did}" class="quitarDocumentoRel text-red-500 font-bold shrink-0 ml-2">✕</button>
+      </div>`;
+    }).join('');
+    $('documentosRelListaTemp').querySelectorAll('.quitarDocumentoRel').forEach(b=>{
+      b.addEventListener('click', ()=>{ documentosRelTemp = documentosRelTemp.filter(id=>id!==b.dataset.id); renderDocumentosRelTemp(); });
+    });
+  }
+  function renderVinculoDocumentoLista(){
+    const q = txt('vd_buscar').toLowerCase();
+    const filtrados = documentos.filter(d=>!documentosRelTemp.includes(d.id) && (!q || (d.nombre||'').toLowerCase().includes(q)));
+    if(filtrados.length===0){ $('vdListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-4">Sin documentos que coincidan.</p>'; return; }
+    $('vdListaWrap').innerHTML = filtrados.map(d=>`
+      <label class="flex items-center gap-2 bg-sky-50 dark:bg-slate-800 rounded-lg p-2 text-xs cursor-pointer">
+        <input type="checkbox" value="${d.id}" class="vdCheck rounded">
+        <span>${esc(d.nombre)} <span class="text-slate-400">· ${esc(d.tipo||'')}</span></span>
+      </label>`).join('');
+  }
+  $('vd_buscar').addEventListener('input', renderVinculoDocumentoLista);
+  $('btnVincularDocumento').addEventListener('click', ()=>{
+    $('vd_buscar').value='';
+    renderVinculoDocumentoLista();
+    openModal('modalVincularDocumento');
+  });
+  $('btnConfirmarVincularDocumento').addEventListener('click', ()=>{
+    $('vdListaWrap').querySelectorAll('.vdCheck:checked').forEach(chk=>{
+      if(!documentosRelTemp.includes(chk.value)) documentosRelTemp.push(chk.value);
+    });
+    renderDocumentosRelTemp();
+    closeModal('modalVincularDocumento');
+  });
+
+  /* ---- Crear / editar investigación ---- */
+  function abrirInvestigacion(id){
+    const inv = investigaciones.find(i=>i.id===id) || {};
+    $('modalInvestigacionTitulo').textContent = id ? '📚 Editar investigación' : '📚 Nueva investigación';
+    $('inv_editId').value = id || '';
+    $('inv_topico').value = inv.topico || '';
+    $('inv_estado').value = inv.estado || 'Pendiente';
+    $('inv_titulo').value = inv.titulo || '';
+    $('inv_problema').value = inv.problema || '';
+    $('inv_objetivo').value = inv.objetivo || '';
+    $('inv_apuntes').value = inv.apuntes || '';
+    $('inv_aprendido').value = inv.aprendido || '';
+    $('inv_aplicacion').value = inv.aplicacion || '';
+    $('inv_conclusion').value = inv.conclusion || '';
+    $('inv_pendientes').value = inv.pendientes || '';
+    fuentesTemp = (inv.fuentes || []).map(f=>({...f}));
+    serviciosRelTemp = (inv.serviciosRelacionados || []).slice();
+    documentosRelTemp = (inv.documentosRelacionados || []).slice();
+    renderFuentesTemp(); renderServiciosRelTemp(); renderDocumentosRelTemp();
+    $('invDetalleWrap').classList.add('hidden');
+    $('invListaHeader').classList.remove('hidden');
+    $('invListaWrap').classList.remove('hidden');
+    openModal('modalInvestigacion');
+  }
+  $('btnNuevaInvestigacion').addEventListener('click', ()=>abrirInvestigacion(null));
+  $('btnEditarDesdeDetalle').addEventListener('click', ()=>abrirInvestigacion($('btnEditarDesdeDetalle').dataset.id));
+
+  $('btnGuardarInvestigacion').addEventListener('click', ()=>{
+    if(!$('inv_topico').value){ alert('Selecciona un tópico.'); return; }
+    if(!txt('inv_titulo')){ alert('Ponle un título a la investigación.'); return; }
+    for(const f of fuentesTemp){
+      if(f.url && !esUrlRazonable(f.url)){ alert(`La fuente "${f.titulo||f.url}" no tiene una URL válida (debe empezar con http://, https:// o www.).`); return; }
+    }
+    const id = txt('inv_editId');
+    const hoy = new Date().toISOString().slice(0,10);
+    const datos = {
+      topico: $('inv_topico').value, estado: $('inv_estado').value, titulo: txt('inv_titulo'),
+      problema: txt('inv_problema'), objetivo: txt('inv_objetivo'), apuntes: txt('inv_apuntes'),
+      fuentes: fuentesTemp.filter(f=>f.titulo||f.url), aprendido: txt('inv_aprendido'), aplicacion: txt('inv_aplicacion'),
+      conclusion: txt('inv_conclusion'), pendientes: txt('inv_pendientes'),
+      serviciosRelacionados: serviciosRelTemp.slice(), documentosRelacionados: documentosRelTemp.slice(),
+      fechaActualizacion: hoy
+    };
+    if(id){
+      const idx = investigaciones.findIndex(i=>i.id===id);
+      if(idx>-1) investigaciones[idx] = { ...investigaciones[idx], ...datos };
+    } else {
+      investigaciones.push({ id: uid(), ...datos, fechaCreacion: hoy });
+    }
+    saveInvestigaciones();
+    closeModal('modalInvestigacion');
+    $('invDetalleWrap').classList.add('hidden');
+    $('invListaHeader').classList.remove('hidden');
+    $('invListaWrap').classList.remove('hidden');
+    renderInvestigaciones();
+    actualizarInvestigacionesDelTrabajo();
+    mostrarToast('✔ Investigación guardada (local)');
+  });
+
+  /* ---- Vista de detalle (solo lectura) ---- */
+  function verInvestigacion(id){
+    const inv = investigaciones.find(i=>i.id===id);
+    if(!inv) return;
+    const bloque = (label, valor) => valor ? `<div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">${label}</p><p class="whitespace-pre-line text-slate-700 dark:text-slate-200">${esc(valor)}</p></div>` : '';
+    const fuentesHTML = (inv.fuentes && inv.fuentes.length) ? `<div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">🔗 Fuentes y enlaces</p>${inv.fuentes.map(f=>`<p><a href="${esc(f.url)}" target="_blank" class="text-sky-600 dark:text-sky-400 underline">${esc(f.titulo||f.url)}</a>${f.descripcion?' — '+esc(f.descripcion):''}</p>`).join('')}</div>` : '';
+    const serviciosHTML = (inv.serviciosRelacionados && inv.serviciosRelacionados.length) ? `<div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">🔧 Servicios relacionados</p>${inv.serviciosRelacionados.map(tid=>{
+      const t = trabajos.find(x=>x.id===tid); if(!t) return '';
+      const cli = clientesActivos.find(c=>c.id===t.clienteId);
+      return `<button data-id="${tid}" class="abrirServicioDesdeDetalle block text-left text-sky-600 dark:text-sky-400 underline">${esc(t.numOrden||'—')} · ${esc(cli?nombreCompleto(cli):'Sin cliente')} · ${esc(t.fecha||'')} · ${esc(t.categoria||'')}</button>`;
+    }).join('')}</div>` : '';
+    const documentosHTML = (inv.documentosRelacionados && inv.documentosRelacionados.length) ? `<div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">📄 Documentos relacionados</p>${inv.documentosRelacionados.map(did=>{
+      const d = documentos.find(x=>x.id===did); if(!d) return '';
+      return `<p>${esc(d.nombre)} <span class="text-slate-400">· ${esc(d.tipo||'')}</span></p>`;
+    }).join('')}</div>` : '';
+
+    $('invDetalleContenido').innerHTML = `
+      <div>
+        <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100">${esc(inv.titulo)}</h3>
+        <p class="text-xs text-slate-400 mt-1">${esc(nombreTopico(inv.topico))} · ${esc(inv.estado)} · Creada ${esc(inv.fechaCreacion||'')} · Actualizada ${esc(inv.fechaActualizacion||'')}</p>
+      </div>
+      ${bloque('Problema / duda', inv.problema)}
+      ${bloque('Objetivo', inv.objetivo)}
+      ${bloque('Apuntes', inv.apuntes)}
+      ${fuentesHTML}
+      ${bloque('🧠 Lo aprendido', inv.aprendido)}
+      ${bloque('🔧 Aplicación práctica', inv.aplicacion)}
+      ${bloque('✅ Conclusión', inv.conclusion)}
+      ${bloque('📌 Pendientes', inv.pendientes)}
+      ${serviciosHTML}
+      ${documentosHTML}
+    `;
+    $('invDetalleContenido').querySelectorAll('.abrirServicioDesdeDetalle').forEach(b=>{
+      b.addEventListener('click', ()=>{ cargarTrabajo(b.dataset.id); irAPantalla('servicios'); });
+    });
+    $('btnEditarDesdeDetalle').dataset.id = id;
+    $('btnEliminarDesdeDetalle').onclick = ()=>eliminarInvestigacion(id);
+    $('invListaHeader').classList.add('hidden');
+    $('invListaWrap').classList.add('hidden');
+    $('invDetalleWrap').classList.remove('hidden');
+  }
+  $('btnRegresarInvestigacion').addEventListener('click', ()=>{
+    $('invDetalleWrap').classList.add('hidden');
+    $('invListaHeader').classList.remove('hidden');
+    $('invListaWrap').classList.remove('hidden');
+  });
+
+  /* ---- Relación inversa: investigaciones ligadas al servicio actualmente cargado ---- */
+  let trabajoActualId = null;
+  function actualizarInvestigacionesDelTrabajo(){
+    if(!trabajoActualId){ $('investigacionesDelTrabajoWrap').classList.add('hidden'); return; }
+    const relacionadas = investigaciones.filter(inv => (inv.serviciosRelacionados||[]).includes(trabajoActualId));
+    if(relacionadas.length===0){ $('investigacionesDelTrabajoWrap').classList.add('hidden'); return; }
+    $('investigacionesDelTrabajoLista').innerHTML = relacionadas.map(inv=>`
+      <button data-id="${inv.id}" class="abrirInvestigacionDesdeServicio block w-full text-left bg-sky-50 dark:bg-slate-800 rounded-lg p-2 text-xs hover:bg-sky-100 dark:hover:bg-slate-700">
+        <span class="font-semibold text-slate-700 dark:text-slate-200">${esc(inv.titulo)}</span>
+        <span class="text-slate-400"> · ${esc(nombreTopico(inv.topico))} · ${esc(inv.estado)}</span>
+      </button>`).join('');
+    $('investigacionesDelTrabajoLista').querySelectorAll('.abrirInvestigacionDesdeServicio').forEach(b=>{
+      b.addEventListener('click', ()=>{ irAPantalla('investigacion'); verInvestigacion(b.dataset.id); });
+    });
+    $('investigacionesDelTrabajoWrap').classList.remove('hidden');
+  }
+
+  /* ================= MÓDULO: BIBLIOTECA ================= */
+  const LS_DOCUMENTOS = 'msd_biblioteca_v1';
+  let documentos = JSON.parse(localStorage.getItem(LS_DOCUMENTOS) || '[]');
+  function saveDocumentos(){ localStorage.setItem(LS_DOCUMENTOS, JSON.stringify(documentos)); }
+
+  function renderBiblioteca(){
+    const q = txt('bibBuscar').toLowerCase();
+    const ftipo = $('bibFiltroTipo').value, ftopico = $('bibFiltroTopico').value;
+    const filtrados = documentos.filter(d=>{
+      if(ftipo && d.tipo !== ftipo) return false;
+      if(ftopico && d.topico !== ftopico) return false;
+      if(q && !(d.nombre||'').toLowerCase().includes(q)) return false;
+      return true;
+    }).sort((a,b)=>(b.favorito?1:0)-(a.favorito?1:0));
+    if(filtrados.length===0){ $('bibListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-6">Sin documentos guardados todavía.</p>'; return; }
+    $('bibListaWrap').innerHTML = filtrados.map(d=>`
+      <div class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <p class="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">${d.favorito?'⭐ ':''}${esc(d.nombre||'(sin nombre)')}</p>
+          <p class="text-[11px] text-slate-400">${esc(d.tipo||'')} · ${esc(d.topico||'—')} ${d.etiquetas?'· '+esc(d.etiquetas):''}</p>
+          ${d.urlDrive ? `<a href="${esc(d.urlDrive)}" target="_blank" class="text-[11px] text-sky-600 dark:text-sky-400 underline">Abrir documento</a>` : ''}
+        </div>
+        <button data-id="${d.id}" class="borrarDocumento text-red-500 text-xs font-semibold shrink-0">Borrar</button>
+      </div>`).join('');
+    $('bibListaWrap').querySelectorAll('.borrarDocumento').forEach(b=>b.addEventListener('click', ()=>{
+      if(!confirm('¿Borrar este documento del catálogo?')) return;
+      documentos = documentos.filter(d=>d.id!==b.dataset.id);
+      saveDocumentos(); renderBiblioteca();
+    }));
+  }
+  ['bibBuscar','bibFiltroTipo','bibFiltroTopico'].forEach(id=>{
+    $(id).addEventListener('input', renderBiblioteca);
+    $(id).addEventListener('change', renderBiblioteca);
+  });
+  $('btnNuevoDocumento').addEventListener('click', ()=>{
+    ['bib_nombre','bib_descripcion','bib_etiquetas','bib_urlDrive'].forEach(id=>$(id).value='');
+    $('bib_favorito').checked = false;
+    openModal('modalDocumento');
+  });
+  $('btnGuardarDocumento').addEventListener('click', ()=>{
+    if(!txt('bib_nombre')){ alert('Ponle un nombre al documento.'); return; }
+    documentos.push({
+      id: uid(), nombre: txt('bib_nombre'), tipo: $('bib_tipo').value, topico: $('bib_topico').value,
+      descripcion: txt('bib_descripcion'), etiquetas: txt('bib_etiquetas'), urlDrive: txt('bib_urlDrive'),
+      favorito: $('bib_favorito').checked, estado: 'Activo', idDrive: '', fecha: new Date().toISOString().slice(0,10)
+    });
+    saveDocumentos();
+    closeModal('modalDocumento');
+    renderBiblioteca();
+    mostrarToast('✔ Documento guardado (local)');
+  });
+
+  /* ================= MÓDULO: LISTA DE MATERIALES (catálogo histórico) ================= */
+  const LS_MATCAT = 'msd_materiales_catalogo_v1';
+  const LS_COMPRAS = 'msd_compras_v1';
+  const LS_FERRETERIAS = 'msd_ferreterias_v1';
+  let materialesCatalogo = JSON.parse(localStorage.getItem(LS_MATCAT) || '[]');
+  let compras = JSON.parse(localStorage.getItem(LS_COMPRAS) || '[]');
+  let ferreterias = JSON.parse(localStorage.getItem(LS_FERRETERIAS) || '[]');
+  function saveMaterialesCatalogo(){ localStorage.setItem(LS_MATCAT, JSON.stringify(materialesCatalogo)); }
+  function saveCompras(){ localStorage.setItem(LS_COMPRAS, JSON.stringify(compras)); }
+  function saveFerreterias(){ localStorage.setItem(LS_FERRETERIAS, JSON.stringify(ferreterias)); }
+
+  function renderMaterialesCatalogo(){
+    const q = txt('matCatBuscar').toLowerCase();
+    const filtrados = materialesCatalogo.filter(m=> !q || (m.descripcion||'').toLowerCase().includes(q) || (m.parte||'').toLowerCase().includes(q));
+    if(filtrados.length===0){ $('matCatListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-6">Sin materiales en el catálogo todavía.</p>'; return; }
+    $('matCatListaWrap').innerHTML = filtrados.map(m=>`
+      <div class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <p class="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">${esc(m.descripcion||'')}</p>
+          <p class="text-[11px] text-slate-400">${esc(m.marca||'—')} ${m.parte?'· N/P '+esc(m.parte):''} ${m.categoria?'· '+esc(m.categoria):''} ${m.unidad?'· '+esc(m.unidad):''}</p>
+        </div>
+        <button data-id="${m.id}" class="borrarMaterialCat text-red-500 text-xs font-semibold shrink-0">Borrar</button>
+      </div>`).join('');
+    $('matCatListaWrap').querySelectorAll('.borrarMaterialCat').forEach(b=>b.addEventListener('click', ()=>{
+      if(!confirm('¿Borrar este material del catálogo?')) return;
+      materialesCatalogo = materialesCatalogo.filter(m=>m.id!==b.dataset.id);
+      saveMaterialesCatalogo(); renderMaterialesCatalogo(); renderSelectorMaterialCompra();
+    }));
+    renderSelectorMaterialCompra();
+  }
+  $('matCatBuscar').addEventListener('input', renderMaterialesCatalogo);
+  $('btnNuevoMaterialCat').addEventListener('click', ()=>{
+    ['matcat_descripcion','matcat_parte','matcat_marca','matcat_categoria','matcat_unidad','matcat_especificaciones','matcat_comentarios'].forEach(id=>$(id).value='');
+    openModal('modalMaterialCat');
+  });
+  $('btnGuardarMaterialCat').addEventListener('click', ()=>{
+    if(!txt('matcat_descripcion')){ alert('Ponle una descripción al material.'); return; }
+    materialesCatalogo.push({
+      id: uid(), descripcion: txt('matcat_descripcion'), parte: txt('matcat_parte'), marca: txt('matcat_marca'),
+      categoria: txt('matcat_categoria'), unidad: txt('matcat_unidad'), especificaciones: txt('matcat_especificaciones'),
+      comentarios: txt('matcat_comentarios'), estado: 'Activo'
+    });
+    saveMaterialesCatalogo();
+    closeModal('modalMaterialCat');
+    renderMaterialesCatalogo();
+    mostrarToast('✔ Material agregado al catálogo (local)');
+  });
+
+  function renderSelectorMaterialCompra(){
+    $('compra_material').innerHTML = '<option value="">— Selecciona un material del catálogo —</option>' +
+      materialesCatalogo.map(m=>`<option value="${m.id}">${esc(m.descripcion)}</option>`).join('');
+  }
+  function renderSelectorFerreteriaCompra(){
+    $('compra_ferreteria').innerHTML = '<option value="">— Ferretería —</option>' +
+      ferreterias.map(f=>`<option value="${f.id}">${esc(f.nombre)}</option>`).join('');
+  }
+
+  function renderCompras(){
+    if(compras.length===0){ $('comprasListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-4">Sin compras registradas todavía.</p>'; return; }
+    $('comprasListaWrap').innerHTML = compras.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).map(c=>{
+      const mat = materialesCatalogo.find(m=>m.id===c.materialId);
+      const ferr = ferreterias.find(f=>f.id===c.ferreteriaId);
+      const total = (c.cantidad||0)*(c.precioUnit||0);
+      return `<div class="flex items-center justify-between py-2 border-b border-sky-100 dark:border-slate-800 text-sm">
+        <div class="min-w-0">
+          <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${esc(mat?mat.descripcion:'(material borrado)')}</p>
+          <p class="text-[11px] text-slate-400">${esc(c.fecha||'')} · ${esc(ferr?ferr.nombre:'—')} · ${c.cantidad||0} x ${money(c.precioUnit||0)} = ${money(total)}</p>
+        </div>
+        <button data-id="${c.id}" class="borrarCompra text-red-500 text-xs font-semibold shrink-0">Borrar</button>
+      </div>`;
+    }).join('');
+    $('comprasListaWrap').querySelectorAll('.borrarCompra').forEach(b=>b.addEventListener('click', ()=>{
+      compras = compras.filter(c=>c.id!==b.dataset.id);
+      saveCompras(); renderCompras();
+    }));
+  }
+  $('btnNuevaCompra').addEventListener('click', ()=>{
+    renderSelectorMaterialCompra(); renderSelectorFerreteriaCompra();
+    ['compra_cantidad','compra_precioUnit','compra_comentarios'].forEach(id=>$(id).value='');
+    $('compra_fecha').value = new Date().toISOString().slice(0,10);
+    openModal('modalCompra');
+  });
+  $('btnGuardarCompra').addEventListener('click', ()=>{
+    if(!$('compra_material').value){ alert('Selecciona un material del catálogo.'); return; }
+    compras.push({
+      id: uid(), materialId: $('compra_material').value, fecha: $('compra_fecha').value || new Date().toISOString().slice(0,10),
+      ferreteriaId: $('compra_ferreteria').value, cantidad: num('compra_cantidad')||0, precioUnit: num('compra_precioUnit')||0,
+      comentarios: txt('compra_comentarios')
+    });
+    saveCompras();
+    closeModal('modalCompra');
+    renderCompras();
+    mostrarToast('✔ Compra registrada (local)');
+  });
+
+  function renderFerreterias(){
+    if(ferreterias.length===0){ $('ferreteriasListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-4">Sin ferreterías registradas todavía.</p>'; return; }
+    $('ferreteriasListaWrap').innerHTML = ferreterias.map(f=>`
+      <div class="flex items-center justify-between py-2 border-b border-sky-100 dark:border-slate-800 text-sm">
+        <div class="min-w-0">
+          <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${esc(f.nombre)}</p>
+          <p class="text-[11px] text-slate-400">${esc(f.telefono||'')} ${f.contacto?'· '+esc(f.contacto):''} ${f.direccion?'· '+esc(f.direccion):''}</p>
+        </div>
+        <button data-id="${f.id}" class="borrarFerreteria text-red-500 text-xs font-semibold shrink-0">Borrar</button>
+      </div>`).join('');
+    $('ferreteriasListaWrap').querySelectorAll('.borrarFerreteria').forEach(b=>b.addEventListener('click', ()=>{
+      ferreterias = ferreterias.filter(f=>f.id!==b.dataset.id);
+      saveFerreterias(); renderFerreterias(); renderSelectorFerreteriaCompra();
+    }));
+  }
+  $('btnNuevaFerreteria').addEventListener('click', ()=>{
+    ['ferr_nombre','ferr_telefono','ferr_contacto','ferr_direccion','ferr_comentarios'].forEach(id=>$(id).value='');
+    openModal('modalFerreteria');
+  });
+  $('btnGuardarFerreteria').addEventListener('click', ()=>{
+    if(!txt('ferr_nombre')){ alert('Ponle un nombre a la ferretería.'); return; }
+    ferreterias.push({
+      id: uid(), nombre: txt('ferr_nombre'), telefono: txt('ferr_telefono'), contacto: txt('ferr_contacto'),
+      direccion: txt('ferr_direccion'), comentarios: txt('ferr_comentarios'), estado: 'Activo'
+    });
+    saveFerreterias();
+    closeModal('modalFerreteria');
+    renderFerreterias();
+    mostrarToast('✔ Ferretería guardada (local)');
+  });
+
+  /* ================= MÓDULO: MANUAL DE USUARIO ================= */
+  let manualInicializado = false;
+  const MANUAL_SECCIONES = [
+    { id:'intro', titulo:'Introducción', texto:'Servicios Robert\'s — Diagnóstico Minisplit es tu app para generar órdenes de servicio de Refrigeración/HVAC, Electricidad y Plomería, con diagnóstico, fotos, materiales, mano de obra y reporte para el cliente.\n\nEsta sección se irá completando en próximas etapas.' },
+    { id:'servicios', titulo:'Servicios', texto:'Desde la pantalla "Servicios" registras cada orden: cliente, categoría de trabajo, diagnóstico, lecturas de A/C (si aplica), materiales, mano de obra y otros gastos. Ahí mismo generas y compartes el reporte.' },
+    { id:'clientes', titulo:'Clientes', texto:'El botón "+" junto al selector de Cliente te permite registrar clientes nuevos. Si conectas Firestore, se sincronizan con tu app de finanzas.' },
+    { id:'equipos', titulo:'Equipos', texto:'El catálogo de equipos (marca/modelo/línea) se administra desde el botón 📚 Catálogo dentro de cada tarjeta de equipo en la sección HVAC.' },
+    { id:'investigacion', titulo:'Investigación y Desarrollo', texto:'Registra aprendizajes técnicos, pruebas y hallazgos de campo organizados por tópico y estado. Por ahora se guardan en este dispositivo.' },
+    { id:'biblioteca', titulo:'Biblioteca', texto:'Repositorio de documentos técnicos (datasheets, manuales, catálogos). La subida directa a Google Drive llegará en una próxima etapa; por ahora puedes guardar un link manualmente.' },
+    { id:'materiales', titulo:'Materiales (catálogo histórico)', texto:'Este catálogo es distinto de los materiales que registras dentro de una orden — aquí llevas tu historial de compras y ferreterías de referencia.' },
+    { id:'kpi', titulo:'KPI', texto:'Esta pantalla mostrará tus indicadores de negocio (ingresos, costos, utilidad, margen) una vez que se integren los cálculos en una próxima etapa.' },
+    { id:'iva', titulo:'Facturación e IVA', texto:'Próximamente.' },
+    { id:'drive', titulo:'Google Drive', texto:'Conecta tu Google Drive desde ☁️ Respaldo (o ⚙️ Configuración) para que las fotos de tus órdenes se guarden ahí con un link, sin ocupar espacio en Firestore.' },
+    { id:'respaldo', titulo:'Respaldo y restauración', texto:'Desde ☁️ Respaldo puedes descargar un respaldo .json de tus datos locales, o subirlo/restaurarlo desde Google Drive.' },
+    { id:'faq', titulo:'Preguntas frecuentes', texto:'Próximamente.' }
+  ];
+  function inicializarManual(){
+    manualInicializado = true;
+    $('manualNav').innerHTML = MANUAL_SECCIONES.map(s=>`<button data-id="${s.id}" class="manualBtn text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-1.5">${esc(s.titulo)}</button>`).join('');
+    $('manualNav').querySelectorAll('.manualBtn').forEach(b=>b.addEventListener('click', ()=>mostrarSeccionManual(b.dataset.id)));
+    mostrarSeccionManual('intro');
+  }
+  function mostrarSeccionManual(id){
+    const s = MANUAL_SECCIONES.find(s=>s.id===id);
+    if(!s) return;
+    $('manualTituloActivo').textContent = s.titulo;
+    $('manualContenidoActivo').textContent = s.texto;
+  }
+
+  /* ================= PANTALLA CONFIGURACIÓN: accesos a modales existentes ================= */
+  $('btnConfigDesdePantalla').addEventListener('click', ()=>openModal('modalConfig'));
+  $('btnRespaldoDesdePantalla').addEventListener('click', ()=>{ renderGdLista(); openModal('modalRespaldo'); });
+  $('btnTemaDesdePantalla').addEventListener('click', ()=>$('btnTheme').click());
+  $('btnHistorialDesdePantalla').addEventListener('click', ()=>{ renderClientesSelects(); renderHistorialLista(); openModal('modalHistorial'); });
+
   /* ================= INIT ================= */
   $('fechaTrabajo').value = new Date().toISOString().slice(0,10);
   $('numOrden').value = sugerirNumOrden();
@@ -2549,6 +3639,8 @@
   renderUnidadesDatalist();
   actualizarVisibilidadHVAC();
   renderMateriales(); renderManoObra(); renderOtros(); recalcularTotales();
+  renderTopicosSelects();
+  irAPantalla('servicios');
   tryLoadFbConfig();
 
   /* ================= PWA: service worker + botón instalar ================= */
