@@ -225,7 +225,10 @@
   <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
     <div class="flex items-center justify-between mb-3">
       <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">🧰 Materiales utilizados <span class="text-slate-400 font-normal normal-case">(opcional)</span></h2>
-      <button id="btnAddMaterial" class="text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-1.5">+ Agregar material</button>
+      <div class="flex gap-2">
+        <button id="btnBuscarMaterialCatalogo" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-1.5">🔎 Buscar en catálogo</button>
+        <button id="btnAddMaterial" class="text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-1.5">+ Agregar material</button>
+      </div>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-xs">
@@ -481,40 +484,91 @@
 
 <!-- ============ PANTALLA: KPI ============ -->
 <div id="screen-kpi" class="screen-panel hidden space-y-5">
+
+  <!-- FILTRO DE PERIODO -->
   <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
-    <div class="flex items-center justify-between mb-3">
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
       <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400">📊 KPI del negocio</h2>
       <select id="kpiPeriodoSel" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
-        <option>Diario</option><option selected>Semanal</option><option>Mensual</option><option>Rango personalizado</option>
+        <option value="diario">Diario</option>
+        <option value="semanal" selected>Semanal</option>
+        <option value="mensual">Mensual</option>
+        <option value="rango">Rango personalizado</option>
       </select>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💰 Ingresos</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
-      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💵 Cobrado</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
-      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💳 Pendiente</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
-      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💸 Costos</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
-      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">📈 Utilidad</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
-      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">📊 Margen</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
-      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">🔧 Trabajos</p><p class="text-lg font-extrabold text-slate-400">—</p></div>
+
+    <div id="kpiRangoPersonalizado" class="hidden grid grid-cols-2 gap-2 mb-3">
+      <input type="date" id="kpiRangoInicio" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <input type="date" id="kpiRangoFin" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+    </div>
+
+    <div class="flex items-center justify-between gap-2 mb-1" id="kpiNavPeriodo">
+      <button id="kpiBtnPrev" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-1.5">← Anterior</button>
+      <button id="kpiBtnActual" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-1.5">Periodo actual</button>
+      <button id="kpiBtnNext" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-1.5">Siguiente →</button>
+    </div>
+    <p id="kpiPeriodoLabel" class="text-center text-[11px] text-slate-400 mt-1">—</p>
+
+    <div class="grid grid-cols-2 gap-2 mt-3">
+      <select id="kpiFiltroEspecialidad" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <option value="">Todas las especialidades</option>
+      </select>
+      <select id="kpiFiltroCliente" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <option value="">Todos los clientes</option>
+      </select>
     </div>
   </section>
+
+  <!-- TARJETAS PRINCIPALES -->
   <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
-    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">Ingresos / Costos / Utilidad</h3>
-    <div class="h-32 flex items-center justify-center border border-dashed border-sky-200 dark:border-slate-700 rounded-lg text-xs text-slate-400">📈 Gráfica próximamente</div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="kpiTarjetas">
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💰 Ingresos</p><p class="text-lg font-extrabold text-slate-700 dark:text-slate-200" id="kpiCardIngresos">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💵 Cobrado</p><p class="text-lg font-extrabold text-slate-700 dark:text-slate-200" id="kpiCardCobrado">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💳 Pendiente</p><p class="text-lg font-extrabold text-slate-700 dark:text-slate-200" id="kpiCardPendiente">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">💸 Costos</p><p class="text-lg font-extrabold text-slate-700 dark:text-slate-200" id="kpiCardCostos">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">📈 Utilidad</p><p class="text-lg font-extrabold text-slate-700 dark:text-slate-200" id="kpiCardUtilidad">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400 uppercase">📊 Margen</p><p class="text-lg font-extrabold text-slate-700 dark:text-slate-200" id="kpiCardMargen">—</p></div>
+      <div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl p-3 text-center col-span-2 md:col-span-1"><p class="text-[10px] text-slate-400 uppercase">🔧 Trabajos</p><p class="text-lg font-extrabold text-slate-700 dark:text-slate-200" id="kpiCardTrabajos">—</p></div>
+    </div>
+    <p class="text-[10px] text-amber-600 dark:text-amber-400 mt-3 leading-snug" id="kpiNotaLimitacion"></p>
   </section>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-    <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
-      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">Trabajos por especialidad</h3>
-      <div class="h-28 flex items-center justify-center border border-dashed border-sky-200 dark:border-slate-700 rounded-lg text-xs text-slate-400">Próximamente</div>
-    </section>
-    <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
-      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">Utilidad por especialidad</h3>
-      <div class="h-28 flex items-center justify-center border border-dashed border-sky-200 dark:border-slate-700 rounded-lg text-xs text-slate-400">Próximamente</div>
-    </section>
-  </div>
+
+  <!-- GRÁFICA DEL PERIODO -->
   <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
-    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">Evolución mensual</h3>
-    <div class="h-32 flex items-center justify-center border border-dashed border-sky-200 dark:border-slate-700 rounded-lg text-xs text-slate-400">Próximamente</div>
+    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">Ingresos / Costos / Utilidad del periodo</h3>
+    <canvas id="kpiChartPeriodo" class="w-full" style="height:160px;"></canvas>
+    <p class="text-[10px] text-slate-400 mt-2" id="kpiChartNota"></p>
+  </section>
+
+  <!-- RENDIMIENTO POR ESPECIALIDAD -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">📊 Rendimiento por especialidad</h3>
+    <div id="kpiEspecialidades" class="space-y-2 text-sm"></div>
+  </section>
+
+  <!-- EVOLUCIÓN -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">📈 Evolución (ingresos por periodo)</h3>
+    <canvas id="kpiChartEvolucion" class="w-full" style="height:160px;"></canvas>
+    <p class="text-[10px] text-slate-400 mt-2">Compara los últimos periodos para ver si tus ingresos van mejorando.</p>
+  </section>
+
+  <!-- TRABAJOS DEL PERIODO -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">🔧 Trabajos del periodo</h3>
+    <div id="kpiTrabajosLista" class="divide-y divide-sky-100 dark:divide-slate-800 text-sm"></div>
+  </section>
+
+  <!-- INFO DE APOYO -->
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">ℹ️ Cómo se calcula</h3>
+    <div class="text-[11px] text-slate-500 dark:text-slate-400 space-y-1.5 leading-snug">
+      <p><strong class="text-slate-600 dark:text-slate-300">Ingresos:</strong> suma de materiales + mano de obra + otros conceptos de cada trabajo (el total que se generó/facturó al cliente), tomado directamente del trabajo guardado.</p>
+      <p><strong class="text-slate-600 dark:text-slate-300">Trabajos:</strong> cantidad de órdenes de servicio registradas dentro del periodo y filtros seleccionados.</p>
+      <p><strong class="text-slate-600 dark:text-slate-300">Cobrado / Pendiente:</strong> requieren un registro de pagos por trabajo que todavía no existe en la app. Se mostrarán como "Datos insuficientes" hasta que se agregue ese campo.</p>
+      <p><strong class="text-slate-600 dark:text-slate-300">Costos:</strong> el precio unitario capturado en materiales y mano de obra es el precio cobrado al cliente, no necesariamente el costo real del negocio. Hasta integrar el historial de compras del catálogo con cada trabajo, este dato se muestra como "Datos insuficientes" para no calcular una cifra incorrecta.</p>
+      <p><strong class="text-slate-600 dark:text-slate-300">Utilidad y Margen:</strong> dependen de tener un Costo real, por lo que también se muestran como "Datos insuficientes" por ahora.</p>
+    </div>
   </section>
 </div>
 
@@ -895,6 +949,23 @@
       <label class="flex items-center gap-1.5 text-xs"><input id="bib_favorito" type="checkbox" class="rounded"> Marcar como favorito</label>
       <button id="btnGuardarDocumento" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar documento</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: BUSCAR MATERIAL EN CATÁLOGO (Etapa 5) ============ -->
+<div id="modalBuscarMatCatalogo" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">🔎 Buscar en catálogo</h3>
+      <button data-close="modalBuscarMatCatalogo" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 border-b border-sky-100 dark:border-slate-800 space-y-2">
+      <input id="buscarMatCatQ" placeholder="Buscar por descripción, N° de parte o marca…" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <select id="buscarMatCatCategoria" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <option value="">Todas las categorías</option>
+      </select>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-2" id="buscarMatCatResultados"></div>
   </div>
 </div>
 
@@ -2119,14 +2190,63 @@
     $('materialesBody').innerHTML = materialesRows.map((row,i)=>{
       const subtotal = (row.cantidad||0) * (row.precioUnit||0);
       row.subtotal = subtotal;
-      return `<tr class="border-b border-sky-100 dark:border-slate-800">
+      const filaPrincipal = `<tr class="border-b border-sky-100 dark:border-slate-800">
         <td class="py-1 pr-1"><input type="number" step="0.1" value="${row.cantidad??''}" data-i="${i}" data-f="cantidad" class="matInput w-14 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
         <td class="py-1 pr-1"><input type="text" value="${esc(row.descripcion||'')}" data-i="${i}" data-f="descripcion" class="matInput w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
         <td class="py-1 pr-1"><input type="text" value="${esc(row.parte||'')}" data-i="${i}" data-f="parte" class="matInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
         <td class="py-1 pr-1"><input type="number" step="0.01" value="${row.precioUnit??''}" data-i="${i}" data-f="precioUnit" class="matInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
         <td class="py-1 pr-1 font-semibold text-slate-600 dark:text-slate-300">${money(subtotal)}</td>
-        <td class="py-1"><button data-i="${i}" class="delMaterial text-red-500 font-bold">✕</button></td>
+        <td class="py-1 whitespace-nowrap"><button data-i="${i}" class="linkMaterialCat text-sky-600 dark:text-sky-400 mr-1" title="${row.materialCatalogoId?'Cambiar vínculo':'Vincular con catálogo'}">🔗</button><button data-i="${i}" class="delMaterial text-red-500 font-bold">✕</button></td>
       </tr>`;
+      let filaInfo = '';
+      if(row.materialCatalogoId){
+        const matCat = materialesCatalogo.find(m=>m.id===row.materialCatalogoId);
+        if(matCat){
+          const stats = estadisticasPrecio(matCat.id);
+          const infoTxt = stats
+            ? `Último costo: ${money(stats.ultimoPrecio)} · ${esc(stats.ultimaFecha||'—')} · ${esc(nombreFerreteria(stats.ultimaFerreteriaId))}`
+            : 'Sin historial de compras';
+          filaInfo = `<tr class="border-b border-sky-100 dark:border-slate-800">
+            <td colspan="6" class="pb-2 pt-0.5">
+              <div class="flex items-center justify-between gap-2 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-1.5">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 truncate">📦 Vinculado a catálogo: <strong class="text-slate-600 dark:text-slate-300">${esc(matCat.descripcion)}</strong> — ${infoTxt}</span>
+                <button data-i="${i}" class="unlinkMaterialCat text-[11px] font-semibold text-amber-600 dark:text-amber-400 shrink-0">Quitar vínculo</button>
+              </div>
+            </td>
+          </tr>`;
+        } else {
+          // El material del catálogo ya no existe (fue eliminado) — no inventamos info, solo lo indicamos.
+          filaInfo = `<tr class="border-b border-sky-100 dark:border-slate-800">
+            <td colspan="6" class="pb-2 pt-0.5">
+              <div class="flex items-center justify-between gap-2 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-1.5">
+                <span class="text-[11px] text-slate-400">📦 Vinculado a un material del catálogo que ya no existe.</span>
+                <button data-i="${i}" class="unlinkMaterialCat text-[11px] font-semibold text-amber-600 dark:text-amber-400 shrink-0">Quitar vínculo</button>
+              </div>
+            </td>
+          </tr>`;
+        }
+      }
+      // Etapa 6: costo congelado en la orden (independiente del catálogo actual y del precio al cliente).
+      let filaCostoCongelado = '';
+      if(row.costoUnit !== null && row.costoUnit !== undefined && row.costoUnit !== ''){
+        const costoTotal = (row.cantidad||0) * row.costoUnit;
+        filaCostoCongelado = `<tr class="border-b border-sky-100 dark:border-slate-800">
+          <td colspan="6" class="pb-2 pt-0.5">
+            <div data-costo-row="${i}" class="text-[11px] text-slate-500 dark:text-slate-400 bg-amber-50 dark:bg-slate-800/60 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-1.5">
+              💰 Costo: ${money(row.costoUnit)} × ${row.cantidad||0} = <strong class="text-slate-600 dark:text-slate-300">${money(costoTotal)}</strong>
+            </div>
+          </td>
+        </tr>`;
+      } else if(row.materialCatalogoId){
+        filaCostoCongelado = `<tr class="border-b border-sky-100 dark:border-slate-800">
+          <td colspan="6" class="pb-2 pt-0.5">
+            <div class="text-[11px] text-slate-400 bg-amber-50 dark:bg-slate-800/60 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-1.5">
+              💰 Costo: Sin costo registrado
+            </div>
+          </td>
+        </tr>`;
+      }
+      return filaPrincipal + filaInfo + filaCostoCongelado;
     }).join('');
     $('materialesBody').querySelectorAll('.matInput').forEach(inp=>{
       inp.addEventListener('input', ()=>{
@@ -2136,11 +2256,108 @@
         // Redibujar solo el subtotal de esa fila sin perder el foco de los demás campos
         const fila = inp.closest('tr');
         fila.children[4].textContent = money((materialesRows[i].cantidad||0)*(materialesRows[i].precioUnit||0));
+        // Etapa 6: si cambia la cantidad, actualizar el texto de costo congelado (costoUnit NO cambia)
+        if(f==='cantidad'){
+          const row = materialesRows[i];
+          if(row.costoUnit !== null && row.costoUnit !== undefined && row.costoUnit !== ''){
+            const costoRowDiv = $('materialesBody').querySelector(`[data-costo-row="${i}"]`);
+            if(costoRowDiv){
+              const costoTotal = (row.cantidad||0) * row.costoUnit;
+              costoRowDiv.innerHTML = `💰 Costo: ${money(row.costoUnit)} × ${row.cantidad||0} = <strong class="text-slate-600 dark:text-slate-300">${money(costoTotal)}</strong>`;
+            }
+          }
+        }
       });
     });
     $('materialesBody').querySelectorAll('.delMaterial').forEach(b=>{
       b.addEventListener('click', ()=>{ materialesRows.splice(parseInt(b.dataset.i),1); renderMateriales(); recalcularTotales(); });
     });
+    $('materialesBody').querySelectorAll('.linkMaterialCat').forEach(b=>{
+      b.addEventListener('click', ()=>{ abrirBuscarMaterialCatalogo(parseInt(b.dataset.i)); });
+    });
+    $('materialesBody').querySelectorAll('.unlinkMaterialCat').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const i = parseInt(b.dataset.i);
+        // Etapa 6: quitar vínculo NO borra el costo histórico ya congelado (costoUnit se conserva).
+        if(materialesRows[i]) delete materialesRows[i].materialCatalogoId;
+        renderMateriales();
+      });
+    });
+  }
+
+  /* ---- Etapa 5: vincular material de la orden con el catálogo histórico (solo consulta / referencia por ID) ---- */
+  let matLinkTargetIndex = null; // null = crear una fila nueva; número = vincular una fila existente sin tocar su precio
+
+  function nombreFerreteria(fid){ const f = ferreterias.find(x=>x.id===fid); return f ? f.nombre : '—'; }
+
+  function abrirBuscarMaterialCatalogo(targetIndex){
+    matLinkTargetIndex = (targetIndex===undefined) ? null : targetIndex;
+    $('buscarMatCatQ').value = '';
+    const opts = categoriasMatLocal.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+    $('buscarMatCatCategoria').innerHTML = '<option value="">Todas las categorías</option>' + opts;
+    $('buscarMatCatCategoria').value = '';
+    renderBuscarMaterialCatalogoResultados();
+    openModal('modalBuscarMatCatalogo');
+  }
+
+  function renderBuscarMaterialCatalogoResultados(){
+    const q = $('buscarMatCatQ').value.trim().toLowerCase();
+    const fcat = $('buscarMatCatCategoria').value;
+    const cont = $('buscarMatCatResultados');
+    const resultados = materialesCatalogo.filter(m=>{
+      if(m.estado==='Inactivo') return false;
+      if(fcat && m.categoria !== fcat) return false;
+      if(q){
+        const texto = [(m.descripcion||''),(m.parte||''),(m.marca||''),nombreCategoriaMat(m.categoria)].join(' ').toLowerCase();
+        if(!texto.includes(q)) return false;
+      }
+      return true;
+    });
+    if(!resultados.length){
+      cont.innerHTML = '<p class="text-center text-sm text-slate-400 py-6">Sin materiales del catálogo que coincidan.</p>';
+      return;
+    }
+    cont.innerHTML = resultados.map(m=>{
+      const stats = estadisticasPrecio(m.id);
+      return `<div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg p-3 flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <p class="font-semibold text-sm text-slate-700 dark:text-slate-200 truncate">${esc(m.descripcion||'')}</p>
+          <p class="text-[11px] text-slate-400">${esc(m.marca||'—')}${m.parte?' · N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))}</p>
+          <p class="text-[11px] ${stats?'text-emerald-600 dark:text-emerald-400 font-semibold':'text-slate-400'}">${stats?('Último costo: '+money(stats.ultimoPrecio)):'Sin historial de compras'}</p>
+        </div>
+        <button data-id="${m.id}" class="seleccionarMatCatalogo shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-1.5">Seleccionar</button>
+      </div>`;
+    }).join('');
+    cont.querySelectorAll('.seleccionarMatCatalogo').forEach(b=>{
+      b.addEventListener('click', ()=>seleccionarMaterialDeCatalogo(b.dataset.id));
+    });
+  }
+  $('buscarMatCatQ').addEventListener('input', renderBuscarMaterialCatalogoResultados);
+  $('buscarMatCatCategoria').addEventListener('change', renderBuscarMaterialCatalogoResultados);
+  $('btnBuscarMaterialCatalogo').addEventListener('click', ()=>abrirBuscarMaterialCatalogo(null));
+
+  function seleccionarMaterialDeCatalogo(catalogoId){
+    const m = materialesCatalogo.find(x=>x.id===catalogoId);
+    if(!m) return;
+    // Etapa 6: al vincular (fila nueva o existente) se congela el ÚLTIMO COSTO registrado del catálogo
+    // en costoUnit. Si no hay historial de compras, costoUnit queda en null (nunca se inventa ni se usa precioUnit).
+    const stats = estadisticasPrecio(m.id);
+    const costoUnit = stats ? stats.ultimoPrecio : null;
+    if(matLinkTargetIndex === null){
+      // Nueva fila: se copia solo descripción/N° de parte como referencia editable; el precio al cliente
+      // queda en 0 para que el usuario lo capture — NUNCA se copia el costo del catálogo como precio de venta.
+      materialesRows.push({ cantidad:1, descripcion: m.descripcion||'', parte: m.parte||'', precioUnit:0, materialCatalogoId: m.id, costoUnit });
+    } else {
+      // Fila existente: solo se agrega la relación por ID y se congela costoUnit. Cantidad y precioUnit
+      // capturados por el usuario NO se tocan.
+      if(materialesRows[matLinkTargetIndex]){
+        materialesRows[matLinkTargetIndex].materialCatalogoId = m.id;
+        materialesRows[matLinkTargetIndex].costoUnit = costoUnit;
+      }
+    }
+    closeModal('modalBuscarMatCatalogo');
+    renderMateriales();
+    recalcularTotales();
   }
 
   function renderManoObra(){
@@ -3062,11 +3279,371 @@
     if(nombre==='investigacion') renderInvestigaciones();
     if(nombre==='biblioteca') renderBiblioteca();
     if(nombre==='materiales'){ renderMaterialesCatalogo(); renderCompras(); renderFerreterias(); }
+    if(nombre==='kpi') renderKPI();
     if(nombre==='manual' && !manualInicializado) inicializarManual();
   }
   document.querySelectorAll('.navBtn').forEach(b=>{
     b.addEventListener('click', ()=>irAPantalla(b.dataset.screen));
   });
+
+  /* ================= MÓDULO: KPI DEL NEGOCIO (Etapa 4) =================
+     Todos los KPI se calculan al vuelo a partir de `trabajos` (misma fuente
+     que Historial). No se guarda ninguna copia ni colección nueva.
+     Campos reales usados de cada trabajo: fecha, categoria, clienteId,
+     totalMateriales, totalManoObra, totalOtros, granTotal, numOrden.
+     No existe todavía un campo de cobro/pago ni un costo real distinto del
+     precio cobrado al cliente, así que esos KPI se muestran como
+     "Datos insuficientes" en vez de inventar un valor. */
+
+  const DATOS_INSUF = 'Datos insuficientes';
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function fechaISO(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+  function parseISO(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+  function addDias(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+
+  function inicioSemana(d){ // lunes como inicio de semana
+    const r = new Date(d);
+    const dow = r.getDay(); // 0=domingo..6=sabado
+    const diff = (dow === 0) ? -6 : 1 - dow;
+    return addDias(r, diff);
+  }
+
+  const kpiState = {
+    periodo: 'semanal',
+    refFecha: new Date(),          // fecha de referencia para diario/semanal/mensual
+    rangoInicio: fechaISO(inicioSemana(new Date())),
+    rangoFin: fechaISO(new Date()),
+    especialidad: '',
+    clienteId: ''
+  };
+
+  function kpiRangoActual(){
+    if(kpiState.periodo === 'rango'){
+      return { inicio: kpiState.rangoInicio, fin: kpiState.rangoFin };
+    }
+    if(kpiState.periodo === 'diario'){
+      const f = fechaISO(kpiState.refFecha);
+      return { inicio: f, fin: f };
+    }
+    if(kpiState.periodo === 'mensual'){
+      const y = kpiState.refFecha.getFullYear(), m = kpiState.refFecha.getMonth();
+      const inicio = new Date(y, m, 1), fin = new Date(y, m+1, 0);
+      return { inicio: fechaISO(inicio), fin: fechaISO(fin) };
+    }
+    // semanal
+    const ini = inicioSemana(kpiState.refFecha);
+    return { inicio: fechaISO(ini), fin: fechaISO(addDias(ini,6)) };
+  }
+
+  function kpiLabelPeriodo(){
+    const { inicio, fin } = kpiRangoActual();
+    if(kpiState.periodo === 'diario') return `Día: ${inicio}`;
+    if(kpiState.periodo === 'mensual'){
+      const [y,m] = inicio.split('-');
+      const nombres = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      return `${nombres[parseInt(m,10)-1]} ${y}`;
+    }
+    if(kpiState.periodo === 'rango') return `${inicio || '—'} a ${fin || '—'}`;
+    return `Semana: ${inicio} a ${fin}`;
+  }
+
+  function kpiMoverPeriodo(direccion){ // -1 anterior, +1 siguiente
+    if(kpiState.periodo === 'diario') kpiState.refFecha = addDias(kpiState.refFecha, direccion*1);
+    else if(kpiState.periodo === 'semanal') kpiState.refFecha = addDias(kpiState.refFecha, direccion*7);
+    else if(kpiState.periodo === 'mensual') kpiState.refFecha = new Date(kpiState.refFecha.getFullYear(), kpiState.refFecha.getMonth()+direccion, 1);
+    renderKPI();
+  }
+
+  function kpiFiltrarTrabajos(){
+    const { inicio, fin } = kpiRangoActual();
+    if(!inicio || !fin) return [];
+    return trabajos.filter(t=>{
+      if(!t.fecha) return false;
+      if(t.fecha < inicio || t.fecha > fin) return false;
+      if(kpiState.especialidad && t.categoria !== kpiState.especialidad) return false;
+      if(kpiState.clienteId && t.clienteId !== kpiState.clienteId) return false;
+      return true;
+    });
+  }
+
+  function kpiIngresoTrabajo(t){
+    // Mismo cálculo que recalcularTotales(): usa granTotal si existe, si no lo reconstruye
+    // a partir de los mismos tres campos que ya guarda el trabajo.
+    if(t.granTotal) return t.granTotal;
+    return (t.totalMateriales||0) + (t.totalManoObra||0) + (t.totalOtros||0);
+  }
+
+  function kpiCalcular(lista){
+    const ingresos = lista.reduce((s,t)=>s+kpiIngresoTrabajo(t), 0);
+    return {
+      ingresos,
+      trabajosCount: lista.length,
+      cobrado: null,     // sin campo de pago en el trabajo -> Datos insuficientes
+      pendiente: null,
+      costos: null,      // precioUnit/costoUnit son precio al cliente, no costo real -> Datos insuficientes
+      utilidad: null,
+      margen: null
+    };
+  }
+
+  function kpiFormatoCard(v){ return v === null ? DATOS_INSUF : money(v); }
+
+  function renderKPIFiltros(){
+    const prevEsp = kpiState.especialidad, prevCli = kpiState.clienteId;
+    $('kpiFiltroEspecialidad').innerHTML = '<option value="">Todas las especialidades</option>' +
+      CATEGORIAS.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    $('kpiFiltroEspecialidad').value = CATEGORIAS.includes(prevEsp) ? prevEsp : '';
+    kpiState.especialidad = $('kpiFiltroEspecialidad').value;
+
+    const opts = clientesActivos.map(c=>`<option value="${c.id}">${esc(nombreCompleto(c))}</option>`).join('');
+    $('kpiFiltroCliente').innerHTML = '<option value="">Todos los clientes</option>' + opts;
+    $('kpiFiltroCliente').value = clientesActivos.some(c=>c.id===prevCli) ? prevCli : '';
+    kpiState.clienteId = $('kpiFiltroCliente').value;
+  }
+
+  function dibujarBarras(canvasId, series, nota){
+    const canvas = $(canvasId);
+    if(!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const cssWidth = canvas.clientWidth || canvas.parentElement.clientWidth || 300;
+    const cssHeight = parseInt(canvas.style.height, 10) || 160;
+    canvas.width = cssWidth * dpr;
+    canvas.height = cssHeight * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,cssWidth,cssHeight);
+
+    const isDark = document.documentElement.classList.contains('dark');
+    ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx.font = '10px sans-serif';
+
+    if(!series.length){
+      ctx.textAlign = 'center';
+      ctx.fillText('Sin datos en este periodo', cssWidth/2, cssHeight/2);
+      return;
+    }
+
+    const padLeft = 34, padBottom = 24, padTop = 10, padRight = 8;
+    const chartW = cssWidth - padLeft - padRight;
+    const chartH = cssHeight - padTop - padBottom;
+    const maxVal = Math.max(1, ...series.flatMap(s=>s.valores));
+    const nGrupos = series[0].valores.length;
+    const nSeries = series.length;
+    const grupoW = chartW / nGrupos;
+    const barW = Math.min(22, (grupoW*0.7) / nSeries);
+
+    // ejes
+    ctx.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+    ctx.beginPath();
+    ctx.moveTo(padLeft, padTop); ctx.lineTo(padLeft, padTop+chartH); ctx.lineTo(padLeft+chartW, padTop+chartH);
+    ctx.stroke();
+
+    // etiquetas eje Y (0, mitad, max)
+    ctx.textAlign = 'right';
+    [0, 0.5, 1].forEach(f=>{
+      const y = padTop + chartH - f*chartH;
+      ctx.fillText(money(maxVal*f).replace('.00',''), padLeft-4, y+3);
+    });
+
+    for(let g=0; g<nGrupos; g++){
+      const grupoX = padLeft + g*grupoW + (grupoW - barW*nSeries)/2;
+      series.forEach((s,si)=>{
+        const val = s.valores[g] || 0;
+        const h = (val/maxVal) * chartH;
+        ctx.fillStyle = s.color;
+        ctx.fillRect(grupoX + si*barW, padTop+chartH-h, barW-2, h);
+      });
+      ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+      ctx.textAlign = 'center';
+      ctx.fillText(series[0].etiquetas[g], padLeft + g*grupoW + grupoW/2, cssHeight-6);
+    }
+
+    // leyenda
+    let lx = padLeft;
+    series.forEach(s=>{
+      ctx.fillStyle = s.color;
+      ctx.fillRect(lx, 0, 8, 8);
+      ctx.fillStyle = isDark ? '#cbd5e1' : '#475569';
+      ctx.textAlign = 'left';
+      ctx.fillText(s.nombre, lx+11, 8);
+      lx += ctx.measureText(s.nombre).width + 30;
+    });
+  }
+
+  function renderKPIChartPeriodo(lista){
+    const { inicio, fin } = kpiRangoActual();
+    // Sub-periodos: días si diario/semanal/rango corto, semanas si mensual, meses si rango largo.
+    let dias = [];
+    if(inicio && fin){
+      let cursor = parseISO(inicio);
+      const finD = parseISO(fin);
+      let guard = 0;
+      while(cursor <= finD && guard < 62){ dias.push(fechaISO(cursor)); cursor = addDias(cursor,1); guard++; }
+    }
+    const agruparPorSemana = dias.length > 14;
+    let etiquetas = [], ingresosPorGrupo = [];
+    if(!agruparPorSemana){
+      etiquetas = dias.map(d=> d.slice(5).replace('-','/'));
+      ingresosPorGrupo = dias.map(d=> lista.filter(t=>t.fecha===d).reduce((s,t)=>s+kpiIngresoTrabajo(t),0));
+    } else {
+      const grupos = {};
+      dias.forEach(d=>{
+        const semKey = fechaISO(inicioSemana(parseISO(d)));
+        grupos[semKey] = grupos[semKey] || [];
+        grupos[semKey].push(d);
+      });
+      Object.keys(grupos).sort().forEach(k=>{
+        etiquetas.push(k.slice(5).replace('-','/'));
+        const suma = lista.filter(t=>grupos[k].includes(t.fecha)).reduce((s,t)=>s+kpiIngresoTrabajo(t),0);
+        ingresosPorGrupo.push(suma);
+      });
+    }
+    dibujarBarras('kpiChartPeriodo', [
+      { nombre:'Ingresos', color:'#0ea5e9', valores: ingresosPorGrupo, etiquetas }
+    ]);
+    $('kpiChartNota').textContent = 'Costos y Utilidad no se grafican todavía: no hay un costo real distinto del precio cobrado al cliente en los trabajos guardados.';
+  }
+
+  function renderKPIEvolucion(){
+    // Últimos 6 periodos del mismo tipo (sin afectar los filtros de especialidad/cliente para ver la tendencia general),
+    // sí respeta el filtro de especialidad/cliente activo.
+    const N = 6;
+    const etiquetas = [], valores = [];
+    for(let i=N-1; i>=0; i--){
+      let inicio, fin, label;
+      if(kpiState.periodo === 'diario'){
+        const d = addDias(kpiState.refFecha, -i);
+        inicio = fin = fechaISO(d);
+        label = inicio.slice(5).replace('-','/');
+      } else if(kpiState.periodo === 'mensual'){
+        const d = new Date(kpiState.refFecha.getFullYear(), kpiState.refFecha.getMonth()-i, 1);
+        inicio = fechaISO(d);
+        fin = fechaISO(new Date(d.getFullYear(), d.getMonth()+1, 0));
+        label = inicio.slice(0,7);
+      } else { // semanal o rango -> usa semanas
+        const ini = addDias(inicioSemana(kpiState.periodo==='rango' ? parseISO(kpiState.rangoFin||fechaISO(new Date())) : kpiState.refFecha), -7*i);
+        inicio = fechaISO(ini);
+        fin = fechaISO(addDias(ini,6));
+        label = inicio.slice(5).replace('-','/');
+      }
+      const suma = trabajos.filter(t=>{
+        if(!t.fecha || t.fecha<inicio || t.fecha>fin) return false;
+        if(kpiState.especialidad && t.categoria !== kpiState.especialidad) return false;
+        if(kpiState.clienteId && t.clienteId !== kpiState.clienteId) return false;
+        return true;
+      }).reduce((s,t)=>s+kpiIngresoTrabajo(t),0);
+      etiquetas.push(label); valores.push(suma);
+    }
+    dibujarBarras('kpiChartEvolucion', [
+      { nombre:'Ingresos', color:'#22c55e', valores, etiquetas }
+    ]);
+  }
+
+  function renderKPIEspecialidades(lista){
+    const cont = $('kpiEspecialidades');
+    const filas = CATEGORIAS.map(cat=>{
+      const deCat = lista.filter(t=>t.categoria===cat);
+      const ingresos = deCat.reduce((s,t)=>s+kpiIngresoTrabajo(t),0);
+      return { cat, trabajos: deCat.length, ingresos };
+    });
+    // Trabajos con categoría fuera del catálogo actual (datos viejos/atípicos) se agrupan como "Otros" sin inventar nada.
+    const conocidas = new Set(CATEGORIAS);
+    const otros = lista.filter(t=>!conocidas.has(t.categoria));
+    if(otros.length){
+      filas.push({ cat:'Otros', trabajos: otros.length, ingresos: otros.reduce((s,t)=>s+kpiIngresoTrabajo(t),0) });
+    }
+    const iconos = { 'Refrigeración / HVAC':'❄️', 'Electricidad':'⚡', 'Plomería':'🔧', 'Otros':'📋' };
+    cont.innerHTML = filas.map(f=>`
+      <div class="flex items-center justify-between bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2">
+        <div class="flex items-center gap-2">
+          <span>${iconos[f.cat]||'🔧'}</span>
+          <div>
+            <p class="font-semibold text-slate-700 dark:text-slate-200">${esc(f.cat)}</p>
+            <p class="text-[10px] text-slate-400">${f.trabajos} trabajo(s)</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="font-bold text-slate-700 dark:text-slate-200">${money(f.ingresos)}</p>
+          <p class="text-[10px] text-slate-400">Costos/Utilidad: ${DATOS_INSUF}</p>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderKPITrabajosLista(lista){
+    const cont = $('kpiTrabajosLista');
+    if(!lista.length){ cont.innerHTML = '<p class="text-slate-400 py-3">Sin trabajos en este periodo.</p>'; return; }
+    const ordenados = lista.slice().sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||''));
+    cont.innerHTML = ordenados.map(t=>{
+      const cli = clientesActivos.find(c=>c.id===t.clienteId);
+      const iconoCat = t.categoria === 'Electricidad' ? '⚡' : t.categoria === 'Plomería' ? '🔧' : '❄️';
+      return `<div class="flex items-center justify-between py-2 gap-2">
+        <div class="min-w-0">
+          <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${iconoCat} ${esc(cli?nombreCompleto(cli):'Sin cliente')}</p>
+          <p class="text-[11px] text-slate-400">${esc(t.fecha||'')} · ${esc(t.categoria||'')} · Estado de cobro: ${DATOS_INSUF}</p>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="font-bold text-slate-700 dark:text-slate-200">${money(kpiIngresoTrabajo(t))}</p>
+          <button data-id="${t.id}" class="kpiVerTrabajo text-sky-600 dark:text-sky-400 text-[11px] font-semibold">Ver →</button>
+        </div>
+      </div>`;
+    }).join('');
+    cont.querySelectorAll('.kpiVerTrabajo').forEach(b=>{
+      b.addEventListener('click', ()=>{ cargarTrabajo(b.dataset.id); irAPantalla('servicios'); });
+    });
+  }
+
+  function renderKPI(){
+    // Sincroniza controles con el estado
+    $('kpiPeriodoSel').value = kpiState.periodo;
+    $('kpiRangoPersonalizado').classList.toggle('hidden', kpiState.periodo !== 'rango');
+    $('kpiNavPeriodo').classList.toggle('hidden', kpiState.periodo === 'rango');
+    if(kpiState.periodo === 'rango'){
+      $('kpiRangoInicio').value = kpiState.rangoInicio || '';
+      $('kpiRangoFin').value = kpiState.rangoFin || '';
+    }
+    renderKPIFiltros();
+    $('kpiPeriodoLabel').textContent = kpiLabelPeriodo();
+
+    const lista = kpiFiltrarTrabajos();
+    const k = kpiCalcular(lista);
+
+    $('kpiCardIngresos').textContent = money(k.ingresos);
+    $('kpiCardCobrado').textContent = kpiFormatoCard(k.cobrado);
+    $('kpiCardPendiente').textContent = kpiFormatoCard(k.pendiente);
+    $('kpiCardCostos').textContent = kpiFormatoCard(k.costos);
+    $('kpiCardUtilidad').textContent = kpiFormatoCard(k.utilidad);
+    $('kpiCardMargen').textContent = k.utilidad === null ? DATOS_INSUF : (k.ingresos===0 ? '—' : (k.utilidad/k.ingresos*100).toFixed(1)+'%');
+    $('kpiCardTrabajos').textContent = String(k.trabajosCount);
+
+    ['kpiCardCobrado','kpiCardPendiente','kpiCardCostos','kpiCardUtilidad','kpiCardMargen'].forEach(id=>{
+      $(id).classList.toggle('text-slate-400', $(id).textContent === DATOS_INSUF);
+      $(id).classList.toggle('text-base', $(id).textContent === DATOS_INSUF);
+    });
+
+    $('kpiNotaLimitacion').textContent = '⚠ Cobrado, Pendiente, Costos, Utilidad y Margen muestran "Datos insuficientes": la app aún no registra pagos por trabajo ni un costo real distinto del precio cobrado al cliente. Ver "Cómo se calcula" más abajo.';
+
+    renderKPIChartPeriodo(lista);
+    renderKPIEvolucion();
+    renderKPIEspecialidades(lista);
+    renderKPITrabajosLista(lista);
+  }
+
+  $('kpiPeriodoSel').addEventListener('change', ()=>{
+    kpiState.periodo = $('kpiPeriodoSel').value;
+    if(kpiState.periodo === 'rango' && !kpiState.rangoInicio){
+      kpiState.rangoInicio = fechaISO(addDias(new Date(), -7));
+      kpiState.rangoFin = fechaISO(new Date());
+    }
+    renderKPI();
+  });
+  $('kpiRangoInicio').addEventListener('change', ()=>{ kpiState.rangoInicio = $('kpiRangoInicio').value; renderKPI(); });
+  $('kpiRangoFin').addEventListener('change', ()=>{ kpiState.rangoFin = $('kpiRangoFin').value; renderKPI(); });
+  $('kpiFiltroEspecialidad').addEventListener('change', ()=>{ kpiState.especialidad = $('kpiFiltroEspecialidad').value; renderKPI(); });
+  $('kpiFiltroCliente').addEventListener('change', ()=>{ kpiState.clienteId = $('kpiFiltroCliente').value; renderKPI(); });
+  $('kpiBtnPrev').addEventListener('click', ()=>kpiMoverPeriodo(-1));
+  $('kpiBtnNext').addEventListener('click', ()=>kpiMoverPeriodo(1));
+  $('kpiBtnActual').addEventListener('click', ()=>{ kpiState.refFecha = new Date(); renderKPI(); });
 
   /* ================= MÓDULO: INVESTIGACIÓN Y DESARROLLO (Etapa 2) ================= */
   // Persistencia: mismas claves de la Etapa 1 (no se cambian).
