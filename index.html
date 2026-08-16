@@ -411,31 +411,72 @@
 
 <!-- ============ PANTALLA: LISTA DE MATERIALES (catálogo histórico) ============ -->
 <div id="screen-materiales" class="screen-panel hidden space-y-5">
-  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
-    <div class="flex items-center justify-between mb-2">
-      <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400">🧰 Lista de materiales</h2>
-      <button id="btnNuevoMaterialCat" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Agregar material</button>
+  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-2 shadow-sm">
+    <div class="flex gap-1">
+      <button data-matsub="materiales" class="matSubBtn flex-1 text-xs font-semibold px-3 py-2 rounded-lg bg-sky-500 text-white">🧰 Materiales</button>
+      <button data-matsub="compras" class="matSubBtn flex-1 text-xs font-semibold px-3 py-2 rounded-lg bg-sky-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">📜 Compras</button>
+      <button data-matsub="ferreterias" class="matSubBtn flex-1 text-xs font-semibold px-3 py-2 rounded-lg bg-sky-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">🏪 Ferreterías</button>
     </div>
-    <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">Catálogo histórico de materiales — distinto de los materiales que registras dentro de cada orden de servicio.</p>
-    <input id="matCatBuscar" type="text" placeholder="🔍 Buscar material..." class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
-  </section>
-  <section id="matCatListaWrap" class="space-y-3"></section>
-
-  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">📜 Historial de compras</h3>
-      <button id="btnNuevaCompra" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Registrar compra</button>
-    </div>
-    <div id="comprasListaWrap" class="space-y-2"></div>
   </section>
 
-  <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">🏪 Ferreterías</h3>
-      <button id="btnNuevaFerreteria" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Agregar ferretería</button>
-    </div>
-    <div id="ferreteriasListaWrap" class="space-y-2"></div>
-  </section>
+  <!-- SUBPANTALLA: MATERIALES -->
+  <div id="matsub-materiales" class="matsub-panel space-y-5">
+    <section id="matCatListaHeader" class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400">🧰 Catálogo de materiales</h2>
+        <button id="btnNuevoMaterialCat" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Nuevo material</button>
+      </div>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">Catálogo histórico — distinto de los materiales que registras dentro de cada orden de servicio.</p>
+      <input id="matCatBuscar" type="text" placeholder="🔍 Buscar por descripción, N° de parte, marca o categoría..." class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm mb-2">
+      <div class="flex flex-wrap gap-2 items-center">
+        <select id="matCatFiltroCategoria" class="flex-1 min-w-[140px] bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">Todas las categorías</option></select>
+        <button id="btnEditarCategoriasMat" class="text-xs font-semibold bg-slate-500 hover:bg-slate-400 text-white rounded-lg px-2 py-2">✎ Categorías</button>
+        <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 ml-auto">
+          <input id="matCatMostrarInactivos" type="checkbox" class="rounded"> Mostrar inactivos
+        </label>
+      </div>
+    </section>
+    <section id="matCatListaWrap" class="space-y-3"></section>
+
+    <!-- Detalle de material (solo lectura + acciones) -->
+    <section id="matDetalleWrap" class="hidden bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm space-y-3">
+      <div class="flex items-center justify-between border-b border-sky-200 dark:border-slate-700 pb-2">
+        <button id="btnRegresarMaterial" class="text-xs font-semibold text-sky-600 dark:text-sky-400">← Regresar</button>
+        <div class="flex gap-2">
+          <button id="btnRegistrarCompraDesdeDetalle" class="text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg px-3 py-1.5">+ Compra</button>
+          <button id="btnEditarMaterialDesdeDetalle" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-1.5">✏️ Editar</button>
+        </div>
+      </div>
+      <div id="matDetalleContenido" class="space-y-3 text-sm"></div>
+    </section>
+  </div>
+
+  <!-- SUBPANTALLA: COMPRAS -->
+  <div id="matsub-compras" class="matsub-panel hidden space-y-5">
+    <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400">📜 Historial de compras</h2>
+        <button id="btnNuevaCompra" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Registrar compra</button>
+      </div>
+      <input id="comprasBuscar" type="text" placeholder="🔍 Buscar por material o ferretería..." class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+    </section>
+    <section id="comprasListaWrap" class="space-y-2"></section>
+  </div>
+
+  <!-- SUBPANTALLA: FERRETERÍAS -->
+  <div id="matsub-ferreterias" class="matsub-panel hidden space-y-5">
+    <section class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400">🏪 Ferreterías</h2>
+        <button id="btnNuevaFerreteria" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Nueva ferretería</button>
+      </div>
+      <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+        <input id="ferrMostrarInactivas" type="checkbox" class="rounded"> Mostrar inactivas
+      </label>
+    </section>
+    <section id="ferreteriasListaWrap" class="space-y-2"></section>
+  </div>
+
 </div>
 
 <!-- ============ PANTALLA: KPI ============ -->
@@ -857,58 +898,89 @@
   </div>
 </div>
 
-<!-- ============ MODAL: NUEVO MATERIAL (CATÁLOGO HISTÓRICO) ============ -->
+<!-- ============ MODAL: NUEVO / EDITAR MATERIAL (CATÁLOGO HISTÓRICO) ============ -->
 <div id="modalMaterialCat" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
   <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-xl max-h-[85vh] flex flex-col shadow-xl">
     <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
-      <h3 class="font-bold text-sky-700 dark:text-sky-300">🧰 Nuevo material</h3>
+      <h3 id="modalMaterialCatTitulo" class="font-bold text-sky-700 dark:text-sky-300">🧰 Nuevo material</h3>
       <button data-close="modalMaterialCat" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
     </div>
     <div class="p-4 overflow-y-auto space-y-2 text-sm">
-      <input id="matcat_descripcion" placeholder="Descripción" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <input type="hidden" id="matcat_editId">
+      <input id="matcat_descripcion" placeholder="Descripción *" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
       <div class="grid grid-cols-2 gap-2">
         <input id="matcat_parte" placeholder="N° de parte" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
         <input id="matcat_marca" placeholder="Marca" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
-        <input id="matcat_categoria" placeholder="Categoría" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
-        <input id="matcat_unidad" placeholder="Unidad" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <select id="matcat_categoria" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></select>
+        <input id="matcat_unidad" list="listaUnidadesMateriales" placeholder="Unidad *" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
       </div>
+      <datalist id="listaUnidadesMateriales"></datalist>
       <textarea id="matcat_especificaciones" rows="2" placeholder="Especificaciones" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
-      <textarea id="matcat_comentarios" rows="2" placeholder="Comentarios" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
+      <textarea id="matcat_comentarios" rows="2" placeholder="Comentarios generales del material" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
       <button id="btnGuardarMaterialCat" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar material</button>
     </div>
   </div>
 </div>
 
-<!-- ============ MODAL: NUEVA COMPRA ============ -->
+<!-- ============ MODAL: CATEGORÍAS DE MATERIALES ============ -->
+<div id="modalCategoriasMat" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-md max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">🏷 Categorías de materiales</h3>
+      <button data-close="modalCategoriasMat" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-3">
+      <div class="flex gap-2">
+        <input id="nuevaCategoriaMat" placeholder="Ej. Aislamiento térmico" class="flex-1 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <button id="btnAddCategoriaMat" class="bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Agregar</button>
+      </div>
+      <div id="categoriasMatLista" class="text-sm divide-y divide-sky-100 dark:divide-slate-800"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: NUEVA / EDITAR COMPRA ============ -->
 <div id="modalCompra" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
   <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-xl">
     <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
-      <h3 class="font-bold text-sky-700 dark:text-sky-300">📜 Registrar compra</h3>
+      <h3 id="modalCompraTitulo" class="font-bold text-sky-700 dark:text-sky-300">📜 Registrar compra</h3>
       <button data-close="modalCompra" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
     </div>
     <div class="p-4 overflow-y-auto space-y-2 text-sm">
+      <input type="hidden" id="compra_editId">
       <select id="compra_material" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">— Selecciona un material del catálogo —</option></select>
       <div class="grid grid-cols-2 gap-2">
         <input id="compra_fecha" type="date" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
-        <select id="compra_ferreteria" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">— Ferretería —</option></select>
-        <input id="compra_cantidad" type="number" step="0.01" placeholder="Cantidad" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
-        <input id="compra_precioUnit" type="number" step="0.01" placeholder="Precio unitario" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <div class="flex gap-1">
+          <select id="compra_ferreteria" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">— Ferretería —</option></select>
+          <button id="btnNuevaFerreteriaRapida" type="button" class="shrink-0 bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-2 text-sm font-bold">+</button>
+        </div>
+        <input id="compra_cantidad" type="number" step="0.01" placeholder="Cantidad *" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <input id="compra_precioUnit" type="number" step="0.01" placeholder="Precio unitario *" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
       </div>
-      <textarea id="compra_comentarios" rows="2" placeholder="Comentarios" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
+      <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+        <input id="compra_totalManual" type="checkbox" class="rounded"> Ajustar precio total manualmente
+      </label>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 dark:text-slate-400">Precio total:</span>
+        <input id="compra_precioTotal" type="number" step="0.01" disabled class="flex-1 bg-slate-100 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm font-bold">
+      </div>
+      <textarea id="compra_comentarios" rows="2" placeholder="Comentarios (ej. buena calidad, no tenían existencia...)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
       <button id="btnGuardarCompra" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar compra</button>
     </div>
   </div>
 </div>
 
-<!-- ============ MODAL: NUEVA FERRETERÍA ============ -->
+<!-- ============ MODAL: NUEVA / EDITAR FERRETERÍA ============ -->
 <div id="modalFerreteria" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
   <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-xl">
     <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
-      <h3 class="font-bold text-sky-700 dark:text-sky-300">🏪 Nueva ferretería</h3>
+      <h3 id="modalFerreteriaTitulo" class="font-bold text-sky-700 dark:text-sky-300">🏪 Nueva ferretería</h3>
       <button data-close="modalFerreteria" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
     </div>
     <div class="p-4 overflow-y-auto space-y-2 text-sm">
-      <input id="ferr_nombre" placeholder="Nombre" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      <input type="hidden" id="ferr_editId">
+      <input id="ferr_nombre" placeholder="Nombre *" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
       <div class="grid grid-cols-2 gap-2">
         <input id="ferr_telefono" placeholder="Teléfono" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
         <input id="ferr_contacto" placeholder="Contacto" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
@@ -919,6 +991,7 @@
     </div>
   </div>
 </div>
+
 
 <script>
 (function(){
@@ -3468,130 +3541,501 @@
     mostrarToast('✔ Documento guardado (local)');
   });
 
-  /* ================= MÓDULO: LISTA DE MATERIALES (catálogo histórico) ================= */
+  /* ================= MÓDULO: LISTA DE MATERIALES, PRECIOS Y FERRETERÍAS (Etapa 3) ================= */
+  // Persistencia: mismas claves de la Etapa 1 (no se cambian) + 2 claves nuevas para categorías/unidades de este módulo.
   const LS_MATCAT = 'msd_materiales_catalogo_v1';
   const LS_COMPRAS = 'msd_compras_v1';
   const LS_FERRETERIAS = 'msd_ferreterias_v1';
+  const LS_CATEGORIAS_MAT = 'msd_categorias_materiales_v1'; // nueva en Etapa 3
+  const LS_UNIDADES_MAT = 'msd_unidades_materiales_v1';     // nueva en Etapa 3
+  const DEFAULT_CATEGORIAS_MAT = ['Refrigeración','Electricidad','Electrónica','Plomería','Herramientas','Consumibles','Seguridad','Otros'];
+  const DEFAULT_UNIDADES_MAT = ['Pieza','Metro','Kilogramo','Litro','Juego','Caja','Rollo','Otro'];
+
   let materialesCatalogo = JSON.parse(localStorage.getItem(LS_MATCAT) || '[]');
   let compras = JSON.parse(localStorage.getItem(LS_COMPRAS) || '[]');
   let ferreterias = JSON.parse(localStorage.getItem(LS_FERRETERIAS) || '[]');
+  let categoriasMatLocal = JSON.parse(localStorage.getItem(LS_CATEGORIAS_MAT) || 'null') || DEFAULT_CATEGORIAS_MAT.map(n=>({id:uid(), nombre:n, estado:'Activo'}));
+  let unidadesMatLocal = JSON.parse(localStorage.getItem(LS_UNIDADES_MAT) || 'null') || DEFAULT_UNIDADES_MAT.slice();
+
   function saveMaterialesCatalogo(){ localStorage.setItem(LS_MATCAT, JSON.stringify(materialesCatalogo)); }
   function saveCompras(){ localStorage.setItem(LS_COMPRAS, JSON.stringify(compras)); }
   function saveFerreterias(){ localStorage.setItem(LS_FERRETERIAS, JSON.stringify(ferreterias)); }
+  function saveCategoriasMat(){ localStorage.setItem(LS_CATEGORIAS_MAT, JSON.stringify(categoriasMatLocal)); }
+  function saveUnidadesMat(){ localStorage.setItem(LS_UNIDADES_MAT, JSON.stringify(unidadesMatLocal)); }
 
+  // Migración no destructiva: los registros de la Etapa 1 no tenían fechas/estado formal, ni categoría como catálogo.
+  // Se completan los campos faltantes sin tocar la información ya capturada.
+  let matMigrado = false;
+  materialesCatalogo = materialesCatalogo.map(m=>{
+    if(m.fechaCreacion) return m;
+    matMigrado = true;
+    const hoy = new Date().toISOString().slice(0,10);
+    return { ...m, estado: m.estado || 'Activo', fechaCreacion: hoy, fechaActualizacion: hoy };
+  });
+  if(matMigrado) saveMaterialesCatalogo();
+  let ferrMigrado = false;
+  ferreterias = ferreterias.map(f=>{
+    if(f.fechaCreacion) return f;
+    ferrMigrado = true;
+    const hoy = new Date().toISOString().slice(0,10);
+    return { ...f, estado: (f.estado==='Inactivo'||f.estado==='Inactiva') ? 'Inactiva' : 'Activa', fechaCreacion: hoy, fechaActualizacion: hoy };
+  });
+  if(ferrMigrado) saveFerreterias();
+
+  function resolverCategoriaMat(valor){
+    if(!valor) return null;
+    return categoriasMatLocal.find(c=>c.id===valor) || categoriasMatLocal.find(c=>c.nombre===valor) || null;
+  }
+  function nombreCategoriaMat(valor){ const c = resolverCategoriaMat(valor); return c ? c.nombre : (valor || '—'); }
+  function categoriaMatTieneMateriales(cat){
+    return materialesCatalogo.some(m => m.categoria === cat.id || m.categoria === cat.nombre);
+  }
+
+  function renderCategoriasMatSelects(){
+    const opts = categoriasMatLocal.filter(c=>c.estado!=='Inactivo').map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+    $('matcat_categoria').innerHTML = opts;
+    const optsFiltro = categoriasMatLocal.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+    const prev = $('matCatFiltroCategoria').value;
+    $('matCatFiltroCategoria').innerHTML = '<option value="">Todas las categorías</option>' + optsFiltro;
+    if([...$('matCatFiltroCategoria').options].some(o=>o.value===prev)) $('matCatFiltroCategoria').value = prev;
+  }
+  function renderCategoriasMatLista(){
+    $('categoriasMatLista').innerHTML = categoriasMatLocal.map(c=>`
+      <div class="flex items-center justify-between py-2">
+        <span class="text-sm ${c.estado==='Inactivo'?'text-slate-400':'text-slate-700 dark:text-slate-200'}">${esc(c.nombre)}${c.estado==='Inactivo'?' <span class="text-[10px] text-slate-400">(inactiva)</span>':''}</span>
+        <div class="flex gap-2 text-xs font-semibold shrink-0">
+          <button data-id="${c.id}" class="toggleCategoriaMat text-amber-600 dark:text-amber-400">${c.estado==='Inactivo'?'Activar':'Desactivar'}</button>
+          <button data-id="${c.id}" class="delCategoriaMat text-red-500">Eliminar</button>
+        </div>
+      </div>`).join('');
+    $('categoriasMatLista').querySelectorAll('.toggleCategoriaMat').forEach(b=>b.addEventListener('click', ()=>{
+      const c = categoriasMatLocal.find(x=>x.id===b.dataset.id);
+      if(!c) return;
+      c.estado = c.estado==='Inactivo' ? 'Activo' : 'Inactivo';
+      saveCategoriasMat(); renderCategoriasMatLista(); renderCategoriasMatSelects();
+    }));
+    $('categoriasMatLista').querySelectorAll('.delCategoriaMat').forEach(b=>b.addEventListener('click', ()=>{
+      const c = categoriasMatLocal.find(x=>x.id===b.dataset.id);
+      if(!c) return;
+      if(categoriaMatTieneMateriales(c)){ alert(`"${c.nombre}" tiene materiales asociados — desactívala en vez de eliminarla.`); return; }
+      if(!confirm(`¿Eliminar la categoría "${c.nombre}"?`)) return;
+      categoriasMatLocal = categoriasMatLocal.filter(x=>x.id!==c.id);
+      saveCategoriasMat(); renderCategoriasMatLista(); renderCategoriasMatSelects();
+    }));
+  }
+  $('btnEditarCategoriasMat').addEventListener('click', ()=>{ renderCategoriasMatLista(); openModal('modalCategoriasMat'); });
+  $('btnAddCategoriaMat').addEventListener('click', ()=>{
+    const v = txt('nuevaCategoriaMat');
+    if(!v) return;
+    if(categoriasMatLocal.some(c=>c.nombre.toLowerCase()===v.toLowerCase())){ alert('Ya existe esa categoría.'); return; }
+    categoriasMatLocal.push({ id: uid(), nombre: v, estado: 'Activo' });
+    saveCategoriasMat();
+    $('nuevaCategoriaMat').value = '';
+    renderCategoriasMatLista(); renderCategoriasMatSelects();
+  });
+
+  function renderUnidadesMatDatalist(){
+    $('listaUnidadesMateriales').innerHTML = unidadesMatLocal.map(u=>`<option value="${esc(u)}">`).join('');
+  }
+  function agregarUnidadMatSiNueva(u){
+    if(u && !unidadesMatLocal.includes(u)){ unidadesMatLocal.push(u); saveUnidadesMat(); renderUnidadesMatDatalist(); }
+  }
+
+  /* ---- Estadísticas de precio de un material ---- */
+  function estadisticasPrecio(materialId){
+    const comprasMat = compras.filter(c=>c.materialId===materialId).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    if(comprasMat.length===0) return null;
+    const precios = comprasMat.map(c=>c.precioUnit||0);
+    const ultima = comprasMat[0];
+    return {
+      ultimoPrecio: ultima.precioUnit||0,
+      precioMin: Math.min(...precios),
+      precioMax: Math.max(...precios),
+      precioProm: precios.reduce((s,p)=>s+p,0)/precios.length,
+      ultimaFecha: ultima.fecha,
+      ultimaFerreteriaId: ultima.ferreteriaId,
+      totalCompras: comprasMat.length,
+      historial: comprasMat
+    };
+  }
+
+  /* ---- Catálogo de materiales ---- */
   function renderMaterialesCatalogo(){
     const q = txt('matCatBuscar').toLowerCase();
-    const filtrados = materialesCatalogo.filter(m=> !q || (m.descripcion||'').toLowerCase().includes(q) || (m.parte||'').toLowerCase().includes(q));
-    if(filtrados.length===0){ $('matCatListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-6">Sin materiales en el catálogo todavía.</p>'; return; }
-    $('matCatListaWrap').innerHTML = filtrados.map(m=>`
-      <div class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between gap-2">
-        <div class="min-w-0">
-          <p class="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">${esc(m.descripcion||'')}</p>
-          <p class="text-[11px] text-slate-400">${esc(m.marca||'—')} ${m.parte?'· N/P '+esc(m.parte):''} ${m.categoria?'· '+esc(m.categoria):''} ${m.unidad?'· '+esc(m.unidad):''}</p>
+    const fcat = $('matCatFiltroCategoria').value;
+    const mostrarInactivos = $('matCatMostrarInactivos').checked;
+    const filtrados = materialesCatalogo.filter(m=>{
+      if(!mostrarInactivos && m.estado==='Inactivo') return false;
+      if(fcat && m.categoria !== fcat) return false;
+      if(q){
+        const texto = [(m.descripcion||''),(m.parte||''),(m.marca||''),nombreCategoriaMat(m.categoria)].join(' ').toLowerCase();
+        if(!texto.includes(q)) return false;
+      }
+      return true;
+    });
+    if(filtrados.length===0){ $('matCatListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-6">Sin materiales en el catálogo todavía.</p>'; renderSelectorMaterialCompra(); return; }
+    $('matCatListaWrap').innerHTML = filtrados.map(m=>{
+      const stats = estadisticasPrecio(m.id);
+      return `<div class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+        <div class="flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <p class="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">${esc(m.descripcion||'')}</p>
+            <p class="text-[11px] text-slate-400">${esc(m.marca||'—')} ${m.parte?'· N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))} · ${esc(m.unidad||'')}</p>
+          </div>
+          ${m.estado==='Inactivo' ? '<span class="text-[10px] shrink-0 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400">inactivo</span>' : (stats ? `<span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0">${money(stats.ultimoPrecio)}</span>` : '')}
         </div>
-        <button data-id="${m.id}" class="borrarMaterialCat text-red-500 text-xs font-semibold shrink-0">Borrar</button>
-      </div>`).join('');
+        <div class="flex gap-3 mt-2 text-xs font-semibold">
+          <button data-id="${m.id}" class="verMaterialBtn text-slate-600 dark:text-slate-300">👁️ Ver</button>
+          <button data-id="${m.id}" class="editarMaterialCat text-sky-600 dark:text-sky-400">✏️ Editar</button>
+          <button data-id="${m.id}" class="toggleMaterialCat text-amber-600 dark:text-amber-400">${m.estado==='Inactivo'?'🔓 Activar':'🔒 Desactivar'}</button>
+          <button data-id="${m.id}" class="borrarMaterialCat text-red-500">🗑️ Eliminar</button>
+        </div>
+      </div>`;
+    }).join('');
+    $('matCatListaWrap').querySelectorAll('.verMaterialBtn').forEach(b=>b.addEventListener('click', ()=>verMaterial(b.dataset.id)));
+    $('matCatListaWrap').querySelectorAll('.editarMaterialCat').forEach(b=>b.addEventListener('click', ()=>abrirMaterialCat(b.dataset.id)));
+    $('matCatListaWrap').querySelectorAll('.toggleMaterialCat').forEach(b=>b.addEventListener('click', ()=>{
+      const m = materialesCatalogo.find(x=>x.id===b.dataset.id);
+      if(!m) return;
+      m.estado = m.estado==='Inactivo' ? 'Activo' : 'Inactivo';
+      m.fechaActualizacion = new Date().toISOString().slice(0,10);
+      saveMaterialesCatalogo(); renderMaterialesCatalogo();
+    }));
     $('matCatListaWrap').querySelectorAll('.borrarMaterialCat').forEach(b=>b.addEventListener('click', ()=>{
-      if(!confirm('¿Borrar este material del catálogo?')) return;
-      materialesCatalogo = materialesCatalogo.filter(m=>m.id!==b.dataset.id);
-      saveMaterialesCatalogo(); renderMaterialesCatalogo(); renderSelectorMaterialCompra();
+      const m = materialesCatalogo.find(x=>x.id===b.dataset.id);
+      if(!m) return;
+      if(compras.some(c=>c.materialId===m.id)){ alert(`"${m.descripcion}" tiene compras registradas — desactívalo en vez de eliminarlo para conservar el historial de precios.`); return; }
+      if(!confirm(`¿Eliminar "${m.descripcion}" del catálogo?`)) return;
+      materialesCatalogo = materialesCatalogo.filter(x=>x.id!==m.id);
+      saveMaterialesCatalogo(); renderMaterialesCatalogo();
     }));
     renderSelectorMaterialCompra();
   }
-  $('matCatBuscar').addEventListener('input', renderMaterialesCatalogo);
-  $('btnNuevoMaterialCat').addEventListener('click', ()=>{
-    ['matcat_descripcion','matcat_parte','matcat_marca','matcat_categoria','matcat_unidad','matcat_especificaciones','matcat_comentarios'].forEach(id=>$(id).value='');
-    openModal('modalMaterialCat');
+  ['matCatBuscar','matCatFiltroCategoria','matCatMostrarInactivos'].forEach(id=>{
+    $(id).addEventListener('input', renderMaterialesCatalogo);
+    $(id).addEventListener('change', renderMaterialesCatalogo);
   });
+
+  function abrirMaterialCat(id){
+    const m = materialesCatalogo.find(x=>x.id===id) || {};
+    $('modalMaterialCatTitulo').textContent = id ? '🧰 Editar material' : '🧰 Nuevo material';
+    $('matcat_editId').value = id || '';
+    renderCategoriasMatSelects();
+    $('matcat_descripcion').value = m.descripcion || '';
+    $('matcat_parte').value = m.parte || '';
+    $('matcat_marca').value = m.marca || '';
+    $('matcat_categoria').value = m.categoria || '';
+    $('matcat_unidad').value = m.unidad || '';
+    $('matcat_especificaciones').value = m.especificaciones || '';
+    $('matcat_comentarios').value = m.comentarios || '';
+    $('matDetalleWrap').classList.add('hidden');
+    $('matCatListaHeader').classList.remove('hidden');
+    $('matCatListaWrap').classList.remove('hidden');
+    openModal('modalMaterialCat');
+  }
+  $('btnNuevoMaterialCat').addEventListener('click', ()=>abrirMaterialCat(null));
+  $('btnEditarMaterialDesdeDetalle').addEventListener('click', ()=>abrirMaterialCat($('btnEditarMaterialDesdeDetalle').dataset.id));
+
   $('btnGuardarMaterialCat').addEventListener('click', ()=>{
     if(!txt('matcat_descripcion')){ alert('Ponle una descripción al material.'); return; }
-    materialesCatalogo.push({
-      id: uid(), descripcion: txt('matcat_descripcion'), parte: txt('matcat_parte'), marca: txt('matcat_marca'),
-      categoria: txt('matcat_categoria'), unidad: txt('matcat_unidad'), especificaciones: txt('matcat_especificaciones'),
-      comentarios: txt('matcat_comentarios'), estado: 'Activo'
-    });
+    if(!$('matcat_categoria').value){ alert('Selecciona una categoría.'); return; }
+    if(!txt('matcat_unidad')){ alert('Indica la unidad (ej. Pieza, Metro...).'); return; }
+    agregarUnidadMatSiNueva(txt('matcat_unidad'));
+    const id = txt('matcat_editId');
+    const hoy = new Date().toISOString().slice(0,10);
+    const datos = {
+      descripcion: txt('matcat_descripcion'), parte: txt('matcat_parte'), marca: txt('matcat_marca'),
+      categoria: $('matcat_categoria').value, unidad: txt('matcat_unidad'),
+      especificaciones: txt('matcat_especificaciones'), comentarios: txt('matcat_comentarios'),
+      fechaActualizacion: hoy
+    };
+    if(id){
+      const idx = materialesCatalogo.findIndex(m=>m.id===id);
+      if(idx>-1) materialesCatalogo[idx] = { ...materialesCatalogo[idx], ...datos };
+    } else {
+      materialesCatalogo.push({ id: uid(), ...datos, estado: 'Activo', fechaCreacion: hoy });
+    }
     saveMaterialesCatalogo();
     closeModal('modalMaterialCat');
     renderMaterialesCatalogo();
-    mostrarToast('✔ Material agregado al catálogo (local)');
+    mostrarToast('✔ Material guardado (local)');
   });
 
+  /* ---- Vista de detalle de un material ---- */
+  function verMaterial(id){
+    const m = materialesCatalogo.find(x=>x.id===id);
+    if(!m) return;
+    const stats = estadisticasPrecio(m.id);
+    const ferrNombre = fid => { const f = ferreterias.find(x=>x.id===fid); return f ? f.nombre : '—'; };
+
+    let statsHTML = '<p class="text-slate-400 text-sm">Sin compras registradas todavía — aún no hay historial de precios.</p>';
+    let comparacionHTML = '';
+    let historialHTML = '';
+    if(stats){
+      statsHTML = `<div class="grid grid-cols-2 gap-2 text-sm">
+        <div class="bg-sky-50 dark:bg-slate-800 rounded-lg p-2"><p class="text-[10px] text-slate-400 uppercase">Último precio</p><p class="font-bold text-slate-700 dark:text-slate-200">${money(stats.ultimoPrecio)}</p></div>
+        <div class="bg-sky-50 dark:bg-slate-800 rounded-lg p-2"><p class="text-[10px] text-slate-400 uppercase">Precio mínimo</p><p class="font-bold text-slate-700 dark:text-slate-200">${money(stats.precioMin)}</p></div>
+        <div class="bg-sky-50 dark:bg-slate-800 rounded-lg p-2"><p class="text-[10px] text-slate-400 uppercase">Precio máximo</p><p class="font-bold text-slate-700 dark:text-slate-200">${money(stats.precioMax)}</p></div>
+        <div class="bg-sky-50 dark:bg-slate-800 rounded-lg p-2"><p class="text-[10px] text-slate-400 uppercase">Precio promedio</p><p class="font-bold text-slate-700 dark:text-slate-200">${money(stats.precioProm)}</p></div>
+        <div class="bg-sky-50 dark:bg-slate-800 rounded-lg p-2 col-span-2"><p class="text-[10px] text-slate-400 uppercase">Última compra</p><p class="font-bold text-slate-700 dark:text-slate-200">${esc(stats.ultimaFecha)} · ${esc(ferrNombre(stats.ultimaFerreteriaId))}</p></div>
+      </div>`;
+
+      // Comparación de precios: último precio pagado en cada ferretería, de mayor a menor.
+      const porFerreteria = {};
+      stats.historial.forEach(c=>{
+        if(!porFerreteria[c.ferreteriaId] || c.fecha > porFerreteria[c.ferreteriaId].fecha) porFerreteria[c.ferreteriaId] = c;
+      });
+      const filasFerr = Object.values(porFerreteria).sort((a,b)=>(b.precioUnit||0)-(a.precioUnit||0));
+      if(filasFerr.length>1){
+        comparacionHTML = `<div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">🔎 Comparar precios</p>
+          <div class="space-y-1">${filasFerr.map(c=>`<div class="flex justify-between text-sm bg-sky-50 dark:bg-slate-800 rounded-lg px-2 py-1"><span>${esc(ferrNombre(c.ferreteriaId))}</span><span class="font-semibold">${money(c.precioUnit||0)} <span class="text-slate-400 text-xs">(${esc(c.fecha)})</span></span></div>`).join('')}</div></div>`;
+      }
+
+      historialHTML = `<div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">💰 Historial de precios</p>
+        <div class="space-y-1">${stats.historial.map(c=>`
+          <div class="flex items-center justify-between text-sm bg-sky-50 dark:bg-slate-800 rounded-lg px-2 py-1.5">
+            <div class="min-w-0">
+              <span class="font-semibold">${esc(c.fecha)}</span> <span class="text-slate-400">· ${esc(ferrNombre(c.ferreteriaId))}</span>
+              ${c.comentarios ? `<p class="text-[11px] text-slate-400 italic">${esc(c.comentarios)}</p>` : ''}
+            </div>
+            <div class="text-right shrink-0 ml-2">
+              <p class="font-bold">${money(c.precioUnit||0)}</p>
+              <div class="flex gap-1 text-[11px]">
+                <button data-id="${c.id}" class="editarCompraDesdeMaterial text-sky-600 dark:text-sky-400">Editar</button>
+                <button data-id="${c.id}" class="borrarCompraDesdeMaterial text-red-500">✕</button>
+              </div>
+            </div>
+          </div>`).join('')}</div></div>`;
+    }
+
+    $('matDetalleContenido').innerHTML = `
+      <div>
+        <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100">${esc(m.descripcion)}</h3>
+        <p class="text-xs text-slate-400 mt-1">${esc(m.marca||'—')} ${m.parte?'· N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))} · ${esc(m.unidad||'')} ${m.estado==='Inactivo'?' · <span class="text-slate-400">Inactivo</span>':''}</p>
+      </div>
+      ${m.especificaciones ? `<div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">Especificaciones</p><p class="whitespace-pre-line text-slate-700 dark:text-slate-200">${esc(m.especificaciones)}</p></div>` : ''}
+      ${m.comentarios ? `<div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">Comentarios</p><p class="whitespace-pre-line text-slate-700 dark:text-slate-200">${esc(m.comentarios)}</p></div>` : ''}
+      <div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">💰 Resumen de precios</p>${statsHTML}</div>
+      ${comparacionHTML}
+      ${historialHTML}
+    `;
+    $('matDetalleContenido').querySelectorAll('.editarCompraDesdeMaterial').forEach(b=>b.addEventListener('click', ()=>abrirCompra(b.dataset.id)));
+    $('matDetalleContenido').querySelectorAll('.borrarCompraDesdeMaterial').forEach(b=>b.addEventListener('click', ()=>{
+      if(!confirm('¿Borrar esta compra del historial?')) return;
+      compras = compras.filter(c=>c.id!==b.dataset.id);
+      saveCompras();
+      verMaterial(id);
+    }));
+    $('btnEditarMaterialDesdeDetalle').dataset.id = id;
+    $('btnRegistrarCompraDesdeDetalle').dataset.materialId = id;
+    $('matCatListaHeader').classList.add('hidden');
+    $('matCatListaWrap').classList.add('hidden');
+    $('matDetalleWrap').classList.remove('hidden');
+  }
+  $('btnRegresarMaterial').addEventListener('click', ()=>{
+    $('matDetalleWrap').classList.add('hidden');
+    $('matCatListaHeader').classList.remove('hidden');
+    $('matCatListaWrap').classList.remove('hidden');
+    renderMaterialesCatalogo();
+  });
+  $('btnRegistrarCompraDesdeDetalle').addEventListener('click', ()=>{
+    abrirCompra(null, $('btnRegistrarCompraDesdeDetalle').dataset.materialId);
+  });
+
+  /* ---- Compras ---- */
   function renderSelectorMaterialCompra(){
+    const prev = $('compra_material').value;
     $('compra_material').innerHTML = '<option value="">— Selecciona un material del catálogo —</option>' +
-      materialesCatalogo.map(m=>`<option value="${m.id}">${esc(m.descripcion)}</option>`).join('');
+      materialesCatalogo.filter(m=>m.estado!=='Inactivo').map(m=>`<option value="${m.id}">${esc(m.descripcion)}</option>`).join('');
+    if([...$('compra_material').options].some(o=>o.value===prev)) $('compra_material').value = prev;
   }
   function renderSelectorFerreteriaCompra(){
+    const prev = $('compra_ferreteria').value;
     $('compra_ferreteria').innerHTML = '<option value="">— Ferretería —</option>' +
-      ferreterias.map(f=>`<option value="${f.id}">${esc(f.nombre)}</option>`).join('');
+      ferreterias.filter(f=>f.estado!=='Inactiva').map(f=>`<option value="${f.id}">${esc(f.nombre)}</option>`).join('');
+    if([...$('compra_ferreteria').options].some(o=>o.value===prev)) $('compra_ferreteria').value = prev;
   }
 
+  function calcularTotalCompra(){
+    if($('compra_totalManual').checked) return;
+    const total = (num('compra_cantidad')||0) * (num('compra_precioUnit')||0);
+    $('compra_precioTotal').value = total.toFixed(2);
+  }
+  ['compra_cantidad','compra_precioUnit'].forEach(id=>$(id).addEventListener('input', calcularTotalCompra));
+  $('compra_totalManual').addEventListener('change', e=>{
+    $('compra_precioTotal').disabled = !e.target.checked;
+    if(!e.target.checked) calcularTotalCompra();
+  });
+
   function renderCompras(){
-    if(compras.length===0){ $('comprasListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-4">Sin compras registradas todavía.</p>'; return; }
-    $('comprasListaWrap').innerHTML = compras.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).map(c=>{
+    const q = txt('comprasBuscar').toLowerCase();
+    let lista = compras.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    if(q){
+      lista = lista.filter(c=>{
+        const mat = materialesCatalogo.find(m=>m.id===c.materialId);
+        const ferr = ferreterias.find(f=>f.id===c.ferreteriaId);
+        return ((mat?mat.descripcion:'')+' '+(ferr?ferr.nombre:'')).toLowerCase().includes(q);
+      });
+    }
+    if(lista.length===0){ $('comprasListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-4">Sin compras registradas todavía.</p>'; return; }
+    $('comprasListaWrap').innerHTML = lista.map(c=>{
       const mat = materialesCatalogo.find(m=>m.id===c.materialId);
       const ferr = ferreterias.find(f=>f.id===c.ferreteriaId);
-      const total = (c.cantidad||0)*(c.precioUnit||0);
-      return `<div class="flex items-center justify-between py-2 border-b border-sky-100 dark:border-slate-800 text-sm">
+      const total = c.precioTotal !== undefined ? c.precioTotal : (c.cantidad||0)*(c.precioUnit||0);
+      return `<div class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-3 flex items-center justify-between gap-2 text-sm">
         <div class="min-w-0">
           <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${esc(mat?mat.descripcion:'(material borrado)')}</p>
           <p class="text-[11px] text-slate-400">${esc(c.fecha||'')} · ${esc(ferr?ferr.nombre:'—')} · ${c.cantidad||0} x ${money(c.precioUnit||0)} = ${money(total)}</p>
+          ${c.comentarios ? `<p class="text-[11px] text-slate-400 italic">${esc(c.comentarios)}</p>` : ''}
         </div>
-        <button data-id="${c.id}" class="borrarCompra text-red-500 text-xs font-semibold shrink-0">Borrar</button>
+        <div class="flex gap-2 text-xs font-semibold shrink-0">
+          <button data-id="${c.id}" class="editarCompra text-sky-600 dark:text-sky-400">Editar</button>
+          <button data-id="${c.id}" class="borrarCompra text-red-500">Borrar</button>
+        </div>
       </div>`;
     }).join('');
+    $('comprasListaWrap').querySelectorAll('.editarCompra').forEach(b=>b.addEventListener('click', ()=>abrirCompra(b.dataset.id)));
     $('comprasListaWrap').querySelectorAll('.borrarCompra').forEach(b=>b.addEventListener('click', ()=>{
+      if(!confirm('¿Borrar esta compra del historial?')) return;
       compras = compras.filter(c=>c.id!==b.dataset.id);
       saveCompras(); renderCompras();
     }));
   }
-  $('btnNuevaCompra').addEventListener('click', ()=>{
+  $('comprasBuscar').addEventListener('input', renderCompras);
+
+  function abrirCompra(id, materialIdPreseleccionado){
+    const c = id ? compras.find(x=>x.id===id) : null;
+    $('modalCompraTitulo').textContent = id ? '📜 Editar compra' : '📜 Registrar compra';
+    $('compra_editId').value = id || '';
     renderSelectorMaterialCompra(); renderSelectorFerreteriaCompra();
-    ['compra_cantidad','compra_precioUnit','compra_comentarios'].forEach(id=>$(id).value='');
-    $('compra_fecha').value = new Date().toISOString().slice(0,10);
+    $('compra_material').value = c ? c.materialId : (materialIdPreseleccionado || '');
+    $('compra_fecha').value = c ? c.fecha : new Date().toISOString().slice(0,10);
+    $('compra_ferreteria').value = c ? c.ferreteriaId : '';
+    $('compra_cantidad').value = c ? c.cantidad : '';
+    $('compra_precioUnit').value = c ? c.precioUnit : '';
+    $('compra_comentarios').value = c ? c.comentarios : '';
+    $('compra_totalManual').checked = false;
+    $('compra_precioTotal').disabled = true;
+    $('compra_precioTotal').value = c ? (c.precioTotal !== undefined ? c.precioTotal : (c.cantidad||0)*(c.precioUnit||0)).toFixed(2) : '0.00';
     openModal('modalCompra');
-  });
+  }
+  $('btnNuevaCompra').addEventListener('click', ()=>abrirCompra(null));
+  $('btnNuevaFerreteriaRapida').addEventListener('click', ()=>abrirFerreteria(null, true));
+
   $('btnGuardarCompra').addEventListener('click', ()=>{
     if(!$('compra_material').value){ alert('Selecciona un material del catálogo.'); return; }
-    compras.push({
-      id: uid(), materialId: $('compra_material').value, fecha: $('compra_fecha').value || new Date().toISOString().slice(0,10),
+    if(num('compra_cantidad')===null){ alert('La cantidad es obligatoria.'); return; }
+    if(num('compra_precioUnit')===null){ alert('El precio unitario es obligatorio.'); return; }
+    const id = txt('compra_editId');
+    const datos = {
+      materialId: $('compra_material').value, fecha: $('compra_fecha').value || new Date().toISOString().slice(0,10),
       ferreteriaId: $('compra_ferreteria').value, cantidad: num('compra_cantidad')||0, precioUnit: num('compra_precioUnit')||0,
-      comentarios: txt('compra_comentarios')
-    });
+      precioTotal: num('compra_precioTotal')||0, comentarios: txt('compra_comentarios')
+    };
+    if(id){
+      const idx = compras.findIndex(c=>c.id===id);
+      if(idx>-1) compras[idx] = { ...compras[idx], ...datos };
+    } else {
+      compras.push({ id: uid(), ...datos });
+    }
     saveCompras();
     closeModal('modalCompra');
     renderCompras();
-    mostrarToast('✔ Compra registrada (local)');
+    if(!$('matDetalleWrap').classList.contains('hidden')) verMaterial($('btnEditarMaterialDesdeDetalle').dataset.id);
+    mostrarToast('✔ Compra guardada (local)');
   });
 
+  /* ---- Ferreterías ---- */
   function renderFerreterias(){
-    if(ferreterias.length===0){ $('ferreteriasListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-4">Sin ferreterías registradas todavía.</p>'; return; }
-    $('ferreteriasListaWrap').innerHTML = ferreterias.map(f=>`
-      <div class="flex items-center justify-between py-2 border-b border-sky-100 dark:border-slate-800 text-sm">
+    const mostrarInactivas = $('ferrMostrarInactivas').checked;
+    const lista = ferreterias.filter(f=>mostrarInactivas || f.estado!=='Inactiva');
+    if(lista.length===0){ $('ferreteriasListaWrap').innerHTML = '<p class="text-center text-sm text-slate-400 py-4">Sin ferreterías registradas todavía.</p>'; return; }
+    $('ferreteriasListaWrap').innerHTML = lista.map(f=>`
+      <div class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-3 flex items-center justify-between gap-2 text-sm">
         <div class="min-w-0">
-          <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${esc(f.nombre)}</p>
+          <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${esc(f.nombre)} ${f.estado==='Inactiva'?'<span class="text-[10px] text-slate-400">(inactiva)</span>':''}</p>
           <p class="text-[11px] text-slate-400">${esc(f.telefono||'')} ${f.contacto?'· '+esc(f.contacto):''} ${f.direccion?'· '+esc(f.direccion):''}</p>
         </div>
-        <button data-id="${f.id}" class="borrarFerreteria text-red-500 text-xs font-semibold shrink-0">Borrar</button>
+        <div class="flex gap-2 text-xs font-semibold shrink-0">
+          <button data-id="${f.id}" class="editarFerreteria text-sky-600 dark:text-sky-400">Editar</button>
+          <button data-id="${f.id}" class="toggleFerreteria text-amber-600 dark:text-amber-400">${f.estado==='Inactiva'?'Activar':'Desactivar'}</button>
+          <button data-id="${f.id}" class="borrarFerreteria text-red-500">Eliminar</button>
+        </div>
       </div>`).join('');
+    $('ferreteriasListaWrap').querySelectorAll('.editarFerreteria').forEach(b=>b.addEventListener('click', ()=>abrirFerreteria(b.dataset.id)));
+    $('ferreteriasListaWrap').querySelectorAll('.toggleFerreteria').forEach(b=>b.addEventListener('click', ()=>{
+      const f = ferreterias.find(x=>x.id===b.dataset.id);
+      if(!f) return;
+      f.estado = f.estado==='Inactiva' ? 'Activa' : 'Inactiva';
+      f.fechaActualizacion = new Date().toISOString().slice(0,10);
+      saveFerreterias(); renderFerreterias(); renderSelectorFerreteriaCompra();
+    }));
     $('ferreteriasListaWrap').querySelectorAll('.borrarFerreteria').forEach(b=>b.addEventListener('click', ()=>{
-      ferreterias = ferreterias.filter(f=>f.id!==b.dataset.id);
+      const f = ferreterias.find(x=>x.id===b.dataset.id);
+      if(!f) return;
+      if(compras.some(c=>c.ferreteriaId===f.id)){ alert(`"${f.nombre}" tiene compras registradas — desactívala en vez de eliminarla.`); return; }
+      if(!confirm(`¿Eliminar "${f.nombre}"?`)) return;
+      ferreterias = ferreterias.filter(x=>x.id!==f.id);
       saveFerreterias(); renderFerreterias(); renderSelectorFerreteriaCompra();
     }));
   }
-  $('btnNuevaFerreteria').addEventListener('click', ()=>{
-    ['ferr_nombre','ferr_telefono','ferr_contacto','ferr_direccion','ferr_comentarios'].forEach(id=>$(id).value='');
+  $('ferrMostrarInactivas').addEventListener('change', renderFerreterias);
+
+  function abrirFerreteria(id, desdeCompraRapida){
+    const f = id ? ferreterias.find(x=>x.id===id) : null;
+    $('modalFerreteriaTitulo').textContent = id ? '🏪 Editar ferretería' : '🏪 Nueva ferretería';
+    $('ferr_editId').value = id || '';
+    $('ferr_nombre').value = f ? f.nombre : '';
+    $('ferr_telefono').value = f ? (f.telefono||'') : '';
+    $('ferr_contacto').value = f ? (f.contacto||'') : '';
+    $('ferr_direccion').value = f ? (f.direccion||'') : '';
+    $('ferr_comentarios').value = f ? (f.comentarios||'') : '';
+    $('modalFerreteria').dataset.desdeCompra = desdeCompraRapida ? '1' : '';
     openModal('modalFerreteria');
-  });
+  }
+  $('btnNuevaFerreteria').addEventListener('click', ()=>abrirFerreteria(null));
   $('btnGuardarFerreteria').addEventListener('click', ()=>{
     if(!txt('ferr_nombre')){ alert('Ponle un nombre a la ferretería.'); return; }
-    ferreterias.push({
-      id: uid(), nombre: txt('ferr_nombre'), telefono: txt('ferr_telefono'), contacto: txt('ferr_contacto'),
-      direccion: txt('ferr_direccion'), comentarios: txt('ferr_comentarios'), estado: 'Activo'
-    });
+    const id = txt('ferr_editId');
+    const hoy = new Date().toISOString().slice(0,10);
+    const datos = { nombre: txt('ferr_nombre'), telefono: txt('ferr_telefono'), contacto: txt('ferr_contacto'), direccion: txt('ferr_direccion'), comentarios: txt('ferr_comentarios'), fechaActualizacion: hoy };
+    let nuevoId = id;
+    if(id){
+      const idx = ferreterias.findIndex(f=>f.id===id);
+      if(idx>-1) ferreterias[idx] = { ...ferreterias[idx], ...datos };
+    } else {
+      nuevoId = uid();
+      ferreterias.push({ id: nuevoId, ...datos, estado: 'Activa', fechaCreacion: hoy });
+    }
     saveFerreterias();
+    const desdeCompra = $('modalFerreteria').dataset.desdeCompra === '1';
     closeModal('modalFerreteria');
     renderFerreterias();
+    renderSelectorFerreteriaCompra();
+    if(desdeCompra) $('compra_ferreteria').value = nuevoId;
     mostrarToast('✔ Ferretería guardada (local)');
+  });
+
+  /* ---- Navegación interna de la pantalla Materiales ---- */
+  function irASubpantallaMateriales(nombre){
+    ['materiales','compras','ferreterias'].forEach(s=>{
+      $(`matsub-${s}`).classList.toggle('hidden', s !== nombre);
+    });
+    document.querySelectorAll('.matSubBtn').forEach(b=>{
+      const activo = b.dataset.matsub === nombre;
+      b.classList.toggle('bg-sky-500', activo);
+      b.classList.toggle('text-white', activo);
+      b.classList.toggle('bg-sky-50', !activo);
+      b.classList.toggle('dark:bg-slate-800', !activo);
+      b.classList.toggle('text-slate-600', !activo);
+      b.classList.toggle('dark:text-slate-300', !activo);
+    });
+    if(nombre==='materiales') renderMaterialesCatalogo();
+    if(nombre==='compras') renderCompras();
+    if(nombre==='ferreterias') renderFerreterias();
+  }
+  document.querySelectorAll('.matSubBtn').forEach(b=>{
+    b.addEventListener('click', ()=>irASubpantallaMateriales(b.dataset.matsub));
   });
 
   /* ================= MÓDULO: MANUAL DE USUARIO ================= */
