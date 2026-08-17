@@ -328,6 +328,7 @@
 
   <!-- BOTONES -->
   <section class="flex flex-wrap gap-2 no-print">
+    <button id="btnNuevoServicio" class="flex-1 min-w-[150px] bg-slate-500 hover:bg-slate-400 text-white font-bold text-sm rounded-lg px-4 py-3 transition">🆕 Nuevo servicio</button>
     <button id="btnCalc" class="flex-1 min-w-[150px] bg-sky-500 hover:bg-sky-400 text-white font-bold text-sm rounded-lg px-4 py-3 transition">⚡ Calcular y Generar Reporte</button>
     <button id="btnGuardar" class="flex-1 min-w-[150px] bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-sm rounded-lg px-4 py-3 transition">💾 Guardar en historial</button>
     <button id="btnCopy" class="flex-1 min-w-[150px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-lg px-4 py-3 transition">📋 Vista previa / Copiar WhatsApp</button>
@@ -335,6 +336,7 @@
   </section>
 
   <p id="toast" class="hidden text-center text-xs text-emerald-600 dark:text-emerald-400 font-semibold no-print"></p>
+  <p id="modoEdicionBadge" class="hidden text-center text-xs text-amber-600 dark:text-amber-400 font-semibold no-print">✏️ Editando trabajo existente — al presionar "Guardar en historial" se ACTUALIZARÁ este mismo trabajo (no se duplicará). Usa "🆕 Nuevo servicio" si quieres crear uno distinto.</p>
 
   <!-- REPORTE -->
   <section id="reportCard" class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-5 print-border hidden shadow-sm">
@@ -2787,7 +2789,66 @@
     closeModal('modalHistorial');
     calcularYRenderizar();
     actualizarInvestigacionesDelTrabajo();
+    $('modoEdicionBadge').classList.remove('hidden');
   }
+
+  // Etapa 16: limpia el formulario y libera trabajoActualId para que el próximo
+  // "Guardar en historial" cree un trabajo NUEVO en vez de actualizar el que estaba cargado.
+  function nuevoServicio(){
+    if(window.__lastReport && !confirm('¿Iniciar un servicio nuevo? El formulario actual se limpiará (si no lo has guardado, se perderá).')) return;
+    trabajoActualId = null;
+    $('numOrden').value = '';
+    $('clienteSel').value = '';
+    $('categoriaSel').value = 'Refrigeración / HVAC';
+    renderEquipoSistemaSelect();
+    $('equipoSistemaSel').value = '';
+    actualizarVisibilidadHVAC();
+    $('fechaTrabajo').value = new Date().toISOString().slice(0,10);
+    $('tecnico').value = '';
+    $('comentarioCliente').value = '';
+    $('diagnosticoTecnico').value = '';
+    $('causaRaiz').value = '';
+    $('trabajoRealizado').value = '';
+    $('observaciones').value = '';
+    $('misComentarios').value = '';
+    $('tienePendiente').checked = false;
+    $('pendienteFechaWrap').classList.add('hidden');
+    $('pendienteFecha').value = '';
+    $('pendienteHora').value = '09:00';
+
+    materialesRows = []; manoObraRows = []; otrosRows = [];
+    $('ivaActivo').checked = false;
+    $('ivaPorcentaje').value = 16;
+    $('ivaCamposWrap').classList.add('hidden');
+    renderMateriales(); renderManoObra(); renderOtros(); recalcularTotales();
+
+    $('incluirPsicrometria').checked = true;
+    $('numEquiposWrap').classList.remove('hidden');
+    $('equiposContainer').classList.remove('hidden');
+    $('numEquiposSel').value = '1';
+    for(let i=1;i<=NUM_EQUIPOS_MAX;i++) $(`eqCard_${i}`).classList.toggle('oculto', i>1);
+
+    for(let i=1;i<=NUM_EQUIPOS_MAX;i++){
+      ['marca','modelo','linea','ampNominal','voltaje','refrigTipo','refrigCant'].forEach(f=>{ const el=$(`eq${i}_${f}`); if(el) el.value=''; });
+      const largoEl = $(`eq${i}_largo`); if(largoEl) largoEl.value = 70;
+      const anchoEl = $(`eq${i}_ancho`); if(anchoEl) anchoEl.value = 8;
+      const capSel = $(`eq${i}_capNominalSel`); if(capSel) capSel.value = '12000';
+      const capCustomWrap = $(`eq${i}_capCustomWrap`); if(capCustomWrap) capCustomWrap.classList.add('hidden');
+      ['a_te','a_hre','a_ts','a_hrs','a_v','a_psi','a_amp','a_comentario','d_te','d_hre','d_ts','d_hrs','d_v','d_psi','d_amp','d_comentario'].forEach(f=>{ const el=$(`eq${i}_${f}`); if(el) el.value=''; });
+      TIPOS_FOTO.forEach(tipo=>{ fotosActuales[i][tipo]=null; fotosLinksActuales[i][tipo]=null; mostrarPreviewFotoEq(i,tipo,null); });
+    }
+    fotoOrdenActual = { antes:null, despues:null };
+    fotoOrdenLinkActual = { antes:null, despues:null };
+    mostrarPreviewFotoOrden('antes', null);
+    mostrarPreviewFotoOrden('despues', null);
+
+    $('reportCard').classList.add('hidden');
+    window.__lastReport = null;
+    $('investigacionesDelTrabajoWrap').classList.add('hidden');
+    $('modoEdicionBadge').classList.add('hidden');
+    mostrarToast('🆕 Formulario listo para un servicio nuevo');
+  }
+  $('btnNuevoServicio').addEventListener('click', nuevoServicio);
 
   $('btnHistorial').addEventListener('click', ()=>{ renderClientesSelects(); renderHistorialLista(); openModal('modalHistorial'); });
   ['filtroCliente','filtroTipo','filtroMarca','filtroFecha'].forEach(id=>{
@@ -3454,7 +3515,11 @@
   $('btnGuardar').addEventListener('click', async ()=>{
     if (!window.__lastReport) calcularYRenderizar();
     if (!window.__lastReport) return;
-    const idLocal = uid();
+    // Etapa 16: si trabajoActualId apunta a un trabajo que sigue existiendo en el historial,
+    // este Guardar es una EDICIÓN y debe actualizar ese mismo registro (mismo id), nunca crear
+    // uno nuevo. Solo se genera un id nuevo cuando no hay trabajo cargado (servicio nuevo).
+    const esEdicion = !!trabajoActualId && trabajos.some(x=>x.id===trabajoActualId);
+    const idLocal = esEdicion ? trabajoActualId : uid();
     const incluyePsicro = categoriaActual() === 'Refrigeración / HVAC' && $('incluirPsicrometria').checked;
     const n = incluyePsicro ? numEquiposActivos() : 0;
 
@@ -3546,28 +3611,70 @@
             trabajoBase['fotoOrden'+tipo.charAt(0).toUpperCase()+tipo.slice(1)+'Link'] = fotoOrdenLinkActual[tipo];
           }
         }
-        const ref = await db.collection('trabajos_minisplit').add(trabajoBase);
-        trabajoActualId = ref.id;
-        mostrarToast('✔ Trabajo y fotos guardados en la nube');
+        if(esEdicion){
+          // Actualiza el mismo documento (merge:true conserva pagos y cualquier otro campo
+          // que no forme parte del formulario, en vez de reemplazar todo el documento).
+          await db.collection('trabajos_minisplit').doc(trabajoActualId).set(trabajoBase, {merge:true});
+          mostrarToast('✔ Trabajo actualizado y fotos guardadas en la nube');
+        $('modoEdicionBadge').classList.remove('hidden');
+        } else {
+          const ref = await db.collection('trabajos_minisplit').add(trabajoBase);
+          trabajoActualId = ref.id;
+          mostrarToast('✔ Trabajo y fotos guardados en la nube');
+        $('modoEdicionBadge').classList.remove('hidden');
+        }
         actualizarInvestigacionesDelTrabajo();
       }catch(e){ alert('No se pudo guardar en la nube: ' + e.message); }
     } else if(modoCloud && db){
       try{
-        const ref = await db.collection('trabajos_minisplit').add(trabajoBase);
-        trabajoActualId = ref.id;
+        if(esEdicion){
+          await db.collection('trabajos_minisplit').doc(trabajoActualId).set(trabajoBase, {merge:true});
+        } else {
+          const ref = await db.collection('trabajos_minisplit').add(trabajoBase);
+          trabajoActualId = ref.id;
+        }
         equiposData.forEach(eqObj=>{
           const i = eqObj._i;
           const fotosParaGuardar = {};
           TIPOS_FOTO.forEach(t=>{ if(fotosActuales[i][t]) fotosParaGuardar[t.toLowerCase()] = fotosActuales[i][t]; });
-          if(Object.keys(fotosParaGuardar).length){ fotosLocalMap[ref.id + '::' + i] = fotosParaGuardar; }
+          if(Object.keys(fotosParaGuardar).length){ fotosLocalMap[idLocal + '::' + i] = fotosParaGuardar; }
         });
         const fotosOrdenGuardar = {};
         ['antes','despues'].forEach(t=>{ if(fotoOrdenActual[t]) fotosOrdenGuardar[t] = fotoOrdenActual[t]; });
-        if(Object.keys(fotosOrdenGuardar).length){ fotosLocalMap[ref.id + '::orden'] = fotosOrdenGuardar; }
+        if(Object.keys(fotosOrdenGuardar).length){ fotosLocalMap[idLocal + '::orden'] = fotosOrdenGuardar; }
         saveFotosLocalMap();
-        mostrarToast('✔ Trabajo guardado en la nube (fotos solo en este dispositivo — conecta Drive para verlas en todos lados)');
+        mostrarToast(esEdicion ? '✔ Trabajo actualizado en la nube (fotos solo en este dispositivo — conecta Drive para verlas en todos lados)' : '✔ Trabajo guardado en la nube (fotos solo en este dispositivo — conecta Drive para verlas en todos lados)');
+        $('modoEdicionBadge').classList.remove('hidden');
         actualizarInvestigacionesDelTrabajo();
       }catch(e){ alert('No se pudo guardar en la nube: ' + e.message); }
+    } else if(esEdicion){
+      // ACTUALIZAR trabajo existente en el historial local: conserva el mismo id y
+      // conserva cualquier campo que no venga del formulario (p.ej. pagos[]) mediante
+      // el spread del trabajo anterior seguido del spread de los datos nuevos.
+      const idx = trabajosLocal.findIndex(x=>x.id===trabajoActualId);
+      const anterior = trabajosLocal[idx];
+      const trabajoActualizado = { ...anterior, ...trabajoBase, id: anterior.id, pagos: anterior.pagos || [] };
+      const respaldoAnterior = trabajosLocal[idx];
+      trabajosLocal[idx] = trabajoActualizado;
+      equiposData.forEach(eqObj=>{
+        const i = eqObj._i;
+        const fotosParaGuardar = {};
+        TIPOS_FOTO.forEach(t=>{ if(fotosActuales[i][t]) fotosParaGuardar[t.toLowerCase()] = fotosActuales[i][t]; });
+        if(Object.keys(fotosParaGuardar).length){ fotosLocalMap[idLocal + '::' + i] = fotosParaGuardar; }
+      });
+      const fotosOrdenGuardar = {};
+      ['antes','despues'].forEach(t=>{ if(fotoOrdenActual[t]) fotosOrdenGuardar[t] = fotoOrdenActual[t]; });
+      if(Object.keys(fotosOrdenGuardar).length){ fotosLocalMap[idLocal + '::orden'] = fotosOrdenGuardar; }
+      try{
+        saveTrabajos(); saveFotosLocalMap();
+        trabajos = trabajosLocal;
+        mostrarToast('✔ Trabajo actualizado en el historial (local)');
+        $('modoEdicionBadge').classList.remove('hidden');
+        actualizarInvestigacionesDelTrabajo();
+      }catch(err){
+        trabajosLocal[idx] = respaldoAnterior;
+        alert('No se pudo actualizar: el almacenamiento local está lleno (probablemente por fotos). Haz un respaldo y limpia registros antiguos, o conecta Google Drive.');
+      }
     } else {
       const trabajo = { id: idLocal, ...trabajoBase };
       trabajosLocal.push(trabajo);
@@ -3585,6 +3692,7 @@
         trabajos = trabajosLocal;
         trabajoActualId = idLocal;
         mostrarToast('✔ Trabajo guardado en el historial (local)');
+        $('modoEdicionBadge').classList.remove('hidden');
         actualizarInvestigacionesDelTrabajo();
       }catch(err){
         trabajosLocal.pop();
@@ -5207,7 +5315,7 @@ La app funciona 100% sin internet ni cuenta alguna (todo se guarda en este dispo
 8. Pulsa "Calcular / Generar reporte" para ver la vista previa, y "Guardar" para guardarlo en el Historial.
 9. Desde 🗂 Historial puedes pulsar "Ver" en cualquier trabajo para volver a cargarlo en la pantalla (por ejemplo para reimprimirlo o reenviar el reporte).
 
-⚠️ Importante: el botón "Ver" del Historial carga los datos del trabajo en el formulario para consulta/reimpresión, pero "Guardar" siempre crea un trabajo NUEVO — no sobreescribe el original. Si necesitas modificar diagnóstico, materiales o totales de un trabajo ya guardado, hazlo con cuidado (quedará un registro duplicado) o bórralo y créalo de nuevo. La única información que SÍ puedes actualizar sobre un trabajo ya existente, sin duplicarlo, son sus pagos (ver sección "Cobros").` },
+✏️ Importante: el botón "Ver" del Historial carga los datos del trabajo en el formulario. Mientras ese trabajo esté cargado, verás el aviso "Editando trabajo existente" — y si presionas "Guardar en historial", se ACTUALIZARÁ ese mismo trabajo (mismo ID, mismos pagos, sin duplicarlo). Si en cambio quieres registrar un trabajo distinto, pulsa primero "🆕 Nuevo servicio" para limpiar el formulario; así el siguiente "Guardar" creará un trabajo nuevo.` },
 
     { id:'clientes', titulo:'Clientes', texto:'El botón "+" junto al selector de Cliente te permite registrar clientes nuevos (nombre, apellido, teléfono, dirección). Si conectas Firestore, se sincronizan con tu app de finanzas — es el mismo catálogo de clientes en ambas apps.' },
 
@@ -5295,7 +5403,7 @@ Restaurar un respaldo reemplaza tus datos locales actuales (te lo confirma antes
 
 ¿Necesito internet para usar la app? No, todo funciona sin conexión salvo conectar Firestore o Google Drive.
 
-¿Qué pasa si edito un trabajo viejo y le doy "Guardar"? Se crea un trabajo nuevo (duplicado), no se actualiza el original — ver la sección "Servicios" para más detalle. Los pagos sí se pueden agregar a un trabajo existente sin duplicarlo, desde 🗂 Historial → 💰 Cobros.
+¿Qué pasa si edito un trabajo viejo (abierto con "Ver" desde Historial) y le doy "Guardar"? Se ACTUALIZA ese mismo trabajo (mismo ID) — no se duplica. Si quieres capturar un trabajo distinto, pulsa "🆕 Nuevo servicio" antes de guardar, para que se cree un registro nuevo en vez de sobreescribir el que tenías cargado.
 
 ¿El IVA afecta mi Utilidad/Margen? No, el KPI de Ingresos/Utilidad/Margen siempre usa el Subtotal (sin IVA); el IVA solo afecta lo que el cliente debe pagar (Cobrado/Pendiente).` }
   ];
