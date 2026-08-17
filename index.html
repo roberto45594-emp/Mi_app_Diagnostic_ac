@@ -250,7 +250,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-xs">
         <thead><tr class="text-slate-400 text-left">
-          <th class="pb-1 pr-1 w-16">Cant.</th><th class="pb-1 pr-1 w-24">Unidad</th><th class="pb-1 pr-1">Descripción</th><th class="pb-1 pr-1 w-24">Costo Unit.</th><th class="pb-1 pr-1 w-24">Subtotal</th><th class="pb-1 w-8"></th>
+          <th class="pb-1 pr-1 w-16">Cant.</th><th class="pb-1 pr-1 w-24">Unidad</th><th class="pb-1 pr-1">Descripción</th><th class="pb-1 pr-1 w-24">P. Cliente</th><th class="pb-1 pr-1 w-24">Costo Real</th><th class="pb-1 pr-1 w-24">Subtotal</th><th class="pb-1 w-8"></th>
         </tr></thead>
         <tbody id="manoObraBody"></tbody>
       </table>
@@ -267,7 +267,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-xs">
         <thead><tr class="text-slate-400 text-left">
-          <th class="pb-1 pr-1">Concepto</th><th class="pb-1 pr-1 w-24">Precio</th><th class="pb-1 w-8"></th>
+          <th class="pb-1 pr-1">Concepto</th><th class="pb-1 pr-1 w-24">Precio</th><th class="pb-1 pr-1 w-24">Tipo</th><th class="pb-1 w-8"></th>
         </tr></thead>
         <tbody id="otrosBody"></tbody>
       </table>
@@ -277,7 +277,28 @@
       <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Total materiales</span><span id="resTotalMateriales">$0.00</span></div>
       <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Total mano de obra</span><span id="resTotalManoObra">$0.00</span></div>
       <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Otros gastos</span><span id="resTotalOtros">$0.00</span></div>
-      <div class="flex justify-between text-base font-extrabold text-sky-700 dark:text-sky-300 pt-2 border-t border-sky-200 dark:border-slate-700"><span>GRAN TOTAL</span><span id="resGranTotal">$0.00</span></div>
+      <div class="flex justify-between text-base font-extrabold text-sky-700 dark:text-sky-300 pt-2 border-t border-sky-200 dark:border-slate-700"><span id="resGranTotalLabel">GRAN TOTAL</span><span id="resGranTotal">$0.00</span></div>
+    </div>
+
+    <!-- Etapa 12: IVA / facturación opcional — capa de cálculo sobre el precio de venta, no toca costos -->
+    <div class="mt-3 border border-sky-200 dark:border-slate-700 rounded-xl p-4">
+      <label class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+        <input id="ivaActivo" type="checkbox" class="rounded">
+        🧾 Aplicar IVA a este trabajo (opcional)
+      </label>
+      <div id="ivaCamposWrap" class="hidden mt-3 space-y-2">
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-slate-500 dark:text-slate-400">Porcentaje IVA</label>
+          <input id="ivaPorcentaje" type="number" step="0.01" value="16" class="w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-sm">
+          <span class="text-xs text-slate-400">%</span>
+        </div>
+        <div class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-700 rounded-lg p-3 space-y-1 text-sm">
+          <div class="flex justify-between text-slate-600 dark:text-slate-300"><span>Subtotal</span><span id="ivaResSubtotal">$0.00</span></div>
+          <div class="flex justify-between text-slate-600 dark:text-slate-300"><span id="ivaResPctLabel">IVA (16%)</span><span id="ivaResMonto">$0.00</span></div>
+          <div class="flex justify-between font-extrabold text-sky-700 dark:text-sky-300 pt-1 border-t border-sky-200 dark:border-slate-700"><span>TOTAL CON IVA</span><span id="ivaResTotal">$0.00</span></div>
+        </div>
+      </div>
+      <p class="text-[10px] text-slate-400 mt-2">El IVA es una capa de cálculo sobre el precio de venta; no modifica los costos reales congelados (costoUnit / costoRealUnit) ni la Utilidad/Margen del negocio.</p>
     </div>
   </section>
 
@@ -566,8 +587,8 @@
       <p><strong class="text-slate-600 dark:text-slate-300">Ingresos:</strong> suma de materiales + mano de obra + otros conceptos de cada trabajo (el total que se generó/facturó al cliente), tomado directamente del trabajo guardado.</p>
       <p><strong class="text-slate-600 dark:text-slate-300">Trabajos:</strong> cantidad de órdenes de servicio registradas dentro del periodo y filtros seleccionados.</p>
       <p><strong class="text-slate-600 dark:text-slate-300">Cobrado / Pendiente:</strong> requieren un registro de pagos por trabajo que todavía no existe en la app. Se mostrarán como "Datos insuficientes" hasta que se agregue ese campo.</p>
-      <p><strong class="text-slate-600 dark:text-slate-300">Costos:</strong> el precio unitario capturado en materiales y mano de obra es el precio cobrado al cliente, no necesariamente el costo real del negocio. Hasta integrar el historial de compras del catálogo con cada trabajo, este dato se muestra como "Datos insuficientes" para no calcular una cifra incorrecta.</p>
-      <p><strong class="text-slate-600 dark:text-slate-300">Utilidad y Margen:</strong> dependen de tener un Costo real, por lo que también se muestran como "Datos insuficientes" por ahora.</p>
+      <p><strong class="text-slate-600 dark:text-slate-300">Costos:</strong> suma del costo real congelado de cada trabajo (costoUnit en materiales, costoRealUnit en mano de obra, y renglones de "otros" con tipo costo). Si algún renglón con ingreso conocido no tiene costo real capturado, se marca con "*" y una advertencia: ese costo NO se asume como $0, se muestra solo el costo conocido.</p>
+      <p><strong class="text-slate-600 dark:text-slate-300">Utilidad y Margen:</strong> Ingresos − Costos, y (Utilidad/Ingresos)×100. Solo se calculan cuando todos los trabajos del periodo tienen costo real completo; si algún trabajo tiene costo incompleto, se muestran como "Datos insuficientes" en vez de una cifra falsa.</p>
     </div>
   </section>
 </div>
@@ -716,6 +737,52 @@
         <input id="filtroFecha" type="date" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
       </div>
       <div id="historialLista" class="text-sm divide-y divide-sky-100 dark:divide-slate-800"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: COBROS Y CUENTAS PENDIENTES (Etapa 11) ============ -->
+<div id="modalCobros" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <div class="min-w-0">
+        <h3 class="font-bold text-sky-700 dark:text-sky-300">💰 Cobros</h3>
+        <p id="cobrosTituloTrabajo" class="text-[11px] text-slate-400 truncate"></p>
+      </div>
+      <button data-close="modalCobros" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-4">
+      <div class="bg-sky-50 dark:bg-slate-800/60 border border-sky-200 dark:border-slate-700 rounded-xl p-4 space-y-1">
+        <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Total de venta</span><span id="cobrosResumenTotal" class="font-semibold">$0.00</span></div>
+        <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Cobrado</span><span id="cobrosResumenCobrado" class="font-semibold text-emerald-600 dark:text-emerald-400">$0.00</span></div>
+        <div class="flex justify-between text-base font-extrabold text-slate-700 dark:text-slate-200 pt-2 border-t border-sky-200 dark:border-slate-700"><span>Pendiente</span><span id="cobrosResumenPendiente">$0.00</span></div>
+        <div class="pt-2"><span id="cobrosEstadoBadge" class="text-xs font-bold rounded-full px-2.5 py-1"></span></div>
+        <div id="cobrosSobrepagoWrap" class="hidden pt-1"><p id="cobrosSobrepagoTxt" class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold"></p></div>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-2">Pagos registrados</h4>
+        <div id="cobrosLista" class="text-sm"></div>
+      </div>
+
+      <div class="border-t border-sky-200 dark:border-slate-700 pt-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-2">Registrar / editar pago</h4>
+        <input type="hidden" id="cobroEditId" value="">
+        <div class="grid grid-cols-2 gap-2">
+          <input id="cobroMonto" type="number" step="0.01" placeholder="Monto" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+          <input id="cobroFecha" type="date" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+          <select id="cobroMetodo" class="col-span-2 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+            <option value="Efectivo">Efectivo</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Tarjeta">Tarjeta</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div class="flex gap-2 mt-3">
+          <button id="btnGuardarPago" class="flex-1 bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Registrar pago</button>
+          <button id="btnCancelarEdicionPago" class="hidden text-xs font-semibold text-slate-500 dark:text-slate-400 px-2">Cancelar edición</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -931,11 +998,12 @@
 <div id="modalDocumento" class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center p-4">
   <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-xl max-h-[85vh] flex flex-col shadow-xl">
     <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
-      <h3 class="font-bold text-sky-700 dark:text-sky-300">📚 Nuevo documento</h3>
+      <h3 id="modalDocumentoTitulo" class="font-bold text-sky-700 dark:text-sky-300">📚 Nuevo documento</h3>
       <button data-close="modalDocumento" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
     </div>
     <div class="p-4 overflow-y-auto space-y-2 text-sm">
-      <p class="text-[11px] text-slate-400">La subida directa a Google Drive se agregará en una etapa posterior — por ahora puedes pegar un link si ya lo tienes.</p>
+      <input type="hidden" id="bib_editId">
+      <input type="hidden" id="bib_idDrive">
       <input id="bib_nombre" placeholder="Nombre" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
       <div class="grid grid-cols-2 gap-2">
         <select id="bib_tipo" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
@@ -945,7 +1013,17 @@
       </div>
       <textarea id="bib_descripcion" rows="2" placeholder="Descripción" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></textarea>
       <input id="bib_etiquetas" placeholder="Etiquetas (separadas por coma)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
-      <input id="bib_urlDrive" placeholder="URL de Google Drive (opcional, manual por ahora)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+
+      <div class="border border-sky-200 dark:border-slate-700 rounded-lg p-3 space-y-2">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">Archivo / enlace</p>
+        <div id="bibDriveConectado" class="hidden space-y-2">
+          <input id="bib_archivo" type="file" class="w-full text-xs">
+          <button id="btnSubirDocumentoDrive" type="button" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg px-3 py-2 text-xs font-bold">☁️ Subir a Google Drive</button>
+        </div>
+        <p id="bibDriveDesconectado" class="text-[11px] text-slate-400">Google Drive no está conectado — puedes pegar un enlace manualmente, o conectar Drive desde ☁️ Respaldo para subir el archivo directamente.</p>
+        <input id="bib_urlDrive" placeholder="URL del documento (Drive u otro enlace)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+      </div>
+
       <label class="flex items-center gap-1.5 text-xs"><input id="bib_favorito" type="checkbox" class="rounded"> Marcar como favorito</label>
       <button id="btnGuardarDocumento" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Guardar documento</button>
     </div>
@@ -1180,7 +1258,11 @@
       totalMateriales: base.totalMateriales || 0,
       totalManoObra: base.totalManoObra || 0,
       totalOtros: base.totalOtros || 0,
-      granTotal: base.granTotal || 0
+      granTotal: base.granTotal || 0,
+      // Etapa 11: trabajos viejos no tienen "pagos" -> se interpretan como [] (Sin pago, Pendiente = granTotal).
+      pagos: Array.isArray(base.pagos) ? base.pagos : [],
+      // Etapa 12: trabajos viejos no tienen IVA -> se interpretan como IVA desactivado (nunca se asume que sí llevaban IVA).
+      iva: (base.iva && typeof base.iva === 'object') ? base.iva : { activo: false, porcentaje: 0, subtotal: base.granTotal || 0, monto: 0, total: base.granTotal || 0 }
     };
   }
 
@@ -1366,10 +1448,21 @@
   function snapshotDatos(){
     return {
       tipo: 'respaldo_diagnostico_minisplit',
-      version: 4,
+      version: 5,
       exportado: new Date().toISOString(),
       catalogo: catalogoLocal, clientesLocal, sistemas: sistemasLocal, unidades: unidadesLocal, trabajos: trabajosLocal,
-      fotosLocalMap
+      fotosLocalMap,
+      // --- Etapa 7: Investigación y Desarrollo ---
+      topicosLocal,
+      investigaciones,
+      // --- Etapa 7: Biblioteca ---
+      documentos,
+      // --- Etapa 7: Materiales ---
+      materialesCatalogo,
+      compras,
+      ferreterias,
+      categoriasMatLocal,
+      unidadesMatLocal
     };
   }
 
@@ -1388,6 +1481,34 @@
     saveCatalogo(); saveClientesLocal(); saveSistemas(); saveUnidades(); saveTrabajos(); saveFotosLocalMap();
     if(!modoCloud){ clientesActivos = clientesLocal; catalogo = catalogoLocal; sistemas = sistemasLocal; trabajos = trabajosLocal; }
     renderCatalogoDatalist(); renderClientesSelects(); renderEquipoSistemaSelect(); renderUnidadesDatalist();
+
+    // --- Etapa 7: Investigación y Desarrollo (compatible con respaldos antiguos sin estas claves) ---
+    topicosLocal = (data.topicosLocal && data.topicosLocal.length) ? data.topicosLocal : topicosLocal;
+    investigaciones = data.investigaciones || investigaciones;
+    saveTopicos(); saveInvestigaciones();
+    if(typeof renderTopicosSelects === 'function') renderTopicosSelects();
+    if(typeof renderTopicosLista === 'function') renderTopicosLista();
+    if(typeof renderInvestigaciones === 'function') renderInvestigaciones();
+
+    // --- Etapa 7: Biblioteca ---
+    documentos = data.documentos || documentos;
+    saveDocumentos();
+    if(typeof renderBiblioteca === 'function') renderBiblioteca();
+
+    // --- Etapa 7: Materiales (catálogo, compras, ferreterías, categorías, unidades) ---
+    materialesCatalogo = data.materialesCatalogo || materialesCatalogo;
+    compras = data.compras || compras;
+    ferreterias = data.ferreterias || ferreterias;
+    categoriasMatLocal = (data.categoriasMatLocal && data.categoriasMatLocal.length) ? data.categoriasMatLocal : categoriasMatLocal;
+    unidadesMatLocal = (data.unidadesMatLocal && data.unidadesMatLocal.length) ? data.unidadesMatLocal : unidadesMatLocal;
+    saveMaterialesCatalogo(); saveCompras(); saveFerreterias(); saveCategoriasMat(); saveUnidadesMat();
+    if(typeof renderMaterialesCatalogo === 'function') renderMaterialesCatalogo();
+    if(typeof renderCompras === 'function') renderCompras();
+    if(typeof renderFerreterias === 'function') renderFerreterias();
+    if(typeof renderCategoriasMatLista === 'function') renderCategoriasMatLista();
+    if(typeof renderCategoriasMatSelects === 'function') renderCategoriasMatSelects();
+    if(typeof renderUnidadesMatDatalist === 'function') renderUnidadesMatDatalist();
+
     mostrarToast(modoCloud ? '✔ Respaldo restaurado en este dispositivo' : '✔ Datos restaurados correctamente');
     return true;
   }
@@ -2186,6 +2307,11 @@
 
   function money(n){ const v = (n===null||n===undefined||isNaN(n)) ? 0 : n; return '$' + v.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 
+  // Etapa 9: normaliza el tipo de una fila de "otros". Cualquier fila sin "tipo" (registros
+  // antiguos) o con un valor no reconocido se interpreta como "ingreso", preservando el
+  // comportamiento histórico. Nunca se infiere "costo" a partir del nombre del concepto.
+  function otrosTipo(r){ return r && r.tipo === 'costo' ? 'costo' : 'ingreso'; }
+
   function renderMateriales(){
     $('materialesBody').innerHTML = materialesRows.map((row,i)=>{
       const subtotal = (row.cantidad||0) * (row.precioUnit||0);
@@ -2362,13 +2488,14 @@
 
   function renderManoObra(){
     $('manoObraBody').innerHTML = manoObraRows.map((row,i)=>{
-      const subtotal = (row.cantidad||0) * (row.costoUnit||0);
+      const subtotal = (row.cantidad||0) * (row.precioUnit||0);
       row.subtotal = subtotal;
       return `<tr class="border-b border-sky-100 dark:border-slate-800">
         <td class="py-1 pr-1"><input type="number" step="0.1" value="${row.cantidad??''}" data-i="${i}" data-f="cantidad" class="moInput w-14 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
         <td class="py-1 pr-1"><input type="text" list="listaUnidades" value="${esc(row.unidad||'')}" data-i="${i}" data-f="unidad" class="moInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
         <td class="py-1 pr-1"><input type="text" value="${esc(row.descripcion||'')}" data-i="${i}" data-f="descripcion" class="moInput w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
-        <td class="py-1 pr-1"><input type="number" step="0.01" value="${row.costoUnit??''}" data-i="${i}" data-f="costoUnit" class="moInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><input type="number" step="0.01" value="${row.precioUnit??''}" data-i="${i}" data-f="precioUnit" title="Precio cobrado al cliente" class="moInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><input type="number" step="0.01" value="${row.costoRealUnit??''}" data-i="${i}" data-f="costoRealUnit" title="Costo real interno (no se muestra al cliente)" placeholder="—" class="moInput w-20 bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded px-1 py-1"></td>
         <td class="py-1 pr-1 font-semibold text-slate-600 dark:text-slate-300">${money(subtotal)}</td>
         <td class="py-1"><button data-i="${i}" class="delManoObra text-red-500 font-bold">✕</button></td>
       </tr>`;
@@ -2376,10 +2503,16 @@
     $('manoObraBody').querySelectorAll('.moInput').forEach(inp=>{
       inp.addEventListener('input', ()=>{
         const i = parseInt(inp.dataset.i), f = inp.dataset.f;
-        manoObraRows[i][f] = (f==='cantidad'||f==='costoUnit') ? (parseFloat(inp.value)||0) : inp.value;
+        if(f==='cantidad' || f==='precioUnit'){
+          manoObraRows[i][f] = parseFloat(inp.value)||0;
+        } else if(f==='costoRealUnit'){
+          manoObraRows[i][f] = inp.value === '' ? null : (parseFloat(inp.value)||0);
+        } else {
+          manoObraRows[i][f] = inp.value;
+        }
         recalcularTotales();
         const fila = inp.closest('tr');
-        fila.children[4].textContent = money((manoObraRows[i].cantidad||0)*(manoObraRows[i].costoUnit||0));
+        fila.children[5].textContent = money((manoObraRows[i].cantidad||0)*(manoObraRows[i].precioUnit||0));
       });
       inp.addEventListener('change', ()=>{ if(inp.dataset.f==='unidad') agregarUnidadSiNueva(inp.value.trim()); });
     });
@@ -2389,14 +2522,22 @@
   }
 
   function renderOtros(){
-    $('otrosBody').innerHTML = otrosRows.map((row,i)=>`
+    $('otrosBody').innerHTML = otrosRows.map((row,i)=>{
+      const tipo = otrosTipo(row);
+      return `
       <tr class="border-b border-sky-100 dark:border-slate-800">
         <td class="py-1 pr-1"><input type="text" value="${esc(row.concepto||'')}" data-i="${i}" data-f="concepto" class="otInput w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
         <td class="py-1 pr-1"><input type="number" step="0.01" value="${row.precio??''}" data-i="${i}" data-f="precio" class="otInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><select data-i="${i}" data-f="tipo" class="otInput w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1">
+          <option value="ingreso" ${tipo==='ingreso'?'selected':''}>Ingreso</option>
+          <option value="costo" ${tipo==='costo'?'selected':''}>Costo</option>
+        </select></td>
         <td class="py-1"><button data-i="${i}" class="delOtro text-red-500 font-bold">✕</button></td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
     $('otrosBody').querySelectorAll('.otInput').forEach(inp=>{
-      inp.addEventListener('input', ()=>{
+      const evt = inp.tagName === 'SELECT' ? 'change' : 'input';
+      inp.addEventListener(evt, ()=>{
         const i = parseInt(inp.dataset.i), f = inp.dataset.f;
         otrosRows[i][f] = (f==='precio') ? (parseFloat(inp.value)||0) : inp.value;
         recalcularTotales();
@@ -2409,8 +2550,10 @@
 
   function recalcularTotales(){
     const totalMat = materialesRows.reduce((s,r)=>s+((r.cantidad||0)*(r.precioUnit||0)),0);
-    const totalMO = manoObraRows.reduce((s,r)=>s+((r.cantidad||0)*(r.costoUnit||0)),0);
-    const totalOt = otrosRows.reduce((s,r)=>s+(r.precio||0),0);
+    const totalMO = manoObraRows.reduce((s,r)=>s+((r.cantidad||0)*(r.precioUnit||0)),0);
+    // Etapa 9: solo los conceptos "ingreso" (o sin tipo, migrados como ingreso) se cobran al
+    // cliente. Los "costo" se guardan en el trabajo pero no inflan el importe cobrado.
+    const totalOt = otrosRows.reduce((s,r)=>s+(otrosTipo(r)==='ingreso' ? (r.precio||0) : 0),0);
     const gran = totalMat + totalMO + totalOt;
     $('totalMaterialesTxt').textContent = money(totalMat);
     $('totalManoObraTxt').textContent = money(totalMO);
@@ -2418,12 +2561,33 @@
     $('resTotalManoObra').textContent = money(totalMO);
     $('resTotalOtros').textContent = money(totalOt);
     $('resGranTotal').textContent = money(gran);
-    return { totalMat, totalMO, totalOt, gran };
+
+    // Etapa 12: IVA es una capa de cálculo sobre "gran" (precio de venta). NUNCA toca
+    // costoUnit/costoRealUnit ni el propio "gran" (que sigue siendo el Subtotal).
+    const ivaActivo = $('ivaActivo').checked;
+    $('resGranTotalLabel').textContent = ivaActivo ? 'SUBTOTAL' : 'GRAN TOTAL';
+    let ivaPct = 0, ivaMonto = 0, totalConIva = gran;
+    if(ivaActivo){
+      ivaPct = parseFloat($('ivaPorcentaje').value) || 0;
+      ivaMonto = gran * (ivaPct/100);
+      totalConIva = gran + ivaMonto;
+      $('ivaResSubtotal').textContent = money(gran);
+      $('ivaResPctLabel').textContent = `IVA (${ivaPct}%)`;
+      $('ivaResMonto').textContent = money(ivaMonto);
+      $('ivaResTotal').textContent = money(totalConIva);
+    }
+    return { totalMat, totalMO, totalOt, gran, ivaActivo, ivaPct, ivaMonto, totalConIva };
   }
 
+  $('ivaActivo').addEventListener('change', ()=>{
+    $('ivaCamposWrap').classList.toggle('hidden', !$('ivaActivo').checked);
+    recalcularTotales();
+  });
+  $('ivaPorcentaje').addEventListener('input', recalcularTotales);
+
   $('btnAddMaterial').addEventListener('click', ()=>{ materialesRows.push({cantidad:1, descripcion:'', parte:'', precioUnit:0}); renderMateriales(); recalcularTotales(); });
-  $('btnAddManoObra').addEventListener('click', ()=>{ manoObraRows.push({cantidad:1, unidad:'Servicio', descripcion:'', costoUnit:0}); renderManoObra(); recalcularTotales(); });
-  $('btnAddOtro').addEventListener('click', ()=>{ otrosRows.push({concepto:'', precio:0}); renderOtros(); recalcularTotales(); });
+  $('btnAddManoObra').addEventListener('click', ()=>{ manoObraRows.push({cantidad:1, unidad:'Servicio', descripcion:'', precioUnit:0, costoRealUnit:null}); renderManoObra(); recalcularTotales(); });
+  $('btnAddOtro').addEventListener('click', ()=>{ otrosRows.push({concepto:'', precio:0, tipo:'ingreso'}); renderOtros(); recalcularTotales(); });
 
   /* ================= HISTORIAL DE TRABAJOS ================= */
   function renderFiltroMarcas(){
@@ -2448,19 +2612,32 @@
       const cli = clientesActivos.find(c=>c.id===t.clienteId);
       const pendienteTxt = t.pendienteFecha ? `⏰ Pendiente: ${t.pendienteFecha}${t.pendienteHora?' '+t.pendienteHora:''}` : '';
       const iconoCat = t.categoria === 'Electricidad' ? '⚡' : t.categoria === 'Plomería' ? '🔧' : '❄️';
+      // Etapa 11: estado de cobro derivado de los pagos del trabajo (sin duplicar el dato).
+      const cob = infoCobro(t);
+      let cobroTxt = '';
+      if(cob.gran > 0){
+        if(cob.estado === 'Pagado') cobroTxt = `<span class="text-emerald-600 dark:text-emerald-400 font-semibold">✅ Pagado</span>`;
+        else if(cob.estado === 'Parcial') cobroTxt = `<span class="text-amber-600 dark:text-amber-400 font-semibold">🟡 Parcial · Pendiente: ${money(cob.pendiente)}</span>`;
+        else cobroTxt = `<span class="text-red-500 font-semibold">🔴 Sin pago · Pendiente: ${money(cob.pendiente)}</span>`;
+      }
       return `<div class="flex items-center justify-between py-2 gap-2">
         <div class="min-w-0">
           <p class="font-semibold text-slate-700 dark:text-slate-200 truncate">${iconoCat} ${esc(t.equipoSistema||t.categoria||'—')} · ${esc(cli?nombreCompleto(cli):'Sin cliente')}</p>
-          <p class="text-[11px] text-slate-400">${esc(t.numOrden||'')} ${esc(t.fecha||'')} · ${esc(t.categoria||'')}${t.granTotal ? ' · Total: '+money(t.granTotal) : ''}</p>
+          <p class="text-[11px] text-slate-400">${esc(t.numOrden||'')} ${esc(t.fecha||'')} · ${esc(t.categoria||'')}${t.granTotal ? ' · Total: '+money(trabajoImporteTotal(t))+(t.iva&&t.iva.activo?' (IVA incl.)':'') : ''}</p>
           ${pendienteTxt ? `<p class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">${pendienteTxt}</p>` : ''}
+          ${cobroTxt ? `<p class="text-[11px]">${cobroTxt}</p>` : ''}
         </div>
-        <div class="flex gap-2 shrink-0">
-          <button data-id="${t.id}" class="verTrabajo text-sky-600 dark:text-sky-400 text-xs font-semibold">Ver</button>
-          <button data-id="${t.id}" class="delTrabajo text-red-500 text-xs font-semibold">Borrar</button>
+        <div class="flex flex-col items-end gap-1 shrink-0">
+          <div class="flex gap-2">
+            <button data-id="${t.id}" class="verTrabajo text-sky-600 dark:text-sky-400 text-xs font-semibold">Ver</button>
+            <button data-id="${t.id}" class="delTrabajo text-red-500 text-xs font-semibold">Borrar</button>
+          </div>
+          <button data-id="${t.id}" class="cobrosTrabajo text-emerald-600 dark:text-emerald-400 text-xs font-semibold">💰 Cobros</button>
         </div>
       </div>`;
     }).join('');
     $('historialLista').querySelectorAll('.verTrabajo').forEach(b=>{ b.addEventListener('click', ()=>cargarTrabajo(b.dataset.id)); });
+    $('historialLista').querySelectorAll('.cobrosTrabajo').forEach(b=>{ b.addEventListener('click', ()=>abrirCobros(b.dataset.id)); });
     $('historialLista').querySelectorAll('.delTrabajo').forEach(b=>{
       b.addEventListener('click', ()=>{
         if(!confirm('¿Borrar este trabajo del historial?')) return;
@@ -2499,8 +2676,30 @@
     $('pendienteHora').value = t.pendienteHora || '09:00';
 
     materialesRows = (t.materiales || []).map(r=>({...r}));
-    manoObraRows = (t.manoObra || []).map(r=>({...r}));
-    otrosRows = (t.otros || []).map(r=>({...r}));
+    // Etapa 8: migración de Mano de Obra. En filas viejas, "costoUnit" representaba el precio
+    // cobrado al cliente (no un costo real), así que se reinterpreta como "precioUnit".
+    // "costoRealUnit" nunca se inventa: queda null si no existía ya en el trabajo. Idempotente:
+    // si la fila ya tiene precioUnit, no se toca.
+    manoObraRows = (t.manoObra || []).map(r=>{
+      const row = {...r};
+      if(row.precioUnit === undefined || row.precioUnit === null){
+        row.precioUnit = (row.costoUnit !== undefined && row.costoUnit !== null) ? row.costoUnit : 0;
+      }
+      if(row.costoRealUnit === undefined) row.costoRealUnit = null;
+      delete row.costoUnit; // nombre ambiguo, exclusivo de Materiales
+      return row;
+    });
+    // Etapa 9: migración aditiva. Filas antiguas sin "tipo" se interpretan como "ingreso"
+    // (comportamiento histórico); filas con "tipo" ya definido se conservan sin alterar.
+    otrosRows = (t.otros || []).map(r=>({...r, tipo: otrosTipo(r)}));
+
+    // Etapa 12: restaura el IVA tal como fue congelado en el trabajo (nunca se asume IVA
+    // activo en trabajos viejos que no lo tenían).
+    const ivaTrabajo = (t.iva && typeof t.iva === 'object') ? t.iva : { activo:false, porcentaje:16 };
+    $('ivaActivo').checked = !!ivaTrabajo.activo;
+    $('ivaPorcentaje').value = ivaTrabajo.porcentaje || 16;
+    $('ivaCamposWrap').classList.toggle('hidden', !ivaTrabajo.activo);
+
     renderMateriales(); renderManoObra(); renderOtros(); recalcularTotales();
 
     const incluyePsicro = t.categoria === 'Refrigeración / HVAC';
@@ -2594,6 +2793,160 @@
   ['filtroCliente','filtroTipo','filtroMarca','filtroFecha'].forEach(id=>{
     $(id).addEventListener('change', renderHistorialLista);
   });
+
+  /* ================= MÓDULO: COBROS Y CUENTAS PENDIENTES (Etapa 11) =================
+     Los pagos viven DENTRO de cada trabajo (t.pagos[]), no en una colección aparte.
+     granTotal (importe total de venta) NUNCA se modifica desde este módulo.
+     Cobrado = suma de pagos válidos. Pendiente = max(granTotal - Cobrado, 0).
+     Si Cobrado > granTotal, el excedente se muestra aparte como "Sobrepago" en vez
+     de permitir Pendiente negativo. */
+  const METODOS_PAGO = ['Efectivo','Transferencia','Tarjeta','Otro'];
+  let cobrosTrabajoId = null;
+
+  // Importe TOTAL QUE DEBE PAGAR EL CLIENTE (lo que se usa para Cobrado/Pendiente).
+  // Etapa 12: si el trabajo tiene IVA activo, ese total ya incluye el IVA congelado
+  // (t.iva.total); si no, es el mismo Subtotal/GRAN TOTAL de siempre. Distinto del
+  // "Ingreso" que usa el KPI (kpiIngresoTrabajo), que SIEMPRE es el subtotal sin IVA
+  // (el IVA no es ingreso del negocio, solo se recauda y se entera al fisco).
+  function trabajoImporteTotal(t){
+    const subtotal = t.granTotal || ((t.totalMateriales||0) + (t.totalManoObra||0) + (t.totalOtros||0));
+    if(t.iva && t.iva.activo && typeof t.iva.total === 'number') return t.iva.total;
+    return subtotal;
+  }
+
+  function trabajoCobrado(t){
+    return (t.pagos||[]).reduce((s,p)=> s + (typeof p.monto === 'number' ? p.monto : 0), 0);
+  }
+
+  // Resumen de cobro de un trabajo: total, cobrado, pendiente (nunca negativo), sobrepago y estado.
+  function infoCobro(t){
+    const gran = trabajoImporteTotal(t);
+    const cobrado = trabajoCobrado(t);
+    const pendiente = Math.max(gran - cobrado, 0);
+    const sobrepago = cobrado > gran ? (cobrado - gran) : 0;
+    let estado = 'Sin pago';
+    if(cobrado > 0 && cobrado < gran) estado = 'Parcial';
+    else if(gran > 0 && cobrado >= gran) estado = 'Pagado';
+    else if(gran <= 0 && cobrado > 0) estado = 'Pagado';
+    return { gran, cobrado, pendiente, sobrepago, estado };
+  }
+
+  function trabajoActualCobros(){ return trabajos.find(x=>x.id===cobrosTrabajoId) || null; }
+
+  function abrirCobros(id){
+    cobrosTrabajoId = id;
+    $('cobroEditId').value = '';
+    $('cobroMonto').value = '';
+    $('cobroFecha').value = new Date().toISOString().slice(0,10);
+    $('cobroMetodo').value = 'Efectivo';
+    $('btnGuardarPago').textContent = 'Registrar pago';
+    $('btnCancelarEdicionPago').classList.add('hidden');
+    renderCobrosModal();
+    openModal('modalCobros');
+  }
+
+  function renderCobrosModal(){
+    const t = trabajoActualCobros();
+    if(!t){ closeModal('modalCobros'); return; }
+    const info = infoCobro(t);
+    const cli = clientesActivos.find(c=>c.id===t.clienteId);
+    $('cobrosTituloTrabajo').textContent = `${esc(t.numOrden||'')} ${esc(t.fecha||'')} · ${esc(cli?nombreCompleto(cli):'Sin cliente')}`;
+    $('cobrosResumenTotal').textContent = money(info.gran);
+    $('cobrosResumenCobrado').textContent = money(info.cobrado);
+    $('cobrosResumenPendiente').textContent = money(info.pendiente);
+    const badge = $('cobrosEstadoBadge');
+    badge.textContent = info.estado === 'Pagado' ? '✅ Pagado' : info.estado === 'Parcial' ? '🟡 Parcial' : '🔴 Sin pago';
+    badge.className = 'text-xs font-bold rounded-full px-2.5 py-1 ' + (
+      info.estado === 'Pagado' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' :
+      info.estado === 'Parcial' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' :
+      'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300'
+    );
+    $('cobrosSobrepagoWrap').classList.toggle('hidden', info.sobrepago <= 0);
+    if(info.sobrepago > 0) $('cobrosSobrepagoTxt').textContent = `⚠ Sobrepago registrado: ${money(info.sobrepago)}. Revisa los montos capturados.`;
+
+    const pagos = (t.pagos||[]).slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    if(!pagos.length){
+      $('cobrosLista').innerHTML = '<p class="text-slate-400 text-xs py-2">Sin pagos registrados todavía.</p>';
+    } else {
+      $('cobrosLista').innerHTML = pagos.map(p=>`
+        <div class="flex items-center justify-between gap-2 py-1.5 border-b border-sky-100 dark:border-slate-800 text-xs">
+          <div class="min-w-0">
+            <span class="font-semibold text-slate-700 dark:text-slate-200">${money(p.monto||0)}</span>
+            <span class="text-slate-400"> · ${esc(p.fecha||'')} · ${esc(p.metodo||'')}</span>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <button data-id="${p.id}" class="editPago text-sky-600 dark:text-sky-400 font-semibold">Editar</button>
+            <button data-id="${p.id}" class="delPago text-red-500 font-semibold">Borrar</button>
+          </div>
+        </div>`).join('');
+      $('cobrosLista').querySelectorAll('.delPago').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          if(!confirm('¿Borrar este pago?')) return;
+          const nuevos = (t.pagos||[]).filter(p=>p.id!==b.dataset.id);
+          persistirPagos(nuevos);
+        });
+      });
+      $('cobrosLista').querySelectorAll('.editPago').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const p = (t.pagos||[]).find(x=>x.id===b.dataset.id);
+          if(!p) return;
+          $('cobroEditId').value = p.id;
+          $('cobroMonto').value = p.monto;
+          $('cobroFecha').value = p.fecha || '';
+          $('cobroMetodo').value = METODOS_PAGO.includes(p.metodo) ? p.metodo : 'Otro';
+          $('btnGuardarPago').textContent = 'Actualizar pago';
+          $('btnCancelarEdicionPago').classList.remove('hidden');
+        });
+      });
+    }
+  }
+
+  // Único punto de escritura de pagos: actualiza en memoria + localStorage (modo local)
+  // o Firestore (modo nube, vía update() — nunca toca granTotal ni recrea el trabajo).
+  function persistirPagos(nuevosPagos){
+    const t = trabajoActualCobros();
+    if(!t) return;
+    t.pagos = nuevosPagos;
+    if(modoCloud && db){
+      db.collection('trabajos_minisplit').doc(cobrosTrabajoId).update({ pagos: nuevosPagos })
+        .catch(e=>alert('No se pudo guardar el cobro en la nube: ' + e.message));
+    } else {
+      const idx = trabajosLocal.findIndex(x=>x.id===cobrosTrabajoId);
+      if(idx !== -1){ trabajosLocal[idx].pagos = nuevosPagos; saveTrabajos(); }
+    }
+    mostrarToast('✔ Cobro actualizado');
+    renderCobrosModal();
+    if(!$('modalHistorial').classList.contains('hidden')) renderHistorialLista();
+    if(!$('screen-kpi').classList.contains('hidden')) renderKPI();
+  }
+
+  function resetFormPago(){
+    $('cobroEditId').value = '';
+    $('cobroMonto').value = '';
+    $('cobroFecha').value = new Date().toISOString().slice(0,10);
+    $('cobroMetodo').value = 'Efectivo';
+    $('btnGuardarPago').textContent = 'Registrar pago';
+    $('btnCancelarEdicionPago').classList.add('hidden');
+  }
+
+  $('btnGuardarPago').addEventListener('click', ()=>{
+    const t = trabajoActualCobros();
+    if(!t) return;
+    const monto = parseFloat($('cobroMonto').value);
+    if(!monto || monto <= 0){ alert('Ingresa un monto de pago válido (mayor a 0).'); return; }
+    const fecha = $('cobroFecha').value || new Date().toISOString().slice(0,10);
+    const metodo = $('cobroMetodo').value || 'Efectivo';
+    const editId = $('cobroEditId').value;
+    let pagos = (t.pagos||[]).slice();
+    if(editId){
+      pagos = pagos.map(p=> p.id===editId ? { ...p, monto, fecha, metodo } : p);
+    } else {
+      pagos.push({ id: uid(), monto, fecha, metodo });
+    }
+    persistirPagos(pagos);
+    resetFormPago();
+  });
+  $('btnCancelarEdicionPago').addEventListener('click', resetFormPago);
 
   /* ================= MOTOR DE CÁLCULO (puro, sin depender de un equipo específico) ================= */
   function entalpia(T, HR){
@@ -2839,7 +3192,7 @@
     }
 
     const hayDiagnostico = ['comentarioCliente','diagnosticoTecnico','causaRaiz','trabajoRealizado','observaciones'].some(id=>txt(id));
-    const { totalMat, totalMO, totalOt, gran } = recalcularTotales();
+    const { totalMat, totalMO, totalOt, gran, ivaActivo, ivaPct, ivaMonto, totalConIva } = recalcularTotales();
     const hayCostos = materialesRows.length || manoObraRows.length || otrosRows.length;
 
     if(resultados.length === 0 && !hayDiagnostico && !hayCostos){
@@ -2909,21 +3262,26 @@
       }
       if(manoObraRows.length){
         html += `<div><h4 class="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-2">👷 Mano de obra</h4>
-        <table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="pb-1 pr-2">Cant.</th><th class="pb-1 pr-2">Unidad</th><th class="pb-1 pr-2">Descripción</th><th class="pb-1 pr-2">Costo Unit.</th><th class="pb-1">Subtotal</th></tr></thead>
-        <tbody>${manoObraRows.map(r=>filaCosto([r.cantidad, esc(r.unidad||''), esc(r.descripcion||''), money(r.costoUnit||0), money((r.cantidad||0)*(r.costoUnit||0))])).join('')}</tbody></table>
+        <table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="pb-1 pr-2">Cant.</th><th class="pb-1 pr-2">Unidad</th><th class="pb-1 pr-2">Descripción</th><th class="pb-1 pr-2">P. Unit.</th><th class="pb-1">Subtotal</th></tr></thead>
+        <tbody>${manoObraRows.map(r=>filaCosto([r.cantidad, esc(r.unidad||''), esc(r.descripcion||''), money(r.precioUnit||0), money((r.cantidad||0)*(r.precioUnit||0))])).join('')}</tbody></table>
         <p class="text-right text-sm font-bold mt-1">Total mano de obra: ${money(totalMO)}</p></div>`;
       }
-      if(otrosRows.length){
+      // Etapa 9: el reporte al cliente solo debe mostrar los conceptos "ingreso" (lo que se le
+      // cobra). Los conceptos marcados como "costo" son gastos internos y no se filtran aquí.
+      const otrosIngresoRows = otrosRows.filter(r=>otrosTipo(r)==='ingreso');
+      if(otrosIngresoRows.length){
         html += `<div><h4 class="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-2">🧾 Otros conceptos</h4>
         <table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="pb-1 pr-2">Concepto</th><th class="pb-1">Precio</th></tr></thead>
-        <tbody>${otrosRows.map(r=>filaCosto([esc(r.concepto||''), money(r.precio||0)])).join('')}</tbody></table>
+        <tbody>${otrosIngresoRows.map(r=>filaCosto([esc(r.concepto||''), money(r.precio||0)])).join('')}</tbody></table>
         <p class="text-right text-sm font-bold mt-1">Otros gastos: ${money(totalOt)}</p></div>`;
       }
       html += `<div class="bg-sky-50 dark:bg-slate-800/60 border border-sky-200 dark:border-slate-700 rounded-xl p-4 space-y-1">
         <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Total materiales</span><span>${money(totalMat)}</span></div>
         <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Total mano de obra</span><span>${money(totalMO)}</span></div>
         <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>Otros gastos</span><span>${money(totalOt)}</span></div>
-        <div class="flex justify-between text-base font-extrabold text-sky-700 dark:text-sky-300 pt-2 border-t border-sky-200 dark:border-slate-700"><span>GRAN TOTAL</span><span>${money(gran)}</span></div>
+        <div class="flex justify-between text-base font-extrabold text-sky-700 dark:text-sky-300 pt-2 border-t border-sky-200 dark:border-slate-700"><span>${ivaActivo?'SUBTOTAL':'GRAN TOTAL'}</span><span>${money(gran)}</span></div>
+        ${ivaActivo ? `<div class="flex justify-between text-sm text-slate-600 dark:text-slate-300"><span>IVA (${ivaPct}%)</span><span>${money(ivaMonto)}</span></div>
+        <div class="flex justify-between text-base font-extrabold text-sky-700 dark:text-sky-300 pt-2 border-t border-sky-200 dark:border-slate-700"><span>TOTAL CON IVA</span><span>${money(totalConIva)}</span></div>` : ''}
       </div>`;
       $('reportCostosContainer').innerHTML = html;
       $('reportCostosContainer').classList.remove('hidden');
@@ -2950,7 +3308,7 @@
     $('reportCard').classList.remove('hidden');
     $('reportCard').scrollIntoView({behavior:'smooth', block:'start'});
 
-    window.__lastReport = { resultados, cliente, tecnico, categoria, equipoSistema, numOrden, totales:{totalMat,totalMO,totalOt,gran} };
+    window.__lastReport = { resultados, cliente, tecnico, categoria, equipoSistema, numOrden, totales:{totalMat,totalMO,totalOt,gran,ivaActivo,ivaPct,ivaMonto,totalConIva} };
   }
 
   function textoPlano(){
@@ -3051,20 +3409,23 @@
 
       if(manoObraRows.length){
         t += `\n👷 *Mano de obra*\n\`\`\`\n`;
-        t += txt2('Cant',4)+' '+txt2('Unid',6)+' '+txt2('Descripción',10)+' '+num('C.Unit',7)+' '+num('Subt.',8) + '\n';
+        t += txt2('Cant',4)+' '+txt2('Unid',6)+' '+txt2('Descripción',10)+' '+num('P.Unit',7)+' '+num('Subt.',8) + '\n';
         t += '-'.repeat(4+6+10+7+8+4) + '\n';
         manoObraRows.forEach(row=>{
-          t += txt2(row.cantidad||0,4)+' '+txt2(row.unidad||'',6)+' '+txt2(row.descripcion||'',10)+' '+num(money(row.costoUnit||0),7)+' '+num(money((row.cantidad||0)*(row.costoUnit||0)),8) + '\n';
+          t += txt2(row.cantidad||0,4)+' '+txt2(row.unidad||'',6)+' '+txt2(row.descripcion||'',10)+' '+num(money(row.precioUnit||0),7)+' '+num(money((row.cantidad||0)*(row.precioUnit||0)),8) + '\n';
         });
         t += '```\n';
         t += `Subtotal mano de obra: *${money(d.totales.totalMO)}*\n`;
       }
 
-      if(otrosRows.length){
+      // Etapa 9: el resumen que recibe el cliente por WhatsApp solo debe incluir los conceptos
+      // "ingreso"; los "costo" son gastos internos y no se le presentan como cobro.
+      const otrosIngresoRowsWA = otrosRows.filter(r=>otrosTipo(r)==='ingreso');
+      if(otrosIngresoRowsWA.length){
         t += `\n🧾 *Otros conceptos*\n\`\`\`\n`;
         t += txt2('Concepto',21)+' '+num('Precio',8) + '\n';
         t += '-'.repeat(21+8+1) + '\n';
-        otrosRows.forEach(row=>{
+        otrosIngresoRowsWA.forEach(row=>{
           t += txt2(row.concepto||'',21)+' '+num(money(row.precio||0),8) + '\n';
         });
         t += '```\n';
@@ -3076,7 +3437,13 @@
       if(d.totales.totalMO) t += `👷 Mano de obra: *${money(d.totales.totalMO)}*\n`;
       if(d.totales.totalOt) t += `🧾 Otros gastos: *${money(d.totales.totalOt)}*\n`;
       t += `▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n`;
-      t += `💰 *GRAN TOTAL: ${money(d.totales.gran)}*\n`;
+      if(d.totales.ivaActivo){
+        t += `💰 *SUBTOTAL: ${money(d.totales.gran)}*\n`;
+        t += `🧾 IVA (${d.totales.ivaPct}%): ${money(d.totales.ivaMonto)}\n`;
+        t += `💵 *TOTAL CON IVA: ${money(d.totales.totalConIva)}*\n`;
+      } else {
+        t += `💰 *GRAN TOTAL: ${money(d.totales.gran)}*\n`;
+      }
     }
 
     t += `\n\n_Reporte generado automáticamente_ ❄️`;
@@ -3121,10 +3488,16 @@
 
     if(!txt('numOrden')) $('numOrden').value = sugerirNumOrden();
     confirmarNumOrdenUsado();
-    const { totalMat, totalMO, totalOt, gran } = recalcularTotales();
+    const { totalMat, totalMO, totalOt, gran, ivaActivo, ivaPct, ivaMonto, totalConIva } = recalcularTotales();
 
     // Auto-agregar unidades nuevas de mano de obra al catálogo de unidades
     manoObraRows.forEach(r=>agregarUnidadSiNueva((r.unidad||'').trim()));
+
+    // Etapa 12: IVA se congela al guardar el trabajo (mismo criterio de congelamiento
+    // histórico que costoUnit/costoRealUnit) — no se recalcula después con un % distinto.
+    const ivaGuardado = ivaActivo
+      ? { activo:true, porcentaje:ivaPct, subtotal:gran, monto:ivaMonto, total:totalConIva }
+      : { activo:false, porcentaje:0, subtotal:gran, monto:0, total:gran };
 
     const trabajoBase = {
       numOrden: txt('numOrden'),
@@ -3142,6 +3515,7 @@
       manoObra: manoObraRows.map(r=>({...r})),
       otros: otrosRows.map(r=>({...r})),
       totalMateriales: totalMat, totalManoObra: totalMO, totalOtros: totalOt, granTotal: gran,
+      iva: ivaGuardado,
       misComentarios: txt('misComentarios'),
       pendienteFecha: $('tienePendiente').checked ? ($('pendienteFecha').value || null) : null,
       pendienteHora: $('tienePendiente').checked ? ($('pendienteHora').value || null) : null,
@@ -3374,16 +3748,70 @@
     return (t.totalMateriales||0) + (t.totalManoObra||0) + (t.totalOtros||0);
   }
 
+  // Etapa 10: costo real de un trabajo, calculado desde los mismos renglones que ya
+  // guarda el trabajo (materiales, manoObra, otros). Nunca trata costoUnit/costoRealUnit
+  // ausentes (null/undefined/'') como 0: si algún renglón con ingreso conocido no tiene
+  // costo real conocido, el trabajo se marca como "costo incompleto" y su costo conocido
+  // se reporta aparte, sin inventar el faltante.
+  function kpiCostoTrabajo(t){
+    let costos = 0;
+    let completo = true;
+
+    (t.materiales||[]).forEach(r=>{
+      const cu = r.costoUnit;
+      if(cu === null || cu === undefined || cu === ''){
+        completo = false;
+      } else {
+        costos += (r.cantidad||0) * cu;
+      }
+    });
+
+    (t.manoObra||[]).forEach(r=>{
+      const cu = r.costoRealUnit;
+      if(cu === null || cu === undefined || cu === ''){
+        completo = false;
+      } else {
+        costos += (r.cantidad||0) * cu;
+      }
+    });
+
+    (t.otros||[]).forEach(r=>{
+      if(otrosTipo(r) === 'costo') costos += (r.precio||0);
+    });
+
+    return { costos, completo };
+  }
+
   function kpiCalcular(lista){
     const ingresos = lista.reduce((s,t)=>s+kpiIngresoTrabajo(t), 0);
+
+    let costosConocidos = 0;
+    let trabajosIncompletos = 0;
+    lista.forEach(t=>{
+      const { costos, completo } = kpiCostoTrabajo(t);
+      costosConocidos += costos;
+      if(!completo) trabajosIncompletos++;
+    });
+
+    const costoCompleto = trabajosIncompletos === 0;
+    const utilidad = costoCompleto ? (ingresos - costosConocidos) : null;
+    const margen = (utilidad === null) ? null : (ingresos === 0 ? '—' : (utilidad/ingresos*100));
+
+    // Etapa 11: Cobrado/Pendiente se calculan a partir de los pagos guardados en cada
+    // trabajo (mismos trabajos de la lista filtrada, sin colección aparte).
+    const cobrado = lista.reduce((s,t)=>s+trabajoCobrado(t), 0);
+    const pendiente = lista.reduce((s,t)=>s+infoCobro(t).pendiente, 0);
+
     return {
       ingresos,
       trabajosCount: lista.length,
-      cobrado: null,     // sin campo de pago en el trabajo -> Datos insuficientes
-      pendiente: null,
-      costos: null,      // precioUnit/costoUnit son precio al cliente, no costo real -> Datos insuficientes
-      utilidad: null,
-      margen: null
+      cobrado,
+      pendiente,
+      costos: costosConocidos,
+      costosCompletos: costoCompleto,
+      trabajosIncompletos,
+      utilidad,
+      margen
     };
   }
 
@@ -3502,7 +3930,7 @@
     dibujarBarras('kpiChartPeriodo', [
       { nombre:'Ingresos', color:'#0ea5e9', valores: ingresosPorGrupo, etiquetas }
     ]);
-    $('kpiChartNota').textContent = 'Costos y Utilidad no se grafican todavía: no hay un costo real distinto del precio cobrado al cliente en los trabajos guardados.';
+    $('kpiChartNota').textContent = 'Esta gráfica muestra Ingresos por sub-periodo. Costos y Utilidad se muestran en las tarjetas de arriba (ver nota de costos incompletos si aplica).';
   }
 
   function renderKPIEvolucion(){
@@ -3542,19 +3970,30 @@
 
   function renderKPIEspecialidades(lista){
     const cont = $('kpiEspecialidades');
+    const resumenCat = (deCat)=>{
+      const ingresos = deCat.reduce((s,t)=>s+kpiIngresoTrabajo(t),0);
+      let costos = 0, incompletos = 0;
+      deCat.forEach(t=>{
+        const r = kpiCostoTrabajo(t);
+        costos += r.costos;
+        if(!r.completo) incompletos++;
+      });
+      return { ingresos, costos, completo: incompletos===0, incompletos };
+    };
     const filas = CATEGORIAS.map(cat=>{
       const deCat = lista.filter(t=>t.categoria===cat);
-      const ingresos = deCat.reduce((s,t)=>s+kpiIngresoTrabajo(t),0);
-      return { cat, trabajos: deCat.length, ingresos };
+      return { cat, trabajos: deCat.length, ...resumenCat(deCat) };
     });
     // Trabajos con categoría fuera del catálogo actual (datos viejos/atípicos) se agrupan como "Otros" sin inventar nada.
     const conocidas = new Set(CATEGORIAS);
     const otros = lista.filter(t=>!conocidas.has(t.categoria));
     if(otros.length){
-      filas.push({ cat:'Otros', trabajos: otros.length, ingresos: otros.reduce((s,t)=>s+kpiIngresoTrabajo(t),0) });
+      filas.push({ cat:'Otros', trabajos: otros.length, ...resumenCat(otros) });
     }
     const iconos = { 'Refrigeración / HVAC':'❄️', 'Electricidad':'⚡', 'Plomería':'🔧', 'Otros':'📋' };
-    cont.innerHTML = filas.map(f=>`
+    cont.innerHTML = filas.map(f=>{
+      const utilidadTxt = !f.trabajos ? '—' : (f.completo ? money(f.ingresos-f.costos) : `${money(f.ingresos-f.costos)} (parcial ⚠)`);
+      return `
       <div class="flex items-center justify-between bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-3 py-2">
         <div class="flex items-center gap-2">
           <span>${iconos[f.cat]||'🔧'}</span>
@@ -3565,9 +4004,10 @@
         </div>
         <div class="text-right">
           <p class="font-bold text-slate-700 dark:text-slate-200">${money(f.ingresos)}</p>
-          <p class="text-[10px] text-slate-400">Costos/Utilidad: ${DATOS_INSUF}</p>
+          <p class="text-[10px] text-slate-400">Utilidad${f.completo?'':' conocida'}: ${utilidadTxt}</p>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   function renderKPITrabajosLista(lista){
@@ -3611,17 +4051,25 @@
     $('kpiCardIngresos').textContent = money(k.ingresos);
     $('kpiCardCobrado').textContent = kpiFormatoCard(k.cobrado);
     $('kpiCardPendiente').textContent = kpiFormatoCard(k.pendiente);
-    $('kpiCardCostos').textContent = kpiFormatoCard(k.costos);
-    $('kpiCardUtilidad').textContent = kpiFormatoCard(k.utilidad);
-    $('kpiCardMargen').textContent = k.utilidad === null ? DATOS_INSUF : (k.ingresos===0 ? '—' : (k.utilidad/k.ingresos*100).toFixed(1)+'%');
+    $('kpiCardCostos').textContent = money(k.costos) + (k.costosCompletos ? '' : ' *');
+    $('kpiCardUtilidad').textContent = k.utilidad === null ? DATOS_INSUF : money(k.utilidad);
+    $('kpiCardMargen').textContent = k.margen === null ? DATOS_INSUF : (k.margen === '—' ? '—' : k.margen.toFixed(1)+'%');
     $('kpiCardTrabajos').textContent = String(k.trabajosCount);
 
-    ['kpiCardCobrado','kpiCardPendiente','kpiCardCostos','kpiCardUtilidad','kpiCardMargen'].forEach(id=>{
+    ['kpiCardCobrado','kpiCardPendiente','kpiCardUtilidad','kpiCardMargen'].forEach(id=>{
       $(id).classList.toggle('text-slate-400', $(id).textContent === DATOS_INSUF);
       $(id).classList.toggle('text-base', $(id).textContent === DATOS_INSUF);
     });
+    $('kpiCardCostos').classList.toggle('text-amber-600', !k.costosCompletos);
+    $('kpiCardCostos').classList.toggle('dark:text-amber-400', !k.costosCompletos);
 
-    $('kpiNotaLimitacion').textContent = '⚠ Cobrado, Pendiente, Costos, Utilidad y Margen muestran "Datos insuficientes": la app aún no registra pagos por trabajo ni un costo real distinto del precio cobrado al cliente. Ver "Cómo se calcula" más abajo.';
+    const notaPartes = [];
+    if(!k.costosCompletos){
+      notaPartes.push(`⚠ Costos incompletos en ${k.trabajosIncompletos} de ${k.trabajosCount} trabajo(s): algún material u hora de mano de obra no tiene costo real registrado. El costo mostrado es solo el costo conocido, y Utilidad/Margen no se calculan como exactos hasta tener ese dato.`);
+    } else if(k.trabajosCount > 0){
+      notaPartes.push('Costo, Utilidad y Margen son exactos: todos los trabajos del periodo tienen costo real conocido.');
+    }
+    $('kpiNotaLimitacion').textContent = notaPartes.join(' ');
 
     renderKPIChartPeriodo(lista);
     renderKPIEvolucion();
@@ -4085,40 +4533,154 @@
       <div class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between gap-2">
         <div class="min-w-0">
           <p class="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">${d.favorito?'⭐ ':''}${esc(d.nombre||'(sin nombre)')}</p>
-          <p class="text-[11px] text-slate-400">${esc(d.tipo||'')} · ${esc(d.topico||'—')} ${d.etiquetas?'· '+esc(d.etiquetas):''}</p>
+          <p class="text-[11px] text-slate-400">${esc(d.tipo||'')} · ${esc(d.topico?nombreTopico(d.topico):'—')} ${d.etiquetas?'· '+esc(d.etiquetas):''}${d.idDrive?' · ☁️ En Drive':''}</p>
           ${d.urlDrive ? `<a href="${esc(d.urlDrive)}" target="_blank" class="text-[11px] text-sky-600 dark:text-sky-400 underline">Abrir documento</a>` : ''}
         </div>
-        <button data-id="${d.id}" class="borrarDocumento text-red-500 text-xs font-semibold shrink-0">Borrar</button>
+        <div class="flex gap-2 shrink-0">
+          <button data-id="${d.id}" class="editarDocumento text-sky-600 dark:text-sky-400 text-xs font-semibold">Editar</button>
+          <button data-id="${d.id}" class="borrarDocumento text-red-500 text-xs font-semibold">Borrar</button>
+        </div>
       </div>`).join('');
     $('bibListaWrap').querySelectorAll('.borrarDocumento').forEach(b=>b.addEventListener('click', ()=>{
-      if(!confirm('¿Borrar este documento del catálogo?')) return;
+      if(!confirm('¿Borrar este documento del catálogo? (Si el archivo vive en Google Drive, no se borra de Drive, solo se quita de este listado.)')) return;
       documentos = documentos.filter(d=>d.id!==b.dataset.id);
       saveDocumentos(); renderBiblioteca();
     }));
+    $('bibListaWrap').querySelectorAll('.editarDocumento').forEach(b=>b.addEventListener('click', ()=>abrirEditarDocumento(b.dataset.id)));
   }
   ['bibBuscar','bibFiltroTipo','bibFiltroTopico'].forEach(id=>{
     $(id).addEventListener('input', renderBiblioteca);
     $(id).addEventListener('change', renderBiblioteca);
   });
+
+  function actualizarUIDriveModalDocumento(){
+    $('bibDriveConectado').classList.toggle('hidden', !gdAccessToken);
+    $('bibDriveDesconectado').classList.toggle('hidden', !!gdAccessToken);
+  }
+
   $('btnNuevoDocumento').addEventListener('click', ()=>{
+    $('modalDocumentoTitulo').textContent = '📚 Nuevo documento';
+    $('bib_editId').value = '';
+    $('bib_idDrive').value = '';
     ['bib_nombre','bib_descripcion','bib_etiquetas','bib_urlDrive'].forEach(id=>$(id).value='');
     $('bib_favorito').checked = false;
+    $('bib_archivo').value = '';
+    actualizarUIDriveModalDocumento();
     openModal('modalDocumento');
   });
+
+  function abrirEditarDocumento(id){
+    const d = documentos.find(x=>x.id===id);
+    if(!d) return;
+    $('modalDocumentoTitulo').textContent = '📚 Editar documento';
+    $('bib_editId').value = d.id;
+    $('bib_idDrive').value = d.idDrive || '';
+    $('bib_nombre').value = d.nombre || '';
+    $('bib_tipo').value = d.tipo || 'PDF';
+    $('bib_topico').value = d.topico || '';
+    $('bib_descripcion').value = d.descripcion || '';
+    $('bib_etiquetas').value = d.etiquetas || '';
+    $('bib_urlDrive').value = d.urlDrive || '';
+    $('bib_favorito').checked = !!d.favorito;
+    $('bib_archivo').value = '';
+    actualizarUIDriveModalDocumento();
+    openModal('modalDocumento');
+  }
+
   $('btnGuardarDocumento').addEventListener('click', ()=>{
     if(!txt('bib_nombre')){ alert('Ponle un nombre al documento.'); return; }
-    documentos.push({
-      id: uid(), nombre: txt('bib_nombre'), tipo: $('bib_tipo').value, topico: $('bib_topico').value,
+    const editId = $('bib_editId').value;
+    const datos = {
+      nombre: txt('bib_nombre'), tipo: $('bib_tipo').value, topico: $('bib_topico').value,
       descripcion: txt('bib_descripcion'), etiquetas: txt('bib_etiquetas'), urlDrive: txt('bib_urlDrive'),
-      favorito: $('bib_favorito').checked, estado: 'Activo', idDrive: '', fecha: new Date().toISOString().slice(0,10)
-    });
+      favorito: $('bib_favorito').checked, idDrive: txt('bib_idDrive')
+    };
+    if(editId){
+      const idx = documentos.findIndex(d=>d.id===editId);
+      if(idx !== -1) documentos[idx] = { ...documentos[idx], ...datos };
+    } else {
+      documentos.push({ id: uid(), ...datos, estado: 'Activo', fecha: new Date().toISOString().slice(0,10) });
+    }
     saveDocumentos();
     closeModal('modalDocumento');
     renderBiblioteca();
-    mostrarToast('✔ Documento guardado (local)');
+    mostrarToast(editId ? '✔ Documento actualizado' : '✔ Documento guardado');
   });
 
-  /* ================= MÓDULO: LISTA DE MATERIALES, PRECIOS Y FERRETERÍAS (Etapa 3) ================= */
+  /* ---- Etapa 13: subida directa a Google Drive, reutilizando el mismo token/patrón
+     de gdSubirFoto() (misma cuenta ya conectada en ☁️ Respaldo). Carpeta propia
+     "Biblioteca_Diagnostico_Minisplit", separada de la de fotos. Nunca se duplica el
+     archivo dentro del JSON: solo se guarda el id/enlace de Drive. ---- */
+  let gdBibliotecaFolderId = null;
+  async function gdObtenerCarpetaBiblioteca(){
+    if(gdBibliotecaFolderId) return gdBibliotecaFolderId;
+    const q = encodeURIComponent("name = 'Biblioteca_Diagnostico_Minisplit' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`, { headers: { 'Authorization': 'Bearer ' + gdAccessToken } });
+    const json = await res.json();
+    if(json.files && json.files.length){ gdBibliotecaFolderId = json.files[0].id; return gdBibliotecaFolderId; }
+    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Biblioteca_Diagnostico_Minisplit', mimeType: 'application/vnd.google-apps.folder' })
+    });
+    const created = await createRes.json();
+    gdBibliotecaFolderId = created.id;
+    return gdBibliotecaFolderId;
+  }
+
+  async function gdSubirDocumentoBiblioteca(file){
+    if(!gdAccessToken) throw new Error('Google Drive no está conectado.');
+    const folderId = await gdObtenerCarpetaBiblioteca();
+    const metadata = { name: file.name, mimeType: file.type || 'application/octet-stream', parents: [folderId] };
+    const boundary = 'msdbibboundary';
+    const metaPart = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n`;
+    const filePartHeader = `--${boundary}\r\nContent-Type: ${metadata.mimeType}\r\n\r\n`;
+    const closing = `\r\n--${boundary}--`;
+    const body = new Blob([metaPart, filePartHeader, file, closing]);
+    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': `multipart/related; boundary=${boundary}` },
+      body
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const created = await res.json();
+    await fetch(`https://www.googleapis.com/drive/v3/files/${created.id}/permissions`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'reader', type: 'anyone' })
+    });
+    return { id: created.id, viewLink: `https://drive.google.com/file/d/${created.id}/view` };
+  }
+
+  $('btnSubirDocumentoDrive').addEventListener('click', async ()=>{
+    const fileInput = $('bib_archivo');
+    if(!fileInput.files || !fileInput.files.length){ alert('Selecciona primero un archivo.'); return; }
+    if(!gdAccessToken){ alert('Conecta primero con Google Drive desde ☁️ Respaldo.'); return; }
+    const btn = $('btnSubirDocumentoDrive');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = '⏳ Subiendo…';
+    try{
+      const info = await gdSubirDocumentoBiblioteca(fileInput.files[0]);
+      $('bib_idDrive').value = info.id;
+      $('bib_urlDrive').value = info.viewLink;
+      if(!txt('bib_nombre')) $('bib_nombre').value = fileInput.files[0].name;
+      mostrarToast('✔ Archivo subido a Google Drive');
+    }catch(e){
+      alert('No se pudo subir el archivo a Drive: ' + e.message);
+    }finally{
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }
+  });
+
+  /* ================= MÓDULO: LISTA DE MATERIALES, PRECIOS Y FERRETERÍAS (Etapa 3) =================
+     Etapa 14 (sincronización con Firestore) — EVALUADA Y NO IMPLEMENTADA por ser opcional:
+     no hay evidencia de uso simultáneo en varios dispositivos para este catálogo específico
+     (a diferencia de clientes/trabajos/catálogo de equipos, que ya sincronizan desde etapas
+     anteriores), por lo que agregar sincronización aquí sería una arquitectura paralela sin
+     necesidad real y con riesgo de sobrescritura de datos. Si en el futuro se usa este módulo
+     desde varios dispositivos, reutilizar el mismo patrón onSnapshot()/add()/update() ya
+     usado en trabajos_minisplit/clientes/catalogo_equipos — nunca recalcular costoUnit /
+     costoRealUnit de trabajos históricos a partir de cambios futuros en este catálogo. */
   // Persistencia: mismas claves de la Etapa 1 (no se cambian) + 2 claves nuevas para categorías/unidades de este módulo.
   const LS_MATCAT = 'msd_materiales_catalogo_v1';
   const LS_COMPRAS = 'msd_compras_v1';
@@ -4618,18 +5180,124 @@
   /* ================= MÓDULO: MANUAL DE USUARIO ================= */
   let manualInicializado = false;
   const MANUAL_SECCIONES = [
-    { id:'intro', titulo:'Introducción', texto:'Servicios Robert\'s — Diagnóstico Minisplit es tu app para generar órdenes de servicio de Refrigeración/HVAC, Electricidad y Plomería, con diagnóstico, fotos, materiales, mano de obra y reporte para el cliente.\n\nEsta sección se irá completando en próximas etapas.' },
-    { id:'servicios', titulo:'Servicios', texto:'Desde la pantalla "Servicios" registras cada orden: cliente, categoría de trabajo, diagnóstico, lecturas de A/C (si aplica), materiales, mano de obra y otros gastos. Ahí mismo generas y compartes el reporte.' },
-    { id:'clientes', titulo:'Clientes', texto:'El botón "+" junto al selector de Cliente te permite registrar clientes nuevos. Si conectas Firestore, se sincronizan con tu app de finanzas.' },
-    { id:'equipos', titulo:'Equipos', texto:'El catálogo de equipos (marca/modelo/línea) se administra desde el botón 📚 Catálogo dentro de cada tarjeta de equipo en la sección HVAC.' },
-    { id:'investigacion', titulo:'Investigación y Desarrollo', texto:'Registra aprendizajes técnicos, pruebas y hallazgos de campo organizados por tópico y estado. Por ahora se guardan en este dispositivo.' },
-    { id:'biblioteca', titulo:'Biblioteca', texto:'Repositorio de documentos técnicos (datasheets, manuales, catálogos). La subida directa a Google Drive llegará en una próxima etapa; por ahora puedes guardar un link manualmente.' },
-    { id:'materiales', titulo:'Materiales (catálogo histórico)', texto:'Este catálogo es distinto de los materiales que registras dentro de una orden — aquí llevas tu historial de compras y ferreterías de referencia.' },
-    { id:'kpi', titulo:'KPI', texto:'Esta pantalla mostrará tus indicadores de negocio (ingresos, costos, utilidad, margen) una vez que se integren los cálculos en una próxima etapa.' },
-    { id:'iva', titulo:'Facturación e IVA', texto:'Próximamente.' },
-    { id:'drive', titulo:'Google Drive', texto:'Conecta tu Google Drive desde ☁️ Respaldo (o ⚙️ Configuración) para que las fotos de tus órdenes se guarden ahí con un link, sin ocupar espacio en Firestore.' },
-    { id:'respaldo', titulo:'Respaldo y restauración', texto:'Desde ☁️ Respaldo puedes descargar un respaldo .json de tus datos locales, o subirlo/restaurarlo desde Google Drive.' },
-    { id:'faq', titulo:'Preguntas frecuentes', texto:'Próximamente.' }
+    { id:'intro', titulo:'Inicio', texto:
+`Servicios Robert's — Diagnóstico Minisplit es tu app para generar órdenes de servicio de Refrigeración/HVAC, Electricidad y Plomería: diagnóstico, fotos, materiales, mano de obra, cobros, y reporte para el cliente por WhatsApp o impreso.
+
+Navegación: la barra inferior/superior tiene 7 pantallas:
+• Servicios — crear y calcular órdenes de trabajo (pantalla principal).
+• Investigación — tus notas técnicas y aprendizajes de campo.
+• Biblioteca — documentos (datasheets, manuales, catálogos).
+• Materiales — catálogo histórico, compras y ferreterías.
+• KPI — indicadores del negocio (ingresos, costos, utilidad, cobrado, pendiente).
+• Manual — esta guía.
+• Configuración — Firebase (nube) y Google Drive.
+
+Los botones ☁️ Respaldo y 🗂 Historial están siempre visibles en la parte superior: Respaldo para exportar/restaurar tus datos, e Historial para ver, cobrar o borrar trabajos ya guardados.
+
+La app funciona 100% sin internet ni cuenta alguna (todo se guarda en este dispositivo). Conectar Firestore (nube) y Google Drive es opcional y solo agrega sincronización entre tu app de finanzas y respaldo de fotos/documentos.` },
+
+    { id:'servicios', titulo:'Servicios — crear una orden', texto:
+`1. Elige la categoría (Refrigeración/HVAC, Electricidad o Plomería) y, si aplica, el equipo/sistema.
+2. Selecciona o crea un cliente con el botón "+".
+3. Si es HVAC, activa "Incluir psicrometría" y captura hasta 5 equipos: marca, modelo, capacidad, dimensiones, lecturas Antes/Después (temperatura, humedad, voltaje, presión, amperaje) y hasta 3 fotos por equipo (placa, antes, después). La app calcula automáticamente entalpía, delta T y diagnóstico psicrométrico.
+4. Llena Diagnóstico técnico, Causa raíz, Trabajo realizado y Observaciones — esto es lo que ve el cliente en el reporte.
+5. Agrega renglones de Materiales, Mano de obra y Otros conceptos/gastos con el botón "+ Agregar" de cada tabla. Cada renglón se multiplica automáticamente (cantidad × precio).
+6. Si el trabajo lleva IVA, actívalo en la casilla "Aplicar IVA" del resumen de totales (ver sección "IVA / Facturación").
+7. "Mis comentarios" es privado — nunca aparece en el reporte del cliente.
+8. Pulsa "Calcular / Generar reporte" para ver la vista previa, y "Guardar" para guardarlo en el Historial.
+9. Desde 🗂 Historial puedes pulsar "Ver" en cualquier trabajo para volver a cargarlo en la pantalla (por ejemplo para reimprimirlo o reenviar el reporte).
+
+⚠️ Importante: el botón "Ver" del Historial carga los datos del trabajo en el formulario para consulta/reimpresión, pero "Guardar" siempre crea un trabajo NUEVO — no sobreescribe el original. Si necesitas modificar diagnóstico, materiales o totales de un trabajo ya guardado, hazlo con cuidado (quedará un registro duplicado) o bórralo y créalo de nuevo. La única información que SÍ puedes actualizar sobre un trabajo ya existente, sin duplicarlo, son sus pagos (ver sección "Cobros").` },
+
+    { id:'clientes', titulo:'Clientes', texto:'El botón "+" junto al selector de Cliente te permite registrar clientes nuevos (nombre, apellido, teléfono, dirección). Si conectas Firestore, se sincronizan con tu app de finanzas — es el mismo catálogo de clientes en ambas apps.' },
+
+    { id:'equipos', titulo:'Catálogo de equipos', texto:'El catálogo de equipos (marca/modelo/línea, dimensiones y datos de placa) se administra desde el botón 📚 Catálogo dentro de cada tarjeta de equipo en la sección HVAC. Cuando capturas un equipo nuevo con marca, modelo y dimensiones, se agrega automáticamente al catálogo para que la próxima vez solo tengas que buscarlo.' },
+
+    { id:'cobros', titulo:'Cobros y cuentas pendientes', texto:
+`Cada trabajo guardado puede tener pagos registrados por separado, sin alterar el importe total de la orden. Desde 🗂 Historial, pulsa el botón "💰 Cobros" en cualquier trabajo para abrir su ficha de cobro:
+
+• Total de venta — el importe de la orden (o el Total con IVA si el trabajo lo tiene activo).
+• Cobrado — suma de todos los pagos registrados.
+• Pendiente — Total menos Cobrado (nunca baja de $0.00).
+• Estado — Sin pago / Parcial / Pagado, calculado automáticamente.
+
+Para registrar un pago, captura Monto, Fecha y Método (Efectivo, Transferencia, Tarjeta u Otro) y pulsa "Registrar pago". Puedes editar o borrar cualquier pago después. Si por error se registran pagos que suman más que el total, la app lo marca como "Sobrepago" en vez de mostrar un Pendiente negativo, para que lo revises.
+
+Los trabajos guardados antes de esta función se interpretan automáticamente como "Sin pago" (Pendiente = Total), sin que tengas que hacer nada.` },
+
+    { id:'iva', titulo:'IVA / Facturación', texto:
+`El IVA es opcional y se activa por trabajo, en la casilla "Aplicar IVA" debajo del resumen de totales (Módulo 5 de la orden). Al activarlo:
+• El total que ya conocías (antes "GRAN TOTAL") pasa a llamarse SUBTOTAL.
+• Se calcula el IVA con el porcentaje que definas (16% por default, editable).
+• Se muestra un TOTAL CON IVA = Subtotal + IVA.
+
+Ese desglose (Subtotal / IVA / Total) aparece también en el reporte impreso y en el mensaje de WhatsApp cuando el IVA está activo.
+
+El IVA queda "congelado" en el trabajo al guardarlo, igual que los costos históricos — si luego cambias el % por default, los trabajos ya guardados no se recalculan.
+
+Importante: el IVA es una capa de cálculo sobre el precio de venta. NUNCA modifica costoUnit ni costoRealUnit (tus costos reales), y el KPI de Ingresos/Utilidad/Margen del negocio se sigue calculando sobre el Subtotal, no sobre el Total con IVA — el IVA no es ganancia del negocio, es dinero que se recauda para enterarlo a Hacienda. Lo que SÍ incluye el IVA es el monto que el cliente debe pagarte (Cobrado/Pendiente en la sección de Cobros).
+
+Esta función no genera facturas fiscales (CFDI) ni se conecta con el SAT — es solo el cálculo de Subtotal/IVA/Total para tus órdenes.` },
+
+    { id:'investigacion', titulo:'Investigación y Desarrollo', texto:'Registra aprendizajes técnicos, pruebas y hallazgos de campo organizados por tópico (Refrigeración, Electricidad, Electrónica, etc.) y estado. Cada investigación se puede relacionar con trabajos específicos del Historial y con documentos de la Biblioteca, para que quede todo conectado. Se guardan en este dispositivo (localStorage).' },
+
+    { id:'biblioteca', titulo:'Biblioteca', texto:
+`Repositorio de documentos técnicos (datasheets, manuales, catálogos, procedimientos). Para cada documento capturas nombre, tipo, tópico, descripción y etiquetas.
+
+Puedes vincular el archivo de dos formas:
+• Pegando manualmente un enlace en "URL del documento" (funciona siempre, sin necesitar Drive).
+• Si ya conectaste Google Drive (desde ☁️ Respaldo), selecciona el archivo y pulsa "☁️ Subir a Google Drive": se sube a una carpeta propia de la app, se hace accesible por enlace, y ese enlace se guarda automáticamente en el documento. El archivo en sí no se duplica dentro de la app — solo se guarda su referencia.
+
+Puedes editar o borrar un documento en cualquier momento; borrarlo del catálogo no borra el archivo de Google Drive. Los documentos se pueden relacionar con investigaciones desde la pantalla de Investigación.` },
+
+    { id:'materiales', titulo:'Materiales (catálogo, compras, ferreterías)', texto:
+`Este módulo es distinto de los materiales que capturas dentro de una orden de servicio — aquí llevas tu historial de negocio:
+• Catálogo de materiales — descripción, N° de parte, marca, categoría y unidad de cada material que usas.
+• Compras — cada vez que compras un material, registra precio y ferretería; así queda tu historial de costos reales.
+• Ferreterías — tus proveedores de referencia.
+
+Cuando en una orden vinculas un material de este catálogo (🔗), la app congela automáticamente el ÚLTIMO costo de compra registrado como "costo real" de ese renglón — así el costo histórico de la orden nunca cambia aunque el precio del material suba después. Si un material no tiene compras registradas, el costo se marca como "Sin costo registrado" (nunca se inventa un número).
+
+Este catálogo vive en este dispositivo (localStorage); ver la sección "Sincronización de materiales" para más detalle sobre por qué no está en la nube.` },
+
+    { id:'kpi', titulo:'KPI del negocio', texto:
+`La pantalla KPI resume tus números por periodo (día, semana, mes o rango de fechas), con filtros por especialidad y cliente:
+• Ingresos — suma del importe de venta (Subtotal, sin IVA) de los trabajos del periodo.
+• Cobrado — suma de los pagos ya registrados en esos trabajos.
+• Pendiente — lo que aún te deben de esos trabajos.
+• Costos — suma de los costos reales conocidos (material + mano de obra + "otros" marcados como costo). Si algún renglón no tiene costo real capturado, el trabajo se marca como "costo incompleto" (⚠) y el costo mostrado es solo el conocido, sin inventar el faltante.
+• Utilidad y Margen — solo se calculan como exactos cuando TODOS los trabajos del periodo tienen costo completo; si no, se muestra "Datos insuficientes" en vez de un número engañoso.
+
+También puedes ver la evolución en el tiempo, el desglose por especialidad y la lista de trabajos del periodo seleccionado.` },
+
+    { id:'respaldo', titulo:'Respaldo y restauración', texto:
+`Desde ☁️ Respaldo tienes dos formas de respaldar tus datos:
+• Respaldo local — descarga un archivo .json con todo lo que vive en este dispositivo: catálogo de equipos, clientes, trabajos (con sus pagos e IVA), fotos locales, tópicos, investigaciones, biblioteca, catálogo de materiales, compras, ferreterías, categorías y unidades.
+• Respaldo en Google Drive — si conectaste Drive, puedes guardar y restaurar ese mismo respaldo directamente desde tu cuenta.
+
+Restaurar un respaldo reemplaza tus datos locales actuales (te lo confirma antes de hacerlo) y es compatible con respaldos de etapas anteriores: si el respaldo es viejo y no tiene pagos, IVA o documentos de biblioteca, esos datos simplemente se interpretan vacíos/desactivados, sin borrar nada que sí exista.` },
+
+    { id:'drive', titulo:'Google Drive', texto:'Conecta tu Google Drive desde ☁️ Respaldo (o ⚙️ Configuración) para: (1) guardar y restaurar respaldos .json directamente en tu cuenta, (2) subir las fotos de tus órdenes con un link ligero en vez de guardarlas pesadas en Firestore, y (3) subir documentos de la Biblioteca. Necesitas pegar tu propio Client ID de Google Cloud Console (una sola vez). Todo lo demás de la app funciona igual sin Drive conectado.' },
+
+    { id:'configuracion', titulo:'Configuración (Firebase)', texto:'Desde ⚙️ Configuración puedes conectar tu proyecto de Firebase (el mismo de tu app de finanzas) para sincronizar clientes, catálogo de equipos y trabajos entre dispositivos, e iniciar sesión con tu código de acceso. Si no conectas Firebase, la app sigue funcionando completa en modo local (un solo dispositivo).' },
+
+    { id:'conceptos', titulo:'Conceptos financieros', texto:
+`• Precio — lo que le cobras al cliente por un material, hora de mano de obra u otro concepto (precioUnit).
+• Costo — lo que a ti te cuesta realmente ese material o esa hora (costoUnit / costoRealUnit). Se congela en el momento de la orden y no cambia después aunque el catálogo se actualice.
+• Ingreso — el importe total de venta de un trabajo (Subtotal, sin IVA).
+• Utilidad — Ingreso menos Costo. Solo es exacta si todos los costos del periodo están completos.
+• Margen — Utilidad ÷ Ingreso, en porcentaje.
+• Cobrado — lo que el cliente ya te pagó de un trabajo (suma de sus pagos).
+• Pendiente — lo que el cliente todavía te debe de ese trabajo (Total, con IVA si aplica, menos Cobrado).` },
+
+    { id:'faq', titulo:'Preguntas frecuentes', texto:
+`¿Pierdo mis datos si desinstalo o cambio de teléfono? No, si haces un respaldo (☁️ Respaldo) antes y lo restauras en el nuevo dispositivo, o si usas Firestore para lo que ya sincroniza (clientes, catálogo de equipos, trabajos).
+
+¿Necesito internet para usar la app? No, todo funciona sin conexión salvo conectar Firestore o Google Drive.
+
+¿Qué pasa si edito un trabajo viejo y le doy "Guardar"? Se crea un trabajo nuevo (duplicado), no se actualiza el original — ver la sección "Servicios" para más detalle. Los pagos sí se pueden agregar a un trabajo existente sin duplicarlo, desde 🗂 Historial → 💰 Cobros.
+
+¿El IVA afecta mi Utilidad/Margen? No, el KPI de Ingresos/Utilidad/Margen siempre usa el Subtotal (sin IVA); el IVA solo afecta lo que el cliente debe pagar (Cobrado/Pendiente).` }
   ];
   function inicializarManual(){
     manualInicializado = true;
