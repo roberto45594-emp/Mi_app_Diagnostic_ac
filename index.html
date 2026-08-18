@@ -185,35 +185,25 @@
     <div id="equiposContainer" class="space-y-5"></div>
   </div>
 
-  <!-- EVIDENCIA FOTOGRÁFICA GENERAL (para Electricidad / Plomería, o cualquier orden sin lecturas de equipo) -->
+  <!-- EVIDENCIA FOTOGRÁFICA (Etapa 18: ahora visible para todas las categorías, incluyendo
+       Refrigeración / HVAC; hasta 5 fotos con cámara O galería y eliminación individual) -->
   <section id="evidenciaWrapper" class="hidden bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 no-print shadow-sm">
-    <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-3">📷 Evidencia fotográfica <span class="text-slate-400 font-normal normal-case">(opcional)</span></h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Foto antes</label>
-        <div class="flex flex-wrap items-center gap-3">
-          <label class="text-xs font-semibold bg-amber-100 dark:bg-slate-800 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-slate-700 rounded-lg px-3 py-2 cursor-pointer">
-            📷 Tomar / Subir foto
-            <input id="fotoOrdenAntesInput" type="file" accept="image/*" capture="environment" class="hidden">
-          </label>
-          <button id="btnQuitarFotoOrdenAntes" class="hidden text-xs font-semibold text-red-500">Quitar foto</button>
-          <span id="fotoOrdenAntesCargando" class="hidden text-xs text-slate-400">Procesando imagen…</span>
-        </div>
-        <img id="fotoOrdenAntesPreview" class="hidden mt-2 max-h-40 rounded-lg border border-amber-200 dark:border-slate-700">
-      </div>
-      <div>
-        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Foto después</label>
-        <div class="flex flex-wrap items-center gap-3">
-          <label class="text-xs font-semibold bg-emerald-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-slate-700 rounded-lg px-3 py-2 cursor-pointer">
-            📷 Tomar / Subir foto
-            <input id="fotoOrdenDespuesInput" type="file" accept="image/*" capture="environment" class="hidden">
-          </label>
-          <button id="btnQuitarFotoOrdenDespues" class="hidden text-xs font-semibold text-red-500">Quitar foto</button>
-          <span id="fotoOrdenDespuesCargando" class="hidden text-xs text-slate-400">Procesando imagen…</span>
-        </div>
-        <img id="fotoOrdenDespuesPreview" class="hidden mt-2 max-h-40 rounded-lg border border-emerald-200 dark:border-slate-700">
-      </div>
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">📷 Evidencia fotográfica <span class="text-slate-400 font-normal normal-case">(opcional, máx. 5)</span></h2>
+      <span id="evidenciaContador" class="text-[11px] font-semibold text-slate-400">0/5</span>
     </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <label class="text-xs font-semibold bg-amber-100 dark:bg-slate-800 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-slate-700 rounded-lg px-3 py-2 cursor-pointer">
+        📷 Tomar foto
+        <input id="evidenciaCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+      </label>
+      <label class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-2 cursor-pointer">
+        🖼️ Elegir de galería
+        <input id="evidenciaGaleriaInput" type="file" accept="image/*" class="hidden">
+      </label>
+      <span id="evidenciaCargando" class="hidden text-xs text-slate-400">Procesando imagen…</span>
+    </div>
+    <div id="evidenciaGrid" class="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-3"></div>
     <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 mt-3">
       <input id="incluirFotosOrdenWA" type="checkbox" class="rounded" checked>
       Incluir estas fotos al compartir por WhatsApp
@@ -1216,6 +1206,8 @@
   let clientesActivos = clientesLocal; // apunta a Firestore si conecta
   let modoCloud = false;
   let db = null, unsubClientes = null, unsubCatalogo = null, unsubTipos = null, unsubTrabajos = null;
+  // Etapa 18 — Bloque A: listeners de sincronización del módulo de Materiales (mismo patrón que arriba).
+  let unsubMatCat = null, unsubCompras = null, unsubFerreterias = null, unsubCategoriasMat = null, unsubUnidadesMat = null;
 
   function saveCatalogo(){ localStorage.setItem(LS_CATALOGO, JSON.stringify(catalogoLocal)); }
   function saveClientesLocal(){ localStorage.setItem(LS_CLIENTES, JSON.stringify(clientesLocal)); }
@@ -1369,6 +1361,45 @@
         if(!$('modalHistorial').classList.contains('hidden')) renderHistorialLista();
       }, err=>{ setFbStatus('off', 'Error leyendo historial: ' + err.message); });
 
+      // Etapa 18 — Bloque A: Materiales (catálogo, compras, ferreterías) usan el mismo patrón
+      // onSnapshot de colección que catalogo_equipos/clientes/trabajos_minisplit.
+      if(unsubMatCat) unsubMatCat();
+      unsubMatCat = db.collection('materiales_catalogo').onSnapshot(snap=>{
+        materialesCatalogo = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        if(typeof renderMaterialesCatalogo === 'function') renderMaterialesCatalogo();
+        if(typeof renderSelectorMaterialCompra === 'function') renderSelectorMaterialCompra();
+      }, err=>{ setFbStatus('off', 'Error leyendo materiales: ' + err.message); });
+
+      if(unsubCompras) unsubCompras();
+      unsubCompras = db.collection('compras_materiales').onSnapshot(snap=>{
+        compras = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        if(typeof renderCompras === 'function') renderCompras();
+      }, err=>{ setFbStatus('off', 'Error leyendo compras: ' + err.message); });
+
+      if(unsubFerreterias) unsubFerreterias();
+      unsubFerreterias = db.collection('ferreterias_materiales').onSnapshot(snap=>{
+        ferreterias = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        if(typeof renderFerreterias === 'function') renderFerreterias();
+        if(typeof renderSelectorFerreteriaCompra === 'function') renderSelectorFerreteriaCompra();
+      }, err=>{ setFbStatus('off', 'Error leyendo ferreterías: ' + err.message); });
+
+      // Categorías y unidades de materiales son listas cortas de configuración — se sincronizan
+      // como documento único en "config", igual que sistemas_por_categoria.
+      if(unsubCategoriasMat) unsubCategoriasMat();
+      unsubCategoriasMat = db.collection('config').doc('categorias_materiales').onSnapshot(doc=>{
+        const data = doc.exists ? doc.data().data : null;
+        categoriasMat = (data && data.length) ? data : categoriasMatLocal;
+        if(typeof renderCategoriasMatSelects === 'function') renderCategoriasMatSelects();
+        if(typeof renderCategoriasMatLista === 'function' && !$('modalCategoriasMat').classList.contains('hidden')) renderCategoriasMatLista();
+      }, err=>{ setFbStatus('off', 'Error leyendo categorías de materiales: ' + err.message); });
+
+      if(unsubUnidadesMat) unsubUnidadesMat();
+      unsubUnidadesMat = db.collection('config').doc('unidades_materiales').onSnapshot(doc=>{
+        const data = doc.exists ? doc.data().data : null;
+        unidadesMat = (data && data.length) ? data : unidadesMatLocal;
+        if(typeof renderUnidadesMatDatalist === 'function') renderUnidadesMatDatalist();
+      }, err=>{ setFbStatus('off', 'Error leyendo unidades de materiales: ' + err.message); });
+
       setTimeout(ofrecerMigracionLocal, 1500);
     } else {
       modoCloud = false;
@@ -1376,6 +1407,12 @@
       catalogo = catalogoLocal;
       sistemas = sistemasLocal;
       trabajos = trabajosLocal;
+      // Etapa 18 — Bloque A: al desconectar, Materiales vuelve a sus arreglos locales.
+      materialesCatalogo = materialesCatalogoLocal;
+      compras = comprasLocal;
+      ferreterias = ferreteriasLocal;
+      categoriasMat = categoriasMatLocal;
+      unidadesMat = unidadesMatLocal;
       setFbStatus('off', 'Conectado al proyecto, sin sesión. Ingresa tu código.');
       $('authLoginFields').classList.remove('hidden');
       $('btnAuthLogout').classList.add('hidden');
@@ -1383,6 +1420,11 @@
       renderClientesModalLista();
       renderCatalogoDatalist();
       renderEquipoSistemaSelect();
+      if(typeof renderMaterialesCatalogo === 'function') renderMaterialesCatalogo();
+      if(typeof renderCompras === 'function') renderCompras();
+      if(typeof renderFerreterias === 'function') renderFerreterias();
+      if(typeof renderCategoriasMatSelects === 'function') renderCategoriasMatSelects();
+      if(typeof renderUnidadesMatDatalist === 'function') renderUnidadesMatDatalist();
     }
   }
 
@@ -1459,10 +1501,11 @@
       investigaciones,
       // --- Etapa 7: Biblioteca ---
       documentos,
-      // --- Etapa 7: Materiales ---
-      materialesCatalogo,
-      compras,
-      ferreterias,
+      // --- Etapa 7: Materiales (Etapa 18: se respaldan las copias locales, igual que
+      // catalogoLocal/clientesLocal, para no depender de que haya sesión Firestore activa) ---
+      materialesCatalogo: materialesCatalogoLocal,
+      compras: comprasLocal,
+      ferreterias: ferreteriasLocal,
       categoriasMatLocal,
       unidadesMatLocal
     };
@@ -1497,13 +1540,23 @@
     saveDocumentos();
     if(typeof renderBiblioteca === 'function') renderBiblioteca();
 
-    // --- Etapa 7: Materiales (catálogo, compras, ferreterías, categorías, unidades) ---
-    materialesCatalogo = data.materialesCatalogo || materialesCatalogo;
-    compras = data.compras || compras;
-    ferreterias = data.ferreterias || ferreterias;
+    // --- Etapa 7/18: Materiales (catálogo, compras, ferreterías, categorías, unidades).
+    // Igual que el resto del respaldo: se restaura siempre la copia LOCAL; si hay sesión
+    // Firestore activa esos datos no se suben solos (mismo comportamiento que catalogo/clientes/
+    // trabajos arriba) — el usuario puede usar "Materiales" normalmente y decidir si migra.
+    materialesCatalogoLocal = data.materialesCatalogo || materialesCatalogoLocal;
+    comprasLocal = data.compras || comprasLocal;
+    ferreteriasLocal = data.ferreterias || ferreteriasLocal;
     categoriasMatLocal = (data.categoriasMatLocal && data.categoriasMatLocal.length) ? data.categoriasMatLocal : categoriasMatLocal;
     unidadesMatLocal = (data.unidadesMatLocal && data.unidadesMatLocal.length) ? data.unidadesMatLocal : unidadesMatLocal;
     saveMaterialesCatalogo(); saveCompras(); saveFerreterias(); saveCategoriasMat(); saveUnidadesMat();
+    if(!modoCloud){
+      materialesCatalogo = materialesCatalogoLocal;
+      compras = comprasLocal;
+      ferreterias = ferreteriasLocal;
+      categoriasMat = categoriasMatLocal;
+      unidadesMat = unidadesMatLocal;
+    }
     if(typeof renderMaterialesCatalogo === 'function') renderMaterialesCatalogo();
     if(typeof renderCompras === 'function') renderCompras();
     if(typeof renderFerreterias === 'function') renderFerreterias();
@@ -1908,7 +1961,9 @@
   function actualizarVisibilidadHVAC(){
     const esHVAC = categoriaActual() === 'Refrigeración / HVAC';
     $('hvacWrapper').classList.toggle('hidden', !esHVAC);
-    $('evidenciaWrapper').classList.toggle('hidden', esHVAC);
+    // Etapa 18 (B1): Evidencia Fotográfica ahora se muestra para TODAS las categorías,
+    // incluyendo Refrigeración / HVAC (antes se ocultaba solo para HVAC).
+    $('evidenciaWrapper').classList.remove('hidden');
     if(!esHVAC) $('incluirPsicrometria').checked = false;
   }
   $('categoriaSel').addEventListener('change', ()=>{
@@ -2221,39 +2276,48 @@
     });
   }
 
-  /* ================= EVIDENCIA FOTOGRÁFICA GENERAL (no-HVAC) ================= */
-  let fotoOrdenActual = { antes: null, despues: null };       // dataURL de esta sesión
-  let fotoOrdenLinkActual = { antes: null, despues: null };   // {id,viewLink,embedLink} si ya está en Drive
+  /* ================= EVIDENCIA FOTOGRÁFICA (Etapa 18: array de hasta 5 fotos, cámara o galería) ================= */
+  // Cada elemento: { id, local: dataURL de esta sesión (o null si ya está en Drive), drive: {id,viewLink,embedLink}|null }
+  let fotosEvidencia = [];
+  const MAX_EVIDENCIA = 5;
 
-  const ORDEN_FOTO_IDS = {
-    antes: { input:'fotoOrdenAntesInput', preview:'fotoOrdenAntesPreview', quitar:'btnQuitarFotoOrdenAntes', cargando:'fotoOrdenAntesCargando' },
-    despues: { input:'fotoOrdenDespuesInput', preview:'fotoOrdenDespuesPreview', quitar:'btnQuitarFotoOrdenDespues', cargando:'fotoOrdenDespuesCargando' }
-  };
-
-  function mostrarPreviewFotoOrden(tipo, src){
-    const ids = ORDEN_FOTO_IDS[tipo];
-    if(src){ $(ids.preview).src = src; $(ids.preview).classList.remove('hidden'); $(ids.quitar).classList.remove('hidden'); }
-    else { $(ids.preview).classList.add('hidden'); $(ids.quitar).classList.add('hidden'); }
+  function renderEvidenciaGrid(){
+    $('evidenciaContador').textContent = fotosEvidencia.length + '/' + MAX_EVIDENCIA;
+    $('evidenciaGrid').innerHTML = fotosEvidencia.map(f=>{
+      const src = f.local || (f.drive && f.drive.embedLink) || '';
+      return `<div class="relative">
+        <img src="${src}" class="w-full h-20 object-cover rounded-lg border border-sky-200 dark:border-slate-700">
+        <button type="button" data-id="${f.id}" class="quitarFotoEvidencia absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 text-xs leading-none flex items-center justify-center shadow">✕</button>
+      </div>`;
+    }).join('');
+    $('evidenciaGrid').querySelectorAll('.quitarFotoEvidencia').forEach(b=>b.addEventListener('click', ()=>{
+      // Eliminación individual: solo se quita la foto seleccionada; las demás no se tocan
+      // y el cupo liberado permite agregar otra (máx. 5 se vuelve a evaluar al agregar).
+      fotosEvidencia = fotosEvidencia.filter(f=>f.id!==b.dataset.id);
+      renderEvidenciaGrid();
+    }));
   }
 
-  ['antes','despues'].forEach(tipo=>{
-    const ids = ORDEN_FOTO_IDS[tipo];
-    $(ids.input).addEventListener('change', async (e)=>{
+  async function agregarFotoEvidencia(file){
+    if(!file) return;
+    if(fotosEvidencia.length >= MAX_EVIDENCIA){ alert('Máximo 5 imágenes de evidencia.'); return; }
+    $('evidenciaCargando').classList.remove('hidden');
+    try{
+      const dataUrl = await comprimirImagen(file, 1000, 0.72);
+      fotosEvidencia.push({ id: uid(), local: dataUrl, drive: null });
+      renderEvidenciaGrid();
+    }catch(err){ alert('No se pudo procesar la imagen: ' + err.message); }
+    $('evidenciaCargando').classList.add('hidden');
+  }
+
+  // Dos inputs separados (cámara con capture="environment" y galería sin capture) para que en
+  // Android/iOS el usuario pueda elegir tomar una foto NUEVA o seleccionar una YA existente;
+  // en PC ambos abren el mismo selector de archivos de siempre. Reutilizan el mismo procesamiento.
+  ['evidenciaCameraInput','evidenciaGaleriaInput'].forEach(inputId=>{
+    $(inputId).addEventListener('change', async (e)=>{
       const file = e.target.files[0];
-      if(!file) return;
-      $(ids.cargando).classList.remove('hidden');
-      try{
-        fotoOrdenActual[tipo] = await comprimirImagen(file, 1000, 0.72);
-        fotoOrdenLinkActual[tipo] = null;
-        mostrarPreviewFotoOrden(tipo, fotoOrdenActual[tipo]);
-      }catch(err){ alert('No se pudo procesar la imagen: ' + err.message); }
-      $(ids.cargando).classList.add('hidden');
       e.target.value = '';
-    });
-    $(ids.quitar).addEventListener('click', ()=>{
-      fotoOrdenActual[tipo] = null;
-      fotoOrdenLinkActual[tipo] = null;
-      mostrarPreviewFotoOrden(tipo, null);
+      await agregarFotoEvidencia(file);
     });
   });
 
@@ -2263,10 +2327,10 @@
     const incluirGeneral = $('incluirFotosOrdenWA') ? $('incluirFotosOrdenWA').checked : true;
     const fuentes = [];
     if(incluirGeneral){
-      if(fotoOrdenActual.antes) fuentes.push({ src: fotoOrdenActual.antes, nombre: 'antes.jpg' });
-      else if(fotoOrdenLinkActual.antes) fuentes.push({ src: fotoOrdenLinkActual.antes.embedLink, nombre: 'antes.jpg' });
-      if(fotoOrdenActual.despues) fuentes.push({ src: fotoOrdenActual.despues, nombre: 'despues.jpg' });
-      else if(fotoOrdenLinkActual.despues) fuentes.push({ src: fotoOrdenLinkActual.despues.embedLink, nombre: 'despues.jpg' });
+      fotosEvidencia.forEach((f,idx)=>{
+        const src = f.local || (f.drive && f.drive.embedLink);
+        if(src) fuentes.push({ src, nombre: `evidencia${idx+1}.jpg` });
+      });
     }
     if(window.__lastReport){
       window.__lastReport.resultados.forEach(eq=>{
@@ -2421,7 +2485,7 @@
   function abrirBuscarMaterialCatalogo(targetIndex){
     matLinkTargetIndex = (targetIndex===undefined) ? null : targetIndex;
     $('buscarMatCatQ').value = '';
-    const opts = categoriasMatLocal.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+    const opts = categoriasMat.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
     $('buscarMatCatCategoria').innerHTML = '<option value="">Todas las categorías</option>' + opts;
     $('buscarMatCatCategoria').value = '';
     renderBuscarMaterialCatalogoResultados();
@@ -2709,23 +2773,28 @@
     $('numEquiposWrap').classList.toggle('hidden', !$('incluirPsicrometria').checked);
     $('equiposContainer').classList.toggle('hidden', !$('incluirPsicrometria').checked);
 
+    // Etapa 18: reconstruye el arreglo de Evidencia Fotográfica soportando tanto el formato
+    // nuevo (fotosEvidenciaLinks / fotosLocalMap{evidencia:[...]}) como el formato viejo
+    // (fotoOrdenAntesLink/fotoOrdenDespuesLink y fotosLocalMap{antes,despues}) para que
+    // trabajos antiguos sigan mostrando sus fotos sin perderlas ni duplicarlas.
     const localCacheOrden = fotosLocalMap[t.id + '::orden'];
-    ['antes','despues'].forEach(tipo=>{
-      const linkField = 'fotoOrden' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Link';
-      if(t[linkField]){
-        fotoOrdenLinkActual[tipo] = t[linkField];
-        fotoOrdenActual[tipo] = null;
-        mostrarPreviewFotoOrden(tipo, t[linkField].embedLink);
-      } else if(localCacheOrden && localCacheOrden[tipo]){
-        fotoOrdenActual[tipo] = localCacheOrden[tipo];
-        fotoOrdenLinkActual[tipo] = null;
-        mostrarPreviewFotoOrden(tipo, localCacheOrden[tipo]);
-      } else {
-        fotoOrdenActual[tipo] = null;
-        fotoOrdenLinkActual[tipo] = null;
-        mostrarPreviewFotoOrden(tipo, null);
-      }
-    });
+    fotosEvidencia = [];
+    if(Array.isArray(t.fotosEvidenciaLinks) && t.fotosEvidenciaLinks.length){
+      t.fotosEvidenciaLinks.forEach(link=>{ fotosEvidencia.push({ id: uid(), local: null, drive: link }); });
+    } else if(localCacheOrden && Array.isArray(localCacheOrden.evidencia) && localCacheOrden.evidencia.length){
+      localCacheOrden.evidencia.forEach(dataUrl=>{ fotosEvidencia.push({ id: uid(), local: dataUrl, drive: null }); });
+    } else {
+      // Formato viejo (antes/después)
+      ['antes','despues'].forEach(tipo=>{
+        const linkField = 'fotoOrden' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Link';
+        if(t[linkField]){
+          fotosEvidencia.push({ id: uid(), local: null, drive: t[linkField] });
+        } else if(localCacheOrden && localCacheOrden[tipo]){
+          fotosEvidencia.push({ id: uid(), local: localCacheOrden[tipo], drive: null });
+        }
+      });
+    }
+    renderEvidenciaGrid();
 
     const equipos = t.equipos && t.equipos.length ? t.equipos : [{}];
     const n = Math.min(equipos.length, NUM_EQUIPOS_MAX);
@@ -2837,10 +2906,8 @@
       ['a_te','a_hre','a_ts','a_hrs','a_v','a_psi','a_amp','a_comentario','d_te','d_hre','d_ts','d_hrs','d_v','d_psi','d_amp','d_comentario'].forEach(f=>{ const el=$(`eq${i}_${f}`); if(el) el.value=''; });
       TIPOS_FOTO.forEach(tipo=>{ fotosActuales[i][tipo]=null; fotosLinksActuales[i][tipo]=null; mostrarPreviewFotoEq(i,tipo,null); });
     }
-    fotoOrdenActual = { antes:null, despues:null };
-    fotoOrdenLinkActual = { antes:null, despues:null };
-    mostrarPreviewFotoOrden('antes', null);
-    mostrarPreviewFotoOrden('despues', null);
+    fotosEvidencia = [];
+    renderEvidenciaGrid();
 
     $('reportCard').classList.add('hidden');
     window.__lastReport = null;
@@ -3294,16 +3361,15 @@
       $('reportDiagnosticoContainer').innerHTML = '';
     }
 
-    // Evidencia fotográfica general (Antes/Después) — para órdenes que no son de HVAC
-    const fotoOrdenAntesSrc = fotoOrdenActual.antes || (fotoOrdenLinkActual.antes && fotoOrdenLinkActual.antes.embedLink) || null;
-    const fotoOrdenDespuesSrc = fotoOrdenActual.despues || (fotoOrdenLinkActual.despues && fotoOrdenLinkActual.despues.embedLink) || null;
-    if(fotoOrdenAntesSrc || fotoOrdenDespuesSrc){
+    // Evidencia fotográfica (Etapa 18: ahora es un arreglo de hasta 5 fotos, disponible para
+    // cualquier categoría incluyendo Refrigeración / HVAC)
+    const fotosEvidenciaSrcs = fotosEvidencia.map(f=>f.local || (f.drive && f.drive.embedLink)).filter(Boolean);
+    if(fotosEvidenciaSrcs.length){
       $('reportDiagnosticoContainer').innerHTML += `
         <div>
           <h4 class="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-2">📷 Evidencia fotográfica</h4>
           <div class="grid grid-cols-2 gap-3">
-            ${fotoOrdenAntesSrc ? `<div><p class="text-[11px] text-slate-400 mb-1">Antes</p><img src="${fotoOrdenAntesSrc}" class="w-full max-h-56 object-contain rounded-lg border border-amber-200 dark:border-slate-700"></div>` : ''}
-            ${fotoOrdenDespuesSrc ? `<div><p class="text-[11px] text-slate-400 mb-1">Después</p><img src="${fotoOrdenDespuesSrc}" class="w-full max-h-56 object-contain rounded-lg border border-emerald-200 dark:border-slate-700"></div>` : ''}
+            ${fotosEvidenciaSrcs.map(src=>`<div><img src="${src}" class="w-full max-h-56 object-contain rounded-lg border border-sky-200 dark:border-slate-700"></div>`).join('')}
           </div>
         </div>`;
       $('reportDiagnosticoContainer').classList.remove('hidden');
@@ -3397,11 +3463,10 @@
       t += diagBlocks;
     }
 
-    // Evidencia fotográfica general (Antes/Después) — solo aviso textual, las fotos van adjuntas al compartir
-    if(fotoOrdenActual.antes || fotoOrdenActual.despues || fotoOrdenLinkActual.antes || fotoOrdenLinkActual.despues){
+    // Evidencia fotográfica — solo aviso textual, las fotos van adjuntas al compartir
+    if(fotosEvidencia.length){
       t += `\n━━━━━━━━━━━━━━━━━━━\n📷 *EVIDENCIA FOTOGRÁFICA*\n`;
-      if(fotoOrdenActual.antes || fotoOrdenLinkActual.antes) t += `▫️ Foto antes: adjunta con este mensaje / ${fotoOrdenLinkActual.antes ? fotoOrdenLinkActual.antes.viewLink : 'ver imagen adjunta'}\n`;
-      if(fotoOrdenActual.despues || fotoOrdenLinkActual.despues) t += `▫️ Foto después: adjunta con este mensaje / ${fotoOrdenLinkActual.despues ? fotoOrdenLinkActual.despues.viewLink : 'ver imagen adjunta'}\n`;
+      t += `▫️ ${fotosEvidencia.length} foto(s) adjunta(s) con este mensaje\n`;
     }
 
     d.resultados.forEach(eq=>{
@@ -3602,15 +3667,14 @@
             }
           }
         }
-        for(const tipo of ['antes','despues']){
-          if(fotoOrdenActual[tipo]){
-            const nombreArchivo = `orden_${tipo}_${trabajoBase.numOrden||'sinorden'}_${trabajoBase.fecha}.jpg`;
-            const link = await gdSubirFoto(fotoOrdenActual[tipo], nombreArchivo);
-            trabajoBase['fotoOrden'+tipo.charAt(0).toUpperCase()+tipo.slice(1)+'Link'] = link;
-          } else if(fotoOrdenLinkActual[tipo]){
-            trabajoBase['fotoOrden'+tipo.charAt(0).toUpperCase()+tipo.slice(1)+'Link'] = fotoOrdenLinkActual[tipo];
+        for(const foto of fotosEvidencia){
+          if(foto.local){
+            const nombreArchivo = `orden_evidencia_${trabajoBase.numOrden||'sinorden'}_${trabajoBase.fecha}_${foto.id}.jpg`;
+            const link = await gdSubirFoto(foto.local, nombreArchivo);
+            foto.drive = link; foto.local = null;
           }
         }
+        trabajoBase.fotosEvidenciaLinks = fotosEvidencia.map(f=>f.drive).filter(Boolean);
         if(esEdicion){
           // Actualiza el mismo documento (merge:true conserva pagos y cualquier otro campo
           // que no forme parte del formulario, en vez de reemplazar todo el documento).
@@ -3639,9 +3703,8 @@
           TIPOS_FOTO.forEach(t=>{ if(fotosActuales[i][t]) fotosParaGuardar[t.toLowerCase()] = fotosActuales[i][t]; });
           if(Object.keys(fotosParaGuardar).length){ fotosLocalMap[idLocal + '::' + i] = fotosParaGuardar; }
         });
-        const fotosOrdenGuardar = {};
-        ['antes','despues'].forEach(t=>{ if(fotoOrdenActual[t]) fotosOrdenGuardar[t] = fotoOrdenActual[t]; });
-        if(Object.keys(fotosOrdenGuardar).length){ fotosLocalMap[idLocal + '::orden'] = fotosOrdenGuardar; }
+        const fotosEvidenciaGuardar = fotosEvidencia.map(f=>f.local).filter(Boolean);
+        if(fotosEvidenciaGuardar.length){ fotosLocalMap[idLocal + '::orden'] = { evidencia: fotosEvidenciaGuardar }; }
         saveFotosLocalMap();
         mostrarToast(esEdicion ? '✔ Trabajo actualizado en la nube (fotos solo en este dispositivo — conecta Drive para verlas en todos lados)' : '✔ Trabajo guardado en la nube (fotos solo en este dispositivo — conecta Drive para verlas en todos lados)');
         $('modoEdicionBadge').classList.remove('hidden');
@@ -3662,9 +3725,8 @@
         TIPOS_FOTO.forEach(t=>{ if(fotosActuales[i][t]) fotosParaGuardar[t.toLowerCase()] = fotosActuales[i][t]; });
         if(Object.keys(fotosParaGuardar).length){ fotosLocalMap[idLocal + '::' + i] = fotosParaGuardar; }
       });
-      const fotosOrdenGuardar = {};
-      ['antes','despues'].forEach(t=>{ if(fotoOrdenActual[t]) fotosOrdenGuardar[t] = fotoOrdenActual[t]; });
-      if(Object.keys(fotosOrdenGuardar).length){ fotosLocalMap[idLocal + '::orden'] = fotosOrdenGuardar; }
+      const fotosEvidenciaGuardar = fotosEvidencia.map(f=>f.local).filter(Boolean);
+      if(fotosEvidenciaGuardar.length){ fotosLocalMap[idLocal + '::orden'] = { evidencia: fotosEvidenciaGuardar }; }
       try{
         saveTrabajos(); saveFotosLocalMap();
         trabajos = trabajosLocal;
@@ -3684,9 +3746,8 @@
         TIPOS_FOTO.forEach(t=>{ if(fotosActuales[i][t]) fotosParaGuardar[t.toLowerCase()] = fotosActuales[i][t]; });
         if(Object.keys(fotosParaGuardar).length){ fotosLocalMap[idLocal + '::' + i] = fotosParaGuardar; }
       });
-      const fotosOrdenGuardar = {};
-      ['antes','despues'].forEach(t=>{ if(fotoOrdenActual[t]) fotosOrdenGuardar[t] = fotoOrdenActual[t]; });
-      if(Object.keys(fotosOrdenGuardar).length){ fotosLocalMap[idLocal + '::orden'] = fotosOrdenGuardar; }
+      const fotosEvidenciaGuardarNuevo = fotosEvidencia.map(f=>f.local).filter(Boolean);
+      if(fotosEvidenciaGuardarNuevo.length){ fotosLocalMap[idLocal + '::orden'] = { evidencia: fotosEvidenciaGuardarNuevo }; }
       try{
         saveTrabajos(); saveFotosLocalMap();
         trabajos = trabajosLocal;
@@ -4798,40 +4859,52 @@
   const DEFAULT_CATEGORIAS_MAT = ['Refrigeración','Electricidad','Electrónica','Plomería','Herramientas','Consumibles','Seguridad','Otros'];
   const DEFAULT_UNIDADES_MAT = ['Pieza','Metro','Kilogramo','Litro','Juego','Caja','Rollo','Otro'];
 
-  let materialesCatalogo = JSON.parse(localStorage.getItem(LS_MATCAT) || '[]');
-  let compras = JSON.parse(localStorage.getItem(LS_COMPRAS) || '[]');
-  let ferreterias = JSON.parse(localStorage.getItem(LS_FERRETERIAS) || '[]');
+  // Etapa 18 — Bloque A: se separa la copia "Local" (persistida en localStorage, fuente de
+  // verdad en modo sin Firestore) de la variable "activa" que usan todas las funciones de
+  // renderizado/consulta. Mismo patrón que catalogoLocal/catalogo, clientesLocal/clientesActivos,
+  // sistemasLocal/sistemas y trabajosLocal/trabajos ya usado en el resto de la app.
+  let materialesCatalogoLocal = JSON.parse(localStorage.getItem(LS_MATCAT) || '[]');
+  let comprasLocal = JSON.parse(localStorage.getItem(LS_COMPRAS) || '[]');
+  let ferreteriasLocal = JSON.parse(localStorage.getItem(LS_FERRETERIAS) || '[]');
   let categoriasMatLocal = JSON.parse(localStorage.getItem(LS_CATEGORIAS_MAT) || 'null') || DEFAULT_CATEGORIAS_MAT.map(n=>({id:uid(), nombre:n, estado:'Activo'}));
   let unidadesMatLocal = JSON.parse(localStorage.getItem(LS_UNIDADES_MAT) || 'null') || DEFAULT_UNIDADES_MAT.slice();
 
-  function saveMaterialesCatalogo(){ localStorage.setItem(LS_MATCAT, JSON.stringify(materialesCatalogo)); }
-  function saveCompras(){ localStorage.setItem(LS_COMPRAS, JSON.stringify(compras)); }
-  function saveFerreterias(){ localStorage.setItem(LS_FERRETERIAS, JSON.stringify(ferreterias)); }
+  // Variables activas: apuntan a los datos locales por defecto; cuando hay sesión Firestore,
+  // handleAuthState() las reasigna a lo que llega por onSnapshot (igual que "catalogo"/"sistemas").
+  let materialesCatalogo = materialesCatalogoLocal;
+  let compras = comprasLocal;
+  let ferreterias = ferreteriasLocal;
+  let categoriasMat = categoriasMatLocal;
+  let unidadesMat = unidadesMatLocal;
+
+  function saveMaterialesCatalogo(){ localStorage.setItem(LS_MATCAT, JSON.stringify(materialesCatalogoLocal)); }
+  function saveCompras(){ localStorage.setItem(LS_COMPRAS, JSON.stringify(comprasLocal)); }
+  function saveFerreterias(){ localStorage.setItem(LS_FERRETERIAS, JSON.stringify(ferreteriasLocal)); }
   function saveCategoriasMat(){ localStorage.setItem(LS_CATEGORIAS_MAT, JSON.stringify(categoriasMatLocal)); }
   function saveUnidadesMat(){ localStorage.setItem(LS_UNIDADES_MAT, JSON.stringify(unidadesMatLocal)); }
 
   // Migración no destructiva: los registros de la Etapa 1 no tenían fechas/estado formal, ni categoría como catálogo.
   // Se completan los campos faltantes sin tocar la información ya capturada.
   let matMigrado = false;
-  materialesCatalogo = materialesCatalogo.map(m=>{
+  materialesCatalogoLocal = materialesCatalogoLocal.map(m=>{
     if(m.fechaCreacion) return m;
     matMigrado = true;
     const hoy = new Date().toISOString().slice(0,10);
     return { ...m, estado: m.estado || 'Activo', fechaCreacion: hoy, fechaActualizacion: hoy };
   });
-  if(matMigrado) saveMaterialesCatalogo();
+  if(matMigrado){ saveMaterialesCatalogo(); materialesCatalogo = materialesCatalogoLocal; }
   let ferrMigrado = false;
-  ferreterias = ferreterias.map(f=>{
+  ferreteriasLocal = ferreteriasLocal.map(f=>{
     if(f.fechaCreacion) return f;
     ferrMigrado = true;
     const hoy = new Date().toISOString().slice(0,10);
     return { ...f, estado: (f.estado==='Inactivo'||f.estado==='Inactiva') ? 'Inactiva' : 'Activa', fechaCreacion: hoy, fechaActualizacion: hoy };
   });
-  if(ferrMigrado) saveFerreterias();
+  if(ferrMigrado){ saveFerreterias(); ferreterias = ferreteriasLocal; }
 
   function resolverCategoriaMat(valor){
     if(!valor) return null;
-    return categoriasMatLocal.find(c=>c.id===valor) || categoriasMatLocal.find(c=>c.nombre===valor) || null;
+    return categoriasMat.find(c=>c.id===valor) || categoriasMat.find(c=>c.nombre===valor) || null;
   }
   function nombreCategoriaMat(valor){ const c = resolverCategoriaMat(valor); return c ? c.nombre : (valor || '—'); }
   function categoriaMatTieneMateriales(cat){
@@ -4839,15 +4912,27 @@
   }
 
   function renderCategoriasMatSelects(){
-    const opts = categoriasMatLocal.filter(c=>c.estado!=='Inactivo').map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+    const opts = categoriasMat.filter(c=>c.estado!=='Inactivo').map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
     $('matcat_categoria').innerHTML = opts;
-    const optsFiltro = categoriasMatLocal.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+    const optsFiltro = categoriasMat.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
     const prev = $('matCatFiltroCategoria').value;
     $('matCatFiltroCategoria').innerHTML = '<option value="">Todas las categorías</option>' + optsFiltro;
     if([...$('matCatFiltroCategoria').options].some(o=>o.value===prev)) $('matCatFiltroCategoria').value = prev;
   }
+  // Etapa 18: guarda la lista completa de categorías como documento único de configuración
+  // (mismo patrón que sistemas_por_categoria) cuando hay sesión Firestore; si no, cae a local.
+  function guardarCategoriasMat(nuevaLista){
+    if(modoCloud && db){
+      db.collection('config').doc('categorias_materiales').set({ data: nuevaLista }).catch(e=>alert('No se pudo guardar: '+e.message));
+    } else {
+      categoriasMatLocal = nuevaLista;
+      saveCategoriasMat();
+      categoriasMat = categoriasMatLocal;
+      renderCategoriasMatLista(); renderCategoriasMatSelects();
+    }
+  }
   function renderCategoriasMatLista(){
-    $('categoriasMatLista').innerHTML = categoriasMatLocal.map(c=>`
+    $('categoriasMatLista').innerHTML = categoriasMat.map(c=>`
       <div class="flex items-center justify-between py-2">
         <span class="text-sm ${c.estado==='Inactivo'?'text-slate-400':'text-slate-700 dark:text-slate-200'}">${esc(c.nombre)}${c.estado==='Inactivo'?' <span class="text-[10px] text-slate-400">(inactiva)</span>':''}</span>
         <div class="flex gap-2 text-xs font-semibold shrink-0">
@@ -4856,36 +4941,42 @@
         </div>
       </div>`).join('');
     $('categoriasMatLista').querySelectorAll('.toggleCategoriaMat').forEach(b=>b.addEventListener('click', ()=>{
-      const c = categoriasMatLocal.find(x=>x.id===b.dataset.id);
+      const c = categoriasMat.find(x=>x.id===b.dataset.id);
       if(!c) return;
-      c.estado = c.estado==='Inactivo' ? 'Activo' : 'Inactivo';
-      saveCategoriasMat(); renderCategoriasMatLista(); renderCategoriasMatSelects();
+      const nuevaLista = categoriasMat.map(x=>x.id===c.id ? {...x, estado: x.estado==='Inactivo'?'Activo':'Inactivo'} : x);
+      guardarCategoriasMat(nuevaLista);
     }));
     $('categoriasMatLista').querySelectorAll('.delCategoriaMat').forEach(b=>b.addEventListener('click', ()=>{
-      const c = categoriasMatLocal.find(x=>x.id===b.dataset.id);
+      const c = categoriasMat.find(x=>x.id===b.dataset.id);
       if(!c) return;
       if(categoriaMatTieneMateriales(c)){ alert(`"${c.nombre}" tiene materiales asociados — desactívala en vez de eliminarla.`); return; }
       if(!confirm(`¿Eliminar la categoría "${c.nombre}"?`)) return;
-      categoriasMatLocal = categoriasMatLocal.filter(x=>x.id!==c.id);
-      saveCategoriasMat(); renderCategoriasMatLista(); renderCategoriasMatSelects();
+      guardarCategoriasMat(categoriasMat.filter(x=>x.id!==c.id));
     }));
   }
   $('btnEditarCategoriasMat').addEventListener('click', ()=>{ renderCategoriasMatLista(); openModal('modalCategoriasMat'); });
   $('btnAddCategoriaMat').addEventListener('click', ()=>{
     const v = txt('nuevaCategoriaMat');
     if(!v) return;
-    if(categoriasMatLocal.some(c=>c.nombre.toLowerCase()===v.toLowerCase())){ alert('Ya existe esa categoría.'); return; }
-    categoriasMatLocal.push({ id: uid(), nombre: v, estado: 'Activo' });
-    saveCategoriasMat();
+    if(categoriasMat.some(c=>c.nombre.toLowerCase()===v.toLowerCase())){ alert('Ya existe esa categoría.'); return; }
+    guardarCategoriasMat([...categoriasMat, { id: uid(), nombre: v, estado: 'Activo' }]);
     $('nuevaCategoriaMat').value = '';
-    renderCategoriasMatLista(); renderCategoriasMatSelects();
   });
 
   function renderUnidadesMatDatalist(){
-    $('listaUnidadesMateriales').innerHTML = unidadesMatLocal.map(u=>`<option value="${esc(u)}">`).join('');
+    $('listaUnidadesMateriales').innerHTML = unidadesMat.map(u=>`<option value="${esc(u)}">`).join('');
   }
   function agregarUnidadMatSiNueva(u){
-    if(u && !unidadesMatLocal.includes(u)){ unidadesMatLocal.push(u); saveUnidadesMat(); renderUnidadesMatDatalist(); }
+    if(!u || unidadesMat.includes(u)) return;
+    const nuevaLista = [...unidadesMat, u];
+    if(modoCloud && db){
+      db.collection('config').doc('unidades_materiales').set({ data: nuevaLista }).catch(e=>alert('No se pudo guardar la unidad: '+e.message));
+    } else {
+      unidadesMatLocal = nuevaLista;
+      saveUnidadesMat();
+      unidadesMat = unidadesMatLocal;
+      renderUnidadesMatDatalist();
+    }
   }
 
   /* ---- Estadísticas de precio de un material ---- */
@@ -4944,17 +5035,27 @@
     $('matCatListaWrap').querySelectorAll('.toggleMaterialCat').forEach(b=>b.addEventListener('click', ()=>{
       const m = materialesCatalogo.find(x=>x.id===b.dataset.id);
       if(!m) return;
-      m.estado = m.estado==='Inactivo' ? 'Activo' : 'Inactivo';
-      m.fechaActualizacion = new Date().toISOString().slice(0,10);
-      saveMaterialesCatalogo(); renderMaterialesCatalogo();
+      const nuevoEstado = m.estado==='Inactivo' ? 'Activo' : 'Inactivo';
+      const fechaActualizacion = new Date().toISOString().slice(0,10);
+      if(modoCloud && db){
+        db.collection('materiales_catalogo').doc(m.id).update({ estado: nuevoEstado, fechaActualizacion }).catch(e=>alert('No se pudo actualizar: '+e.message));
+      } else {
+        m.estado = nuevoEstado; m.fechaActualizacion = fechaActualizacion;
+        saveMaterialesCatalogo(); renderMaterialesCatalogo();
+      }
     }));
     $('matCatListaWrap').querySelectorAll('.borrarMaterialCat').forEach(b=>b.addEventListener('click', ()=>{
       const m = materialesCatalogo.find(x=>x.id===b.dataset.id);
       if(!m) return;
       if(compras.some(c=>c.materialId===m.id)){ alert(`"${m.descripcion}" tiene compras registradas — desactívalo en vez de eliminarlo para conservar el historial de precios.`); return; }
       if(!confirm(`¿Eliminar "${m.descripcion}" del catálogo?`)) return;
-      materialesCatalogo = materialesCatalogo.filter(x=>x.id!==m.id);
-      saveMaterialesCatalogo(); renderMaterialesCatalogo();
+      if(modoCloud && db){
+        db.collection('materiales_catalogo').doc(m.id).delete().catch(e=>alert('No se pudo borrar: '+e.message));
+      } else {
+        materialesCatalogoLocal = materialesCatalogoLocal.filter(x=>x.id!==m.id);
+        saveMaterialesCatalogo(); materialesCatalogo = materialesCatalogoLocal;
+        renderMaterialesCatalogo();
+      }
     }));
     renderSelectorMaterialCompra();
   }
@@ -4983,7 +5084,7 @@
   $('btnNuevoMaterialCat').addEventListener('click', ()=>abrirMaterialCat(null));
   $('btnEditarMaterialDesdeDetalle').addEventListener('click', ()=>abrirMaterialCat($('btnEditarMaterialDesdeDetalle').dataset.id));
 
-  $('btnGuardarMaterialCat').addEventListener('click', ()=>{
+  $('btnGuardarMaterialCat').addEventListener('click', async ()=>{
     if(!txt('matcat_descripcion')){ alert('Ponle una descripción al material.'); return; }
     if(!$('matcat_categoria').value){ alert('Selecciona una categoría.'); return; }
     if(!txt('matcat_unidad')){ alert('Indica la unidad (ej. Pieza, Metro...).'); return; }
@@ -4996,16 +5097,27 @@
       especificaciones: txt('matcat_especificaciones'), comentarios: txt('matcat_comentarios'),
       fechaActualizacion: hoy
     };
-    if(id){
-      const idx = materialesCatalogo.findIndex(m=>m.id===id);
-      if(idx>-1) materialesCatalogo[idx] = { ...materialesCatalogo[idx], ...datos };
+    // Etapa 18: el ID del material (materialCatalogoId en filas de trabajos) se conserva siempre
+    // — al editar solo se actualizan campos, nunca se genera un ID nuevo.
+    if(modoCloud && db){
+      try{
+        if(id){ await db.collection('materiales_catalogo').doc(id).update(datos); }
+        else { await db.collection('materiales_catalogo').add({ ...datos, estado: 'Activo', fechaCreacion: hoy }); }
+      }catch(e){ alert('No se pudo guardar en la nube: ' + e.message); return; }
+      mostrarToast('✔ Material guardado en la nube');
     } else {
-      materialesCatalogo.push({ id: uid(), ...datos, estado: 'Activo', fechaCreacion: hoy });
+      if(id){
+        const idx = materialesCatalogoLocal.findIndex(m=>m.id===id);
+        if(idx>-1) materialesCatalogoLocal[idx] = { ...materialesCatalogoLocal[idx], ...datos };
+      } else {
+        materialesCatalogoLocal.push({ id: uid(), ...datos, estado: 'Activo', fechaCreacion: hoy });
+      }
+      saveMaterialesCatalogo();
+      materialesCatalogo = materialesCatalogoLocal;
+      renderMaterialesCatalogo();
+      mostrarToast('✔ Material guardado (local)');
     }
-    saveMaterialesCatalogo();
     closeModal('modalMaterialCat');
-    renderMaterialesCatalogo();
-    mostrarToast('✔ Material guardado (local)');
   });
 
   /* ---- Vista de detalle de un material ---- */
@@ -5069,9 +5181,15 @@
     $('matDetalleContenido').querySelectorAll('.editarCompraDesdeMaterial').forEach(b=>b.addEventListener('click', ()=>abrirCompra(b.dataset.id)));
     $('matDetalleContenido').querySelectorAll('.borrarCompraDesdeMaterial').forEach(b=>b.addEventListener('click', ()=>{
       if(!confirm('¿Borrar esta compra del historial?')) return;
-      compras = compras.filter(c=>c.id!==b.dataset.id);
-      saveCompras();
-      verMaterial(id);
+      if(modoCloud && db){
+        db.collection('compras_materiales').doc(b.dataset.id).delete()
+          .then(()=>verMaterial(id))
+          .catch(e=>alert('No se pudo borrar: '+e.message));
+      } else {
+        comprasLocal = comprasLocal.filter(c=>c.id!==b.dataset.id);
+        saveCompras(); compras = comprasLocal;
+        verMaterial(id);
+      }
     }));
     $('btnEditarMaterialDesdeDetalle').dataset.id = id;
     $('btnRegistrarCompraDesdeDetalle').dataset.materialId = id;
@@ -5144,8 +5262,13 @@
     $('comprasListaWrap').querySelectorAll('.editarCompra').forEach(b=>b.addEventListener('click', ()=>abrirCompra(b.dataset.id)));
     $('comprasListaWrap').querySelectorAll('.borrarCompra').forEach(b=>b.addEventListener('click', ()=>{
       if(!confirm('¿Borrar esta compra del historial?')) return;
-      compras = compras.filter(c=>c.id!==b.dataset.id);
-      saveCompras(); renderCompras();
+      if(modoCloud && db){
+        db.collection('compras_materiales').doc(b.dataset.id).delete().catch(e=>alert('No se pudo borrar: '+e.message));
+      } else {
+        comprasLocal = comprasLocal.filter(c=>c.id!==b.dataset.id);
+        saveCompras(); compras = comprasLocal;
+        renderCompras();
+      }
     }));
   }
   $('comprasBuscar').addEventListener('input', renderCompras);
@@ -5169,7 +5292,7 @@
   $('btnNuevaCompra').addEventListener('click', ()=>abrirCompra(null));
   $('btnNuevaFerreteriaRapida').addEventListener('click', ()=>abrirFerreteria(null, true));
 
-  $('btnGuardarCompra').addEventListener('click', ()=>{
+  $('btnGuardarCompra').addEventListener('click', async ()=>{
     if(!$('compra_material').value){ alert('Selecciona un material del catálogo.'); return; }
     if(num('compra_cantidad')===null){ alert('La cantidad es obligatoria.'); return; }
     if(num('compra_precioUnit')===null){ alert('El precio unitario es obligatorio.'); return; }
@@ -5179,17 +5302,29 @@
       ferreteriaId: $('compra_ferreteria').value, cantidad: num('compra_cantidad')||0, precioUnit: num('compra_precioUnit')||0,
       precioTotal: num('compra_precioTotal')||0, comentarios: txt('compra_comentarios')
     };
-    if(id){
-      const idx = compras.findIndex(c=>c.id===id);
-      if(idx>-1) compras[idx] = { ...compras[idx], ...datos };
+    // Nota: registrar/editar una compra NUNCA toca costoUnit/costoRealUnit de trabajos ya
+    // guardados — esos quedaron congelados al momento de guardar cada trabajo (Etapa 6/8).
+    if(modoCloud && db){
+      try{
+        if(id){ await db.collection('compras_materiales').doc(id).update(datos); }
+        else { await db.collection('compras_materiales').add(datos); }
+      }catch(e){ alert('No se pudo guardar en la nube: ' + e.message); return; }
+      mostrarToast('✔ Compra guardada en la nube');
     } else {
-      compras.push({ id: uid(), ...datos });
+      if(id){
+        const idx = comprasLocal.findIndex(c=>c.id===id);
+        if(idx>-1) comprasLocal[idx] = { ...comprasLocal[idx], ...datos };
+      } else {
+        comprasLocal.push({ id: uid(), ...datos });
+      }
+      saveCompras();
+      compras = comprasLocal;
+      renderCompras();
+      mostrarToast('✔ Compra guardada (local)');
     }
-    saveCompras();
     closeModal('modalCompra');
-    renderCompras();
+    if(!modoCloud) renderCompras();
     if(!$('matDetalleWrap').classList.contains('hidden')) verMaterial($('btnEditarMaterialDesdeDetalle').dataset.id);
-    mostrarToast('✔ Compra guardada (local)');
   });
 
   /* ---- Ferreterías ---- */
@@ -5213,17 +5348,27 @@
     $('ferreteriasListaWrap').querySelectorAll('.toggleFerreteria').forEach(b=>b.addEventListener('click', ()=>{
       const f = ferreterias.find(x=>x.id===b.dataset.id);
       if(!f) return;
-      f.estado = f.estado==='Inactiva' ? 'Activa' : 'Inactiva';
-      f.fechaActualizacion = new Date().toISOString().slice(0,10);
-      saveFerreterias(); renderFerreterias(); renderSelectorFerreteriaCompra();
+      const nuevoEstado = f.estado==='Inactiva' ? 'Activa' : 'Inactiva';
+      const fechaActualizacion = new Date().toISOString().slice(0,10);
+      if(modoCloud && db){
+        db.collection('ferreterias_materiales').doc(f.id).update({ estado: nuevoEstado, fechaActualizacion }).catch(e=>alert('No se pudo actualizar: '+e.message));
+      } else {
+        f.estado = nuevoEstado; f.fechaActualizacion = fechaActualizacion;
+        saveFerreterias(); renderFerreterias(); renderSelectorFerreteriaCompra();
+      }
     }));
     $('ferreteriasListaWrap').querySelectorAll('.borrarFerreteria').forEach(b=>b.addEventListener('click', ()=>{
       const f = ferreterias.find(x=>x.id===b.dataset.id);
       if(!f) return;
       if(compras.some(c=>c.ferreteriaId===f.id)){ alert(`"${f.nombre}" tiene compras registradas — desactívala en vez de eliminarla.`); return; }
       if(!confirm(`¿Eliminar "${f.nombre}"?`)) return;
-      ferreterias = ferreterias.filter(x=>x.id!==f.id);
-      saveFerreterias(); renderFerreterias(); renderSelectorFerreteriaCompra();
+      if(modoCloud && db){
+        db.collection('ferreterias_materiales').doc(f.id).delete().catch(e=>alert('No se pudo borrar: '+e.message));
+      } else {
+        ferreteriasLocal = ferreteriasLocal.filter(x=>x.id!==f.id);
+        saveFerreterias(); ferreterias = ferreteriasLocal;
+        renderFerreterias(); renderSelectorFerreteriaCompra();
+      }
     }));
   }
   $('ferrMostrarInactivas').addEventListener('change', renderFerreterias);
@@ -5241,26 +5386,35 @@
     openModal('modalFerreteria');
   }
   $('btnNuevaFerreteria').addEventListener('click', ()=>abrirFerreteria(null));
-  $('btnGuardarFerreteria').addEventListener('click', ()=>{
+  $('btnGuardarFerreteria').addEventListener('click', async ()=>{
     if(!txt('ferr_nombre')){ alert('Ponle un nombre a la ferretería.'); return; }
     const id = txt('ferr_editId');
     const hoy = new Date().toISOString().slice(0,10);
     const datos = { nombre: txt('ferr_nombre'), telefono: txt('ferr_telefono'), contacto: txt('ferr_contacto'), direccion: txt('ferr_direccion'), comentarios: txt('ferr_comentarios'), fechaActualizacion: hoy };
     let nuevoId = id;
-    if(id){
-      const idx = ferreterias.findIndex(f=>f.id===id);
-      if(idx>-1) ferreterias[idx] = { ...ferreterias[idx], ...datos };
-    } else {
-      nuevoId = uid();
-      ferreterias.push({ id: nuevoId, ...datos, estado: 'Activa', fechaCreacion: hoy });
-    }
-    saveFerreterias();
     const desdeCompra = $('modalFerreteria').dataset.desdeCompra === '1';
+    if(modoCloud && db){
+      try{
+        if(id){ await db.collection('ferreterias_materiales').doc(id).update(datos); }
+        else { const ref = await db.collection('ferreterias_materiales').add({ ...datos, estado: 'Activa', fechaCreacion: hoy }); nuevoId = ref.id; }
+      }catch(e){ alert('No se pudo guardar en la nube: ' + e.message); return; }
+      mostrarToast('✔ Ferretería guardada en la nube');
+    } else {
+      if(id){
+        const idx = ferreteriasLocal.findIndex(f=>f.id===id);
+        if(idx>-1) ferreteriasLocal[idx] = { ...ferreteriasLocal[idx], ...datos };
+      } else {
+        nuevoId = uid();
+        ferreteriasLocal.push({ id: nuevoId, ...datos, estado: 'Activa', fechaCreacion: hoy });
+      }
+      saveFerreterias();
+      ferreterias = ferreteriasLocal;
+      renderFerreterias();
+      renderSelectorFerreteriaCompra();
+      mostrarToast('✔ Ferretería guardada (local)');
+    }
     closeModal('modalFerreteria');
-    renderFerreterias();
-    renderSelectorFerreteriaCompra();
     if(desdeCompra) $('compra_ferreteria').value = nuevoId;
-    mostrarToast('✔ Ferretería guardada (local)');
   });
 
   /* ---- Navegación interna de la pantalla Materiales ---- */
