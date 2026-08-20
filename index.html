@@ -804,6 +804,7 @@
         <h4 class="font-bold text-slate-600 dark:text-slate-300 text-xs uppercase mb-2">☁️ Google Drive</h4>
         <div id="driveSetup" class="space-y-2">
           <input id="gd_clientid" placeholder="Client ID de Google Cloud (…apps.googleusercontent.com)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
+          <input id="gd_hint_email" type="email" placeholder="Tu correo de Google (opcional, evita el selector de cuentas)" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs">
           <button id="btnGdConnect" class="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Conectar con Google Drive</button>
         </div>
         <p id="gdStatusText" class="text-[11px] text-slate-500 dark:text-slate-400 pt-2 flex items-center gap-1"><span id="gdStatusDot" class="status-dot off"></span> Sin conectar.</p>
@@ -1592,6 +1593,11 @@
 
   /* ================= RESPALDO Y FOTOS EN GOOGLE DRIVE ================= */
   const LS_GD_CLIENTID = 'msd_gd_clientid_v1';
+  // Etapa 18 (extra): recuerda solo el CORREO de la última cuenta de Google usada — nunca el
+  // token de acceso, que es temporal (~1 hora) y no se puede guardar de forma segura. Este
+  // correo se manda como "hint" a Google para saltar el selector de cuentas si esa cuenta
+  // sigue con sesión iniciada en el navegador.
+  const LS_GD_LAST_EMAIL = 'msd_gd_last_email_v1';
   const GD_SCOPE = 'https://www.googleapis.com/auth/drive.file';
   let gdTokenClient = null;
   let gdAccessToken = null;
@@ -1599,6 +1605,8 @@
 
   const savedClientId = localStorage.getItem(LS_GD_CLIENTID);
   if(savedClientId) $('gd_clientid').value = savedClientId;
+  const savedGdEmail = localStorage.getItem(LS_GD_LAST_EMAIL);
+  if(savedGdEmail) $('gd_hint_email').value = savedGdEmail;
 
   function setGdStatus(dotClass, text){
     $('gdStatusText').innerHTML = '';
@@ -1619,6 +1627,10 @@
       callback: (resp) => {
         if(resp.error){ setGdStatus('off', 'Error de autorización: ' + resp.error); return; }
         gdAccessToken = resp.access_token;
+        // Se guarda el correo SOLO cuando la conexión fue exitosa, para no dejar guardado
+        // un correo mal escrito que nunca llegó a funcionar.
+        const hintEmail = $('gd_hint_email').value.trim();
+        if(hintEmail) localStorage.setItem(LS_GD_LAST_EMAIL, hintEmail);
         setGdStatus('on', 'Conectado a Google Drive.');
         $('gdActions').classList.remove('hidden');
         renderGdLista();
@@ -1631,7 +1643,14 @@
     if(!clientId){ alert('Pega primero tu Client ID de Google Cloud Console.'); return; }
     localStorage.setItem(LS_GD_CLIENTID, clientId);
     gdTokenClient = initGdTokenClient(clientId);
-    if(gdTokenClient) gdTokenClient.requestAccessToken({ prompt: gdAccessToken ? '' : 'consent' });
+    if(!gdTokenClient) return;
+    const hintEmail = $('gd_hint_email').value.trim();
+    // "hint" le dice a Google con qué cuenta intentar primero. Si esa cuenta ya tiene sesión
+    // iniciada en este navegador, Google se salta el selector de cuentas y conecta directo.
+    // Si no la tiene, de todas formas te la muestra como opción junto a las demás.
+    const opciones = { prompt: gdAccessToken ? '' : 'consent' };
+    if(hintEmail) opciones.hint = hintEmail;
+    gdTokenClient.requestAccessToken(opciones);
   });
 
   async function gdSaveBackup(){
