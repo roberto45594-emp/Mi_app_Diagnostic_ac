@@ -452,6 +452,8 @@
       <div class="flex flex-wrap gap-2 items-center">
         <select id="matCatFiltroCategoria" class="flex-1 min-w-[140px] bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">Todas las categorías</option></select>
         <button id="btnEditarCategoriasMat" class="text-xs font-semibold bg-slate-500 hover:bg-slate-400 text-white rounded-lg px-2 py-2">✎ Categorías</button>
+        <select id="matCatFiltroSubcategoria" class="flex-1 min-w-[140px] bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">Todas las subcategorías</option></select>
+        <button id="btnEditarSubcategoriasMat" class="text-xs font-semibold bg-slate-500 hover:bg-slate-400 text-white rounded-lg px-2 py-2">✎ Subcategorías</button>
         <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 ml-auto">
           <input id="matCatMostrarInactivos" type="checkbox" class="rounded"> Mostrar inactivos
         </label>
@@ -1040,6 +1042,9 @@
       <select id="buscarMatCatCategoria" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
         <option value="">Todas las categorías</option>
       </select>
+      <select id="buscarMatCatSubcategoria" class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <option value="">Todas las subcategorías</option>
+      </select>
     </div>
     <div class="p-4 overflow-y-auto space-y-2" id="buscarMatCatResultados"></div>
   </div>
@@ -1059,6 +1064,7 @@
         <input id="matcat_parte" placeholder="N° de parte" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
         <input id="matcat_marca" placeholder="Marca" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
         <select id="matcat_categoria" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"></select>
+        <select id="matcat_subcategoria" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm"><option value="">Sin subcategoría</option></select>
         <input id="matcat_unidad" list="listaUnidadesMateriales" placeholder="Unidad *" class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
       </div>
       <datalist id="listaUnidadesMateriales"></datalist>
@@ -1082,6 +1088,24 @@
         <button id="btnAddCategoriaMat" class="bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Agregar</button>
       </div>
       <div id="categoriasMatLista" class="text-sm divide-y divide-sky-100 dark:divide-slate-800"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: SUBCATEGORÍAS DE MATERIALES ============ -->
+<div id="modalSubcategoriasMat" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl w-full max-w-md max-h-[85vh] flex flex-col shadow-xl">
+    <div class="flex items-center justify-between p-4 border-b border-sky-200 dark:border-slate-700">
+      <h3 class="font-bold text-sky-700 dark:text-sky-300">🏷 Subcategorías de materiales</h3>
+      <button data-close="modalSubcategoriasMat" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xl leading-none">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-3">
+      <p class="text-[11px] text-slate-500 dark:text-slate-400">Ej. Conexión, Fijación (tornillería, taquetes, medidas), Aislamiento…</p>
+      <div class="flex gap-2">
+        <input id="nuevaSubcategoriaMat" placeholder="Ej. Fijación" class="flex-1 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm">
+        <button id="btnAddSubcategoriaMat" class="bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2 text-sm font-bold">Agregar</button>
+      </div>
+      <div id="subcategoriasMatLista" class="text-sm divide-y divide-sky-100 dark:divide-slate-800"></div>
     </div>
   </div>
 </div>
@@ -1213,7 +1237,7 @@
   let modoCloud = false;
   let db = null, unsubClientes = null, unsubCatalogo = null, unsubTipos = null, unsubTrabajos = null;
   // Etapa 18 — Bloque A: listeners de sincronización del módulo de Materiales (mismo patrón que arriba).
-  let unsubMatCat = null, unsubCompras = null, unsubFerreterias = null, unsubCategoriasMat = null, unsubUnidadesMat = null;
+  let unsubMatCat = null, unsubCompras = null, unsubFerreterias = null, unsubCategoriasMat = null, unsubSubcategoriasMat = null, unsubUnidadesMat = null;
 
   function saveCatalogo(){ localStorage.setItem(LS_CATALOGO, JSON.stringify(catalogoLocal)); }
   function saveClientesLocal(){ localStorage.setItem(LS_CLIENTES, JSON.stringify(clientesLocal)); }
@@ -1400,6 +1424,14 @@
         if(typeof renderCategoriasMatLista === 'function' && !$('modalCategoriasMat').classList.contains('hidden')) renderCategoriasMatLista();
       }, err=>{ setFbStatus('off', 'Error leyendo categorías de materiales: ' + err.message); });
 
+      if(unsubSubcategoriasMat) unsubSubcategoriasMat();
+      unsubSubcategoriasMat = db.collection('config').doc('subcategorias_materiales').onSnapshot(doc=>{
+        const data = doc.exists ? doc.data().data : null;
+        subcategoriasMat = (data && data.length) ? data : subcategoriasMatLocal;
+        if(typeof renderSubcategoriasMatSelects === 'function') renderSubcategoriasMatSelects();
+        if(typeof renderSubcategoriasMatLista === 'function' && !$('modalSubcategoriasMat').classList.contains('hidden')) renderSubcategoriasMatLista();
+      }, err=>{ setFbStatus('off', 'Error leyendo subcategorías de materiales: ' + err.message); });
+
       if(unsubUnidadesMat) unsubUnidadesMat();
       unsubUnidadesMat = db.collection('config').doc('unidades_materiales').onSnapshot(doc=>{
         const data = doc.exists ? doc.data().data : null;
@@ -1419,6 +1451,7 @@
       compras = comprasLocal;
       ferreterias = ferreteriasLocal;
       categoriasMat = categoriasMatLocal;
+      subcategoriasMat = subcategoriasMatLocal;
       unidadesMat = unidadesMatLocal;
       setFbStatus('off', 'Conectado al proyecto, sin sesión. Ingresa tu código.');
       $('authLoginFields').classList.remove('hidden');
@@ -1431,6 +1464,7 @@
       if(typeof renderCompras === 'function') renderCompras();
       if(typeof renderFerreterias === 'function') renderFerreterias();
       if(typeof renderCategoriasMatSelects === 'function') renderCategoriasMatSelects();
+      if(typeof renderSubcategoriasMatSelects === 'function') renderSubcategoriasMatSelects();
       if(typeof renderUnidadesMatDatalist === 'function') renderUnidadesMatDatalist();
     }
   }
@@ -1606,6 +1640,7 @@
       compras: comprasLocal,
       ferreterias: ferreteriasLocal,
       categoriasMatLocal,
+      subcategoriasMatLocal,
       unidadesMatLocal
     };
   }
@@ -1647,13 +1682,15 @@
     comprasLocal = data.compras || comprasLocal;
     ferreteriasLocal = data.ferreterias || ferreteriasLocal;
     categoriasMatLocal = (data.categoriasMatLocal && data.categoriasMatLocal.length) ? data.categoriasMatLocal : categoriasMatLocal;
+    subcategoriasMatLocal = (data.subcategoriasMatLocal && data.subcategoriasMatLocal.length) ? data.subcategoriasMatLocal : subcategoriasMatLocal;
     unidadesMatLocal = (data.unidadesMatLocal && data.unidadesMatLocal.length) ? data.unidadesMatLocal : unidadesMatLocal;
-    saveMaterialesCatalogo(); saveCompras(); saveFerreterias(); saveCategoriasMat(); saveUnidadesMat();
+    saveMaterialesCatalogo(); saveCompras(); saveFerreterias(); saveCategoriasMat(); saveSubcategoriasMat(); saveUnidadesMat();
     if(!modoCloud){
       materialesCatalogo = materialesCatalogoLocal;
       compras = comprasLocal;
       ferreterias = ferreteriasLocal;
       categoriasMat = categoriasMatLocal;
+      subcategoriasMat = subcategoriasMatLocal;
       unidadesMat = unidadesMatLocal;
     }
     if(typeof renderMaterialesCatalogo === 'function') renderMaterialesCatalogo();
@@ -1661,6 +1698,8 @@
     if(typeof renderFerreterias === 'function') renderFerreterias();
     if(typeof renderCategoriasMatLista === 'function') renderCategoriasMatLista();
     if(typeof renderCategoriasMatSelects === 'function') renderCategoriasMatSelects();
+    if(typeof renderSubcategoriasMatLista === 'function') renderSubcategoriasMatLista();
+    if(typeof renderSubcategoriasMatSelects === 'function') renderSubcategoriasMatSelects();
     if(typeof renderUnidadesMatDatalist === 'function') renderUnidadesMatDatalist();
 
     mostrarToast(modoCloud ? '✔ Respaldo restaurado en este dispositivo' : '✔ Datos restaurados correctamente');
@@ -2690,9 +2729,10 @@
   function abrirBuscarMaterialCatalogo(targetIndex){
     matLinkTargetIndex = (targetIndex===undefined) ? null : targetIndex;
     $('buscarMatCatQ').value = '';
-    const opts = categoriasMat.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
-    $('buscarMatCatCategoria').innerHTML = '<option value="">Todas las categorías</option>' + opts;
+    renderCategoriasMatSelects();
+    renderSubcategoriasMatSelects();
     $('buscarMatCatCategoria').value = '';
+    $('buscarMatCatSubcategoria').value = '';
     renderBuscarMaterialCatalogoResultados();
     openModal('modalBuscarMatCatalogo');
   }
@@ -2700,12 +2740,14 @@
   function renderBuscarMaterialCatalogoResultados(){
     const q = $('buscarMatCatQ').value.trim().toLowerCase();
     const fcat = $('buscarMatCatCategoria').value;
+    const fsubcat = $('buscarMatCatSubcategoria').value;
     const cont = $('buscarMatCatResultados');
     const resultados = materialesCatalogo.filter(m=>{
       if(m.estado==='Inactivo') return false;
       if(fcat && m.categoria !== fcat) return false;
+      if(fsubcat && m.subcategoria !== fsubcat) return false;
       if(q){
-        const texto = [(m.descripcion||''),(m.parte||''),(m.marca||''),nombreCategoriaMat(m.categoria)].join(' ').toLowerCase();
+        const texto = [(m.descripcion||''),(m.parte||''),(m.marca||''),nombreCategoriaMat(m.categoria),nombreSubcategoriaMat(m.subcategoria)].join(' ').toLowerCase();
         if(!texto.includes(q)) return false;
       }
       return true;
@@ -2719,7 +2761,7 @@
       return `<div class="bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg p-3 flex items-center justify-between gap-2">
         <div class="min-w-0">
           <p class="font-semibold text-sm text-slate-700 dark:text-slate-200 truncate">${esc(m.descripcion||'')}</p>
-          <p class="text-[11px] text-slate-400">${esc(m.marca||'—')}${m.parte?' · N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))}</p>
+          <p class="text-[11px] text-slate-400">${esc(m.marca||'—')}${m.parte?' · N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))}${m.subcategoria?' · '+esc(nombreSubcategoriaMat(m.subcategoria)):''}</p>
           <p class="text-[11px] ${stats?'text-emerald-600 dark:text-emerald-400 font-semibold':'text-slate-400'}">${stats?('Último costo: '+money(stats.ultimoPrecio)):'Sin historial de compras'}</p>
         </div>
         <button data-id="${m.id}" class="seleccionarMatCatalogo shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-1.5">Seleccionar</button>
@@ -2731,6 +2773,7 @@
   }
   $('buscarMatCatQ').addEventListener('input', renderBuscarMaterialCatalogoResultados);
   $('buscarMatCatCategoria').addEventListener('change', renderBuscarMaterialCatalogoResultados);
+  $('buscarMatCatSubcategoria').addEventListener('change', renderBuscarMaterialCatalogoResultados);
   $('btnBuscarMaterialCatalogo').addEventListener('click', ()=>abrirBuscarMaterialCatalogo(null));
 
   function seleccionarMaterialDeCatalogo(catalogoId){
@@ -5062,8 +5105,10 @@
   const LS_COMPRAS = 'msd_compras_v1';
   const LS_FERRETERIAS = 'msd_ferreterias_v1';
   const LS_CATEGORIAS_MAT = 'msd_categorias_materiales_v1'; // nueva en Etapa 3
+  const LS_SUBCATEGORIAS_MAT = 'msd_subcategorias_materiales_v1'; // nueva en Etapa 19
   const LS_UNIDADES_MAT = 'msd_unidades_materiales_v1';     // nueva en Etapa 3
   const DEFAULT_CATEGORIAS_MAT = ['Refrigeración','Electricidad','Electrónica','Plomería','Herramientas','Consumibles','Seguridad','Otros'];
+  const DEFAULT_SUBCATEGORIAS_MAT = ['Conexión','Fijación','Otro'];
   const DEFAULT_UNIDADES_MAT = ['Pieza','Metro','Kilogramo','Litro','Juego','Caja','Rollo','Otro'];
 
   // Etapa 18 — Bloque A: se separa la copia "Local" (persistida en localStorage, fuente de
@@ -5074,6 +5119,7 @@
   let comprasLocal = JSON.parse(localStorage.getItem(LS_COMPRAS) || '[]');
   let ferreteriasLocal = JSON.parse(localStorage.getItem(LS_FERRETERIAS) || '[]');
   let categoriasMatLocal = JSON.parse(localStorage.getItem(LS_CATEGORIAS_MAT) || 'null') || DEFAULT_CATEGORIAS_MAT.map(n=>({id:uid(), nombre:n, estado:'Activo'}));
+  let subcategoriasMatLocal = JSON.parse(localStorage.getItem(LS_SUBCATEGORIAS_MAT) || 'null') || DEFAULT_SUBCATEGORIAS_MAT.map(n=>({id:uid(), nombre:n, estado:'Activo'}));
   let unidadesMatLocal = JSON.parse(localStorage.getItem(LS_UNIDADES_MAT) || 'null') || DEFAULT_UNIDADES_MAT.slice();
 
   // Variables activas: apuntan a los datos locales por defecto; cuando hay sesión Firestore,
@@ -5082,12 +5128,14 @@
   let compras = comprasLocal;
   let ferreterias = ferreteriasLocal;
   let categoriasMat = categoriasMatLocal;
+  let subcategoriasMat = subcategoriasMatLocal;
   let unidadesMat = unidadesMatLocal;
 
   function saveMaterialesCatalogo(){ localStorage.setItem(LS_MATCAT, JSON.stringify(materialesCatalogoLocal)); }
   function saveCompras(){ localStorage.setItem(LS_COMPRAS, JSON.stringify(comprasLocal)); }
   function saveFerreterias(){ localStorage.setItem(LS_FERRETERIAS, JSON.stringify(ferreteriasLocal)); }
   function saveCategoriasMat(){ localStorage.setItem(LS_CATEGORIAS_MAT, JSON.stringify(categoriasMatLocal)); }
+  function saveSubcategoriasMat(){ localStorage.setItem(LS_SUBCATEGORIAS_MAT, JSON.stringify(subcategoriasMatLocal)); }
   function saveUnidadesMat(){ localStorage.setItem(LS_UNIDADES_MAT, JSON.stringify(unidadesMatLocal)); }
 
   // Migración no destructiva: los registros de la Etapa 1 no tenían fechas/estado formal, ni categoría como catálogo.
@@ -5117,14 +5165,47 @@
   function categoriaMatTieneMateriales(cat){
     return materialesCatalogo.some(m => m.categoria === cat.id || m.categoria === cat.nombre);
   }
+  function ordenAlfabMat(lista){ return [...lista].sort((a,b)=>a.nombre.localeCompare(b.nombre, 'es', {sensitivity:'base'})); }
 
+  // Etapa 19: los 3 selects de categoría (formulario de material, filtro del catálogo y filtro
+  // del buscador desde Servicios) se mantienen sincronizados aquí, siempre en orden alfabético,
+  // para facilitar encontrar un material al filtrar o al vincularlo desde una orden de servicio.
   function renderCategoriasMatSelects(){
-    const opts = categoriasMat.filter(c=>c.estado!=='Inactivo').map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
-    $('matcat_categoria').innerHTML = opts;
-    const optsFiltro = categoriasMat.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
-    const prev = $('matCatFiltroCategoria').value;
+    const activas = ordenAlfabMat(categoriasMat.filter(c=>c.estado!=='Inactivo'));
+    const todas = ordenAlfabMat(categoriasMat);
+    $('matcat_categoria').innerHTML = activas.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+
+    const optsFiltro = todas.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+    const prevFiltro = $('matCatFiltroCategoria').value;
     $('matCatFiltroCategoria').innerHTML = '<option value="">Todas las categorías</option>' + optsFiltro;
-    if([...$('matCatFiltroCategoria').options].some(o=>o.value===prev)) $('matCatFiltroCategoria').value = prev;
+    if([...$('matCatFiltroCategoria').options].some(o=>o.value===prevFiltro)) $('matCatFiltroCategoria').value = prevFiltro;
+
+    const prevBuscar = $('buscarMatCatCategoria').value;
+    $('buscarMatCatCategoria').innerHTML = '<option value="">Todas las categorías</option>' + optsFiltro;
+    if([...$('buscarMatCatCategoria').options].some(o=>o.value===prevBuscar)) $('buscarMatCatCategoria').value = prevBuscar;
+  }
+
+  function resolverSubcategoriaMat(valor){
+    if(!valor) return null;
+    return subcategoriasMat.find(c=>c.id===valor) || subcategoriasMat.find(c=>c.nombre===valor) || null;
+  }
+  function nombreSubcategoriaMat(valor){ const c = resolverSubcategoriaMat(valor); return c ? c.nombre : (valor || ''); }
+  function subcategoriaMatTieneMateriales(sub){
+    return materialesCatalogo.some(m => m.subcategoria === sub.id || m.subcategoria === sub.nombre);
+  }
+  function renderSubcategoriasMatSelects(){
+    const activas = ordenAlfabMat(subcategoriasMat.filter(c=>c.estado!=='Inactivo'));
+    const todas = ordenAlfabMat(subcategoriasMat);
+    $('matcat_subcategoria').innerHTML = '<option value="">Sin subcategoría</option>' + activas.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+
+    const optsFiltro = todas.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+    const prevFiltro = $('matCatFiltroSubcategoria').value;
+    $('matCatFiltroSubcategoria').innerHTML = '<option value="">Todas las subcategorías</option>' + optsFiltro;
+    if([...$('matCatFiltroSubcategoria').options].some(o=>o.value===prevFiltro)) $('matCatFiltroSubcategoria').value = prevFiltro;
+
+    const prevBuscar = $('buscarMatCatSubcategoria').value;
+    $('buscarMatCatSubcategoria').innerHTML = '<option value="">Todas las subcategorías</option>' + optsFiltro;
+    if([...$('buscarMatCatSubcategoria').options].some(o=>o.value===prevBuscar)) $('buscarMatCatSubcategoria').value = prevBuscar;
   }
   // Etapa 18: guarda la lista completa de categorías como documento único de configuración
   // (mismo patrón que sistemas_por_categoria) cuando hay sesión Firestore; si no, cae a local.
@@ -5170,6 +5251,49 @@
     $('nuevaCategoriaMat').value = '';
   });
 
+  // Etapa 19: mismo patrón que categorías, para las subcategorías (Conexión, Fijación, etc.).
+  function guardarSubcategoriasMat(nuevaLista){
+    if(modoCloud && db){
+      db.collection('config').doc('subcategorias_materiales').set({ data: nuevaLista }).catch(e=>alert('No se pudo guardar: '+e.message));
+    } else {
+      subcategoriasMatLocal = nuevaLista;
+      saveSubcategoriasMat();
+      subcategoriasMat = subcategoriasMatLocal;
+      renderSubcategoriasMatLista(); renderSubcategoriasMatSelects();
+    }
+  }
+  function renderSubcategoriasMatLista(){
+    $('subcategoriasMatLista').innerHTML = subcategoriasMat.map(c=>`
+      <div class="flex items-center justify-between py-2">
+        <span class="text-sm ${c.estado==='Inactivo'?'text-slate-400':'text-slate-700 dark:text-slate-200'}">${esc(c.nombre)}${c.estado==='Inactivo'?' <span class="text-[10px] text-slate-400">(inactiva)</span>':''}</span>
+        <div class="flex gap-2 text-xs font-semibold shrink-0">
+          <button data-id="${c.id}" class="toggleSubcategoriaMat text-amber-600 dark:text-amber-400">${c.estado==='Inactivo'?'Activar':'Desactivar'}</button>
+          <button data-id="${c.id}" class="delSubcategoriaMat text-red-500">Eliminar</button>
+        </div>
+      </div>`).join('');
+    $('subcategoriasMatLista').querySelectorAll('.toggleSubcategoriaMat').forEach(b=>b.addEventListener('click', ()=>{
+      const c = subcategoriasMat.find(x=>x.id===b.dataset.id);
+      if(!c) return;
+      const nuevaLista = subcategoriasMat.map(x=>x.id===c.id ? {...x, estado: x.estado==='Inactivo'?'Activo':'Inactivo'} : x);
+      guardarSubcategoriasMat(nuevaLista);
+    }));
+    $('subcategoriasMatLista').querySelectorAll('.delSubcategoriaMat').forEach(b=>b.addEventListener('click', ()=>{
+      const c = subcategoriasMat.find(x=>x.id===b.dataset.id);
+      if(!c) return;
+      if(subcategoriaMatTieneMateriales(c)){ alert(`"${c.nombre}" tiene materiales asociados — desactívala en vez de eliminarla.`); return; }
+      if(!confirm(`¿Eliminar la subcategoría "${c.nombre}"?`)) return;
+      guardarSubcategoriasMat(subcategoriasMat.filter(x=>x.id!==c.id));
+    }));
+  }
+  $('btnEditarSubcategoriasMat').addEventListener('click', ()=>{ renderSubcategoriasMatLista(); openModal('modalSubcategoriasMat'); });
+  $('btnAddSubcategoriaMat').addEventListener('click', ()=>{
+    const v = txt('nuevaSubcategoriaMat');
+    if(!v) return;
+    if(subcategoriasMat.some(c=>c.nombre.toLowerCase()===v.toLowerCase())){ alert('Ya existe esa subcategoría.'); return; }
+    guardarSubcategoriasMat([...subcategoriasMat, { id: uid(), nombre: v, estado: 'Activo' }]);
+    $('nuevaSubcategoriaMat').value = '';
+  });
+
   function renderUnidadesMatDatalist(){
     $('listaUnidadesMateriales').innerHTML = unidadesMat.map(u=>`<option value="${esc(u)}">`).join('');
   }
@@ -5208,12 +5332,14 @@
   function renderMaterialesCatalogo(){
     const q = txt('matCatBuscar').toLowerCase();
     const fcat = $('matCatFiltroCategoria').value;
+    const fsubcat = $('matCatFiltroSubcategoria').value;
     const mostrarInactivos = $('matCatMostrarInactivos').checked;
     const filtrados = materialesCatalogo.filter(m=>{
       if(!mostrarInactivos && m.estado==='Inactivo') return false;
       if(fcat && m.categoria !== fcat) return false;
+      if(fsubcat && m.subcategoria !== fsubcat) return false;
       if(q){
-        const texto = [(m.descripcion||''),(m.parte||''),(m.marca||''),nombreCategoriaMat(m.categoria)].join(' ').toLowerCase();
+        const texto = [(m.descripcion||''),(m.parte||''),(m.marca||''),nombreCategoriaMat(m.categoria),nombreSubcategoriaMat(m.subcategoria)].join(' ').toLowerCase();
         if(!texto.includes(q)) return false;
       }
       return true;
@@ -5225,7 +5351,7 @@
         <div class="flex items-center justify-between gap-2">
           <div class="min-w-0">
             <p class="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">${esc(m.descripcion||'')}</p>
-            <p class="text-[11px] text-slate-400">${esc(m.marca||'—')} ${m.parte?'· N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))}</p>
+            <p class="text-[11px] text-slate-400">${esc(m.marca||'—')} ${m.parte?'· N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))}${m.subcategoria?' · '+esc(nombreSubcategoriaMat(m.subcategoria)):''}</p>
           </div>
           ${m.estado==='Inactivo' ? '<span class="text-[10px] shrink-0 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400">inactivo</span>' : (stats ? `<span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0">${money(stats.ultimoPrecio)}</span>` : '')}
         </div>
@@ -5271,7 +5397,7 @@
     }));
     renderSelectorMaterialCompra();
   }
-  ['matCatBuscar','matCatFiltroCategoria','matCatMostrarInactivos'].forEach(id=>{
+  ['matCatBuscar','matCatFiltroCategoria','matCatFiltroSubcategoria','matCatMostrarInactivos'].forEach(id=>{
     $(id).addEventListener('input', renderMaterialesCatalogo);
     $(id).addEventListener('change', renderMaterialesCatalogo);
   });
@@ -5281,10 +5407,12 @@
     $('modalMaterialCatTitulo').textContent = id ? '🧰 Editar material' : '🧰 Nuevo material';
     $('matcat_editId').value = id || '';
     renderCategoriasMatSelects();
+    renderSubcategoriasMatSelects();
     $('matcat_descripcion').value = m.descripcion || '';
     $('matcat_parte').value = m.parte || '';
     $('matcat_marca').value = m.marca || '';
     $('matcat_categoria').value = m.categoria || '';
+    $('matcat_subcategoria').value = m.subcategoria || '';
     $('matcat_unidad').value = m.unidad || '';
     $('matcat_especificaciones').value = m.especificaciones || '';
     $('matcat_comentarios').value = m.comentarios || '';
@@ -5305,7 +5433,7 @@
     const hoy = new Date().toISOString().slice(0,10);
     const datos = {
       descripcion: txt('matcat_descripcion'), parte: txt('matcat_parte'), marca: txt('matcat_marca'),
-      categoria: $('matcat_categoria').value, unidad: txt('matcat_unidad'),
+      categoria: $('matcat_categoria').value, subcategoria: $('matcat_subcategoria').value, unidad: txt('matcat_unidad'),
       especificaciones: txt('matcat_especificaciones'), comentarios: txt('matcat_comentarios'),
       fechaActualizacion: hoy
     };
@@ -5382,7 +5510,7 @@
     $('matDetalleContenido').innerHTML = `
       <div>
         <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100">${esc(m.descripcion)}</h3>
-        <p class="text-xs text-slate-400 mt-1">${esc(m.marca||'—')} ${m.parte?'· N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))} · ${esc(m.unidad||'')} ${m.estado==='Inactivo'?' · <span class="text-slate-400">Inactivo</span>':''}</p>
+        <p class="text-xs text-slate-400 mt-1">${esc(m.marca||'—')} ${m.parte?'· N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))}${m.subcategoria?' · '+esc(nombreSubcategoriaMat(m.subcategoria)):''} · ${esc(m.unidad||'')} ${m.estado==='Inactivo'?' · <span class="text-slate-400">Inactivo</span>':''}</p>
       </div>
       ${m.especificaciones ? `<div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">Especificaciones</p><p class="whitespace-pre-line text-slate-700 dark:text-slate-200">${esc(m.especificaciones)}</p></div>` : ''}
       ${m.comentarios ? `<div><p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">Comentarios</p><p class="whitespace-pre-line text-slate-700 dark:text-slate-200">${esc(m.comentarios)}</p></div>` : ''}
