@@ -440,7 +440,10 @@
     <section id="matCatListaHeader" class="bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
       <div class="flex items-center justify-between mb-2">
         <h2 class="text-sm font-bold text-sky-600 dark:text-sky-400">🧰 Catálogo de materiales</h2>
-        <button id="btnNuevoMaterialCat" class="shrink-0 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Nuevo material</button>
+        <div class="flex gap-2 shrink-0">
+          <button id="btnSubirMaterialesLocales" class="hidden text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-white rounded-lg px-3 py-2">☁ Subir locales</button>
+          <button id="btnNuevoMaterialCat" class="text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-2">+ Nuevo material</button>
+        </div>
       </div>
       <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">Catálogo histórico — distinto de los materiales que registras dentro de cada orden de servicio.</p>
       <input id="matCatBuscar" type="text" placeholder="🔍 Buscar por descripción, N° de parte, marca o categoría..." class="w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-2 text-sm mb-2">
@@ -1368,6 +1371,7 @@
       unsubMatCat = db.collection('materiales_catalogo').onSnapshot(snap=>{
         materialesCatalogo = snap.docs.map(d=>({id:d.id, ...d.data()}));
         if(typeof renderMaterialesCatalogo === 'function') renderMaterialesCatalogo();
+        if(typeof actualizarBotonSubirMaterialesLocales === 'function') actualizarBotonSubirMaterialesLocales();
         if(typeof renderSelectorMaterialCompra === 'function') renderSelectorMaterialCompra();
       }, err=>{ setFbStatus('off', 'Error leyendo materiales: ' + err.message); });
 
@@ -1465,6 +1469,98 @@
       alert('Ocurrió un error migrando: ' + e.message + '\n\nRevisa que tus reglas de Firestore permitan leer/escribir en "catalogo_equipos", "config" y "trabajos_minisplit" para usuarios autenticados.');
     }
   }
+
+  // Etapa 19 — Migración de Materiales (local → nube) con remapeo de foreign keys.
+  //
+  // A diferencia de catalogo_equipos (que NO se referencia por ID desde trabajos, solo se usa
+  // para autocompletar), el catálogo de materiales SÍ se referencia por ID: cada renglón de
+  // materialesRows dentro de un trabajo puede traer materialCatalogoId apuntando a un doc de
+  // materiales_catalogo. Por eso no basta con "subir" los materiales locales con .add() —
+  // eso les da un ID nuevo de Firestore y rompe el enlace en cualquier trabajo que ya los
+  // referenciaba. Este bloque sube los materiales pendientes Y corrige esas referencias,
+  // tanto en trabajos ya sincronizados en la nube como en trabajosLocal (si hubiera historial
+  // solo-local en este dispositivo).
+
+  function materialesLocalesPendientes(){
+    const idsCloud = new Set(materialesCatalogo.map(m=>m.id));
+    return materialesCatalogoLocal.filter(m=>!idsCloud.has(m.id));
+  }
+
+  function actualizarBotonSubirMaterialesLocales(){
+    const btn = $('btnSubirMaterialesLocales');
+    if(!btn) return;
+    const pendientes = modoCloud && db ? materialesLocalesPendientes() : [];
+    btn.classList.toggle('hidden', pendientes.length === 0);
+    btn.textContent = pendientes.length ? `☁ Subir locales (${pendientes.length})` : '☁ Subir locales';
+  }
+
+  async function remapearMaterialCatalogoIdEnTrabajos(mapaIds){
+    if(!Object.keys(mapaIds).length) return;
+
+    // --- Trabajos ya sincronizados en la nube ---
+    if(modoCloud && db){
+      const snap = await db.collection('trabajos_minisplit').get();
+      const updates = [];
+      snap.docs.forEach(doc=>{
+        const t = doc.data();
+        if(!Array.isArray(t.materiales) || !t.materiales.length) return;
+        let cambio = false;
+        const nuevosMateriales = t.materiales.map(row=>{
+          if(row.materialCatalogoId && mapaIds[row.materialCatalogoId]){
+            cambio = true;
+            return { ...row, materialCatalogoId: mapaIds[row.materialCatalogoId] };
+          }
+          return row;
+        });
+        if(cambio) updates.push(doc.ref.update({ materiales: nuevosMateriales }));
+      });
+      if(updates.length) await Promise.all(updates);
+    }
+
+    // --- Historial de trabajos guardado solo en este dispositivo (si existiera) ---
+    let cambioLocal = false;
+    trabajosLocal.forEach(t=>{
+      if(!Array.isArray(t.materiales) || !t.materiales.length) return;
+      t.materiales.forEach(row=>{
+        if(row.materialCatalogoId && mapaIds[row.materialCatalogoId]){
+          row.materialCatalogoId = mapaIds[row.materialCatalogoId];
+          cambioLocal = true;
+        }
+      });
+    });
+    if(cambioLocal) saveTrabajos();
+  }
+
+  async function migrarMaterialesLocalesACloud(){
+    if(!modoCloud || !db) return;
+    const pendientes = materialesLocalesPendientes();
+    if(!pendientes.length){
+      mostrarToast('No hay materiales locales pendientes de subir');
+      return;
+    }
+    mostrarToast(`⏳ Subiendo ${pendientes.length} material(es) local(es) a la nube…`);
+    const mapaIds = {};
+    try{
+      for(const m of pendientes){
+        const { id, ...rest } = m;
+        const ref = await db.collection('materiales_catalogo').add(rest);
+        mapaIds[id] = ref.id;
+      }
+      await remapearMaterialCatalogoIdEnTrabajos(mapaIds);
+      mostrarToast(`✔ ${pendientes.length} material(es) subido(s) y referencias actualizadas`);
+      actualizarBotonSubirMaterialesLocales();
+    }catch(e){
+      alert('Ocurrió un error subiendo materiales: ' + e.message + '\n\nRevisa que tus reglas de Firestore permitan leer/escribir en "materiales_catalogo" y "trabajos_minisplit" para usuarios autenticados. Los materiales ya subidos antes del error quedaron guardados; puedes volver a intentar para el resto.');
+    }
+  }
+
+  $('btnSubirMaterialesLocales').addEventListener('click', ()=>{
+    const pendientes = materialesLocalesPendientes();
+    if(!pendientes.length){ mostrarToast('No hay materiales locales pendientes de subir'); return; }
+    if(confirm(`Encontré ${pendientes.length} material(es) guardado(s) solo en este dispositivo. ¿Subirlos a la nube ahora? Esto también actualizará el enlace (materialCatalogoId) en cualquier trabajo que ya los use.`)){
+      migrarMaterialesLocalesACloud();
+    }
+  });
 
   $('btnConfig').addEventListener('click', ()=>openModal('modalConfig'));
 
@@ -3840,7 +3936,7 @@
     });
     if(nombre==='investigacion') renderInvestigaciones();
     if(nombre==='biblioteca') renderBiblioteca();
-    if(nombre==='materiales'){ renderMaterialesCatalogo(); renderCompras(); renderFerreterias(); }
+    if(nombre==='materiales'){ renderMaterialesCatalogo(); renderCompras(); renderFerreterias(); actualizarBotonSubirMaterialesLocales(); }
     if(nombre==='kpi') renderKPI();
     if(nombre==='manual' && !manualInicializado) inicializarManual();
   }
