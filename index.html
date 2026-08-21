@@ -18,6 +18,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   html{ background:#eff6ff; }
   html.dark{ background:#020617; }
@@ -217,13 +218,14 @@
       <h2 class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">🧰 Materiales utilizados <span class="text-slate-400 font-normal normal-case">(opcional)</span></h2>
       <div class="flex gap-2">
         <button id="btnBuscarMaterialCatalogo" class="text-xs font-semibold bg-sky-100 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-1.5">🔎 Buscar en catálogo</button>
+        <button id="btnCompartirListaMateriales" class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-3 py-1.5">🖼️ Compartir lista</button>
         <button id="btnAddMaterial" class="text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-lg px-3 py-1.5">+ Agregar material</button>
       </div>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-xs">
         <thead><tr class="text-slate-400 text-left">
-          <th class="pb-1 pr-1 w-16">Cant.</th><th class="pb-1 pr-1">Descripción</th><th class="pb-1 pr-1 w-24">N° Parte</th><th class="pb-1 pr-1 w-24">P. Unit.</th><th class="pb-1 pr-1 w-24">Subtotal</th><th class="pb-1 w-8"></th>
+          <th class="pb-1 pr-1 w-16">Cant.</th><th class="pb-1 pr-1 w-20">Unidad</th><th class="pb-1 pr-1">Descripción</th><th class="pb-1 pr-1 w-24">N° Parte</th><th class="pb-1 pr-1 w-24">P. Unit.</th><th class="pb-1 pr-1 w-24">Subtotal</th><th class="pb-1 w-8"></th>
         </tr></thead>
         <tbody id="materialesBody"></tbody>
       </table>
@@ -2499,6 +2501,7 @@
       row.subtotal = subtotal;
       const filaPrincipal = `<tr class="border-b border-sky-100 dark:border-slate-800">
         <td class="py-1 pr-1"><input type="number" step="0.1" value="${row.cantidad??''}" data-i="${i}" data-f="cantidad" class="matInput w-14 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
+        <td class="py-1 pr-1"><input type="text" list="listaUnidadesMateriales" value="${esc(row.unidad||'')}" data-i="${i}" data-f="unidad" class="matInput w-16 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1" placeholder="Pza"></td>
         <td class="py-1 pr-1"><input type="text" value="${esc(row.descripcion||'')}" data-i="${i}" data-f="descripcion" class="matInput w-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
         <td class="py-1 pr-1"><input type="text" value="${esc(row.parte||'')}" data-i="${i}" data-f="parte" class="matInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
         <td class="py-1 pr-1"><input type="number" step="0.01" value="${row.precioUnit??''}" data-i="${i}" data-f="precioUnit" class="matInput w-20 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded px-1 py-1"></td>
@@ -2514,7 +2517,7 @@
             ? `Último costo: ${money(stats.ultimoPrecio)} · ${esc(stats.ultimaFecha||'—')} · ${esc(nombreFerreteria(stats.ultimaFerreteriaId))}`
             : 'Sin historial de compras';
           filaInfo = `<tr class="border-b border-sky-100 dark:border-slate-800">
-            <td colspan="6" class="pb-2 pt-0.5">
+            <td colspan="7" class="pb-2 pt-0.5">
               <div class="flex items-center justify-between gap-2 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-1.5">
                 <span class="text-[11px] text-slate-500 dark:text-slate-400 truncate">📦 Vinculado a catálogo: <strong class="text-slate-600 dark:text-slate-300">${esc(matCat.descripcion)}</strong> — ${infoTxt}</span>
                 <button data-i="${i}" class="unlinkMaterialCat text-[11px] font-semibold text-amber-600 dark:text-amber-400 shrink-0">Quitar vínculo</button>
@@ -2524,7 +2527,7 @@
         } else {
           // El material del catálogo ya no existe (fue eliminado) — no inventamos info, solo lo indicamos.
           filaInfo = `<tr class="border-b border-sky-100 dark:border-slate-800">
-            <td colspan="6" class="pb-2 pt-0.5">
+            <td colspan="7" class="pb-2 pt-0.5">
               <div class="flex items-center justify-between gap-2 bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-lg px-2 py-1.5">
                 <span class="text-[11px] text-slate-400">📦 Vinculado a un material del catálogo que ya no existe.</span>
                 <button data-i="${i}" class="unlinkMaterialCat text-[11px] font-semibold text-amber-600 dark:text-amber-400 shrink-0">Quitar vínculo</button>
@@ -2538,7 +2541,7 @@
       if(row.costoUnit !== null && row.costoUnit !== undefined && row.costoUnit !== ''){
         const costoTotal = (row.cantidad||0) * row.costoUnit;
         filaCostoCongelado = `<tr class="border-b border-sky-100 dark:border-slate-800">
-          <td colspan="6" class="pb-2 pt-0.5">
+          <td colspan="7" class="pb-2 pt-0.5">
             <div data-costo-row="${i}" class="text-[11px] text-slate-500 dark:text-slate-400 bg-amber-50 dark:bg-slate-800/60 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-1.5">
               💰 Costo: ${money(row.costoUnit)} × ${row.cantidad||0} = <strong class="text-slate-600 dark:text-slate-300">${money(costoTotal)}</strong>
             </div>
@@ -2546,7 +2549,7 @@
         </tr>`;
       } else if(row.materialCatalogoId){
         filaCostoCongelado = `<tr class="border-b border-sky-100 dark:border-slate-800">
-          <td colspan="6" class="pb-2 pt-0.5">
+          <td colspan="7" class="pb-2 pt-0.5">
             <div class="text-[11px] text-slate-400 bg-amber-50 dark:bg-slate-800/60 border border-amber-200 dark:border-slate-700 rounded-lg px-2 py-1.5">
               💰 Costo: Sin costo registrado
             </div>
@@ -2562,7 +2565,7 @@
         recalcularTotales();
         // Redibujar solo el subtotal de esa fila sin perder el foco de los demás campos
         const fila = inp.closest('tr');
-        fila.children[4].textContent = money((materialesRows[i].cantidad||0)*(materialesRows[i].precioUnit||0));
+        fila.children[5].textContent = money((materialesRows[i].cantidad||0)*(materialesRows[i].precioUnit||0));
         // Etapa 6: si cambia la cantidad, actualizar el texto de costo congelado (costoUnit NO cambia)
         if(f==='cantidad'){
           const row = materialesRows[i];
@@ -2575,6 +2578,7 @@
           }
         }
       });
+      inp.addEventListener('change', ()=>{ if(inp.dataset.f==='unidad') agregarUnidadMatSiNueva(inp.value.trim()); });
     });
     $('materialesBody').querySelectorAll('.delMaterial').forEach(b=>{
       b.addEventListener('click', ()=>{ materialesRows.splice(parseInt(b.dataset.i),1); renderMateriales(); recalcularTotales(); });
@@ -2591,6 +2595,92 @@
       });
     });
   }
+
+  // Etapa 19 — Bloque B: genera una imagen (PNG) con formato de "lista de compras" a partir de
+  // materialesRows, para compartir por WhatsApp con el cliente. Muestra cantidad + UNIDAD +
+  // descripción + precio + subtotal, y el total al final — la unidad es clave para que el
+  // cliente compre exactamente lo que corresponde (ej. 1 Kg de clavos vs 3 pza de clavos).
+  async function generarImagenListaMateriales(){
+    if(!materialesRows.length){ alert('Agrega al menos un material antes de generar la lista.'); return; }
+    if(typeof html2canvas === 'undefined'){ alert('No se pudo cargar el generador de imágenes. Revisa tu conexión a internet e intenta de nuevo.'); return; }
+
+    const clienteId = $('clienteSel') ? $('clienteSel').value : '';
+    const cliente = clientesActivos.find(c=>c.id===clienteId);
+    const numOrden = txt('numOrden');
+    const fechaVal = ($('fechaTrabajo') && $('fechaTrabajo').value) ? $('fechaTrabajo').value : new Date().toISOString().slice(0,10);
+    const fechaTxt = new Date(fechaVal + 'T12:00:00').toLocaleDateString('es-MX', {year:'numeric', month:'long', day:'numeric'});
+    const total = materialesRows.reduce((s,r)=>s+((r.cantidad||0)*(r.precioUnit||0)),0);
+
+    const filasHTML = materialesRows.map(r=>`
+      <tr>
+        <td style="padding:8px 6px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f172a;">${r.cantidad||0}</td>
+        <td style="padding:8px 6px;border-bottom:1px solid #e2e8f0;color:#0369a1;font-weight:700;">${esc(r.unidad||'—')}</td>
+        <td style="padding:8px 6px;border-bottom:1px solid #e2e8f0;color:#334155;">${esc(r.descripcion||'')}${r.parte?` <span style="color:#94a3b8;font-size:11px;">(N/P ${esc(r.parte)})</span>`:''}</td>
+        <td style="padding:8px 6px;border-bottom:1px solid #e2e8f0;text-align:right;color:#334155;">${money(r.precioUnit||0)}</td>
+        <td style="padding:8px 6px;border-bottom:1px solid #e2e8f0;text-align:right;font-weight:700;color:#0f172a;">${money((r.cantidad||0)*(r.precioUnit||0))}</td>
+      </tr>`).join('');
+
+    const wrap = document.createElement('div');
+    wrap.style.position = 'fixed'; wrap.style.left = '-9999px'; wrap.style.top = '0';
+    wrap.innerHTML = `
+      <div style="width:640px;font-family:Arial,Helvetica,sans-serif;background:#ffffff;padding:28px;">
+        <div style="display:flex;align-items:center;gap:10px;border-bottom:3px solid #0284c7;padding-bottom:14px;margin-bottom:16px;">
+          <div style="font-size:30px;">❄️</div>
+          <div>
+            <div style="font-size:20px;font-weight:800;color:#0c4a6e;">Servicios Robert's</div>
+            <div style="font-size:12px;color:#64748b;">Lista de materiales${numOrden ? ' — Orden ' + esc(numOrden) : ''}</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#475569;margin-bottom:14px;">
+          ${cliente ? `<div><strong>Cliente:</strong> ${esc(nombreCompleto(cliente))}</div>` : ''}
+          <div><strong>Fecha:</strong> ${fechaTxt}</div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:#f0f9ff;text-align:left;">
+              <th style="padding:8px 6px;color:#0369a1;font-size:11px;text-transform:uppercase;">Cant.</th>
+              <th style="padding:8px 6px;color:#0369a1;font-size:11px;text-transform:uppercase;">Unidad</th>
+              <th style="padding:8px 6px;color:#0369a1;font-size:11px;text-transform:uppercase;">Material</th>
+              <th style="padding:8px 6px;color:#0369a1;font-size:11px;text-transform:uppercase;text-align:right;">P. Unit.</th>
+              <th style="padding:8px 6px;color:#0369a1;font-size:11px;text-transform:uppercase;text-align:right;">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>${filasHTML}</tbody>
+        </table>
+        <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+          <div style="background:#0c4a6e;color:#ffffff;border-radius:10px;padding:10px 18px;font-size:15px;font-weight:800;">TOTAL: ${money(total)}</div>
+        </div>
+        <div style="margin-top:18px;font-size:10px;color:#94a3b8;text-align:center;">Generado por Servicios Robert's · ${new Date().toLocaleDateString('es-MX')}</div>
+      </div>`;
+    document.body.appendChild(wrap);
+
+    try{
+      const canvas = await html2canvas(wrap.firstElementChild, { scale: 2, backgroundColor: '#ffffff' });
+      document.body.removeChild(wrap);
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+      if(!blob){ alert('No se pudo generar la imagen.'); return; }
+      const nombreArchivo = `lista_materiales${numOrden ? '_' + numOrden.replace(/[^a-zA-Z0-9-_]/g,'') : ''}.png`;
+      const file = new File([blob], nombreArchivo, { type: 'image/png' });
+      const textoCompartir = `Lista de materiales — Servicios Robert's${numOrden ? ' (Orden ' + numOrden + ')' : ''}`;
+      try{
+        if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
+          await navigator.share({ files: [file], title: 'Lista de materiales', text: textoCompartir });
+          return;
+        }
+      }catch(e){ if(e.name === 'AbortError') return; }
+      // Sin Web Share (o el usuario no tiene WhatsApp asociado al share sheet): se descarga la
+      // imagen para que la comparta manualmente desde su galería.
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = nombreArchivo;
+      a.click();
+      mostrarToast('✔ Imagen descargada — compártela desde tu galería por WhatsApp');
+    }catch(e){
+      if(document.body.contains(wrap)) document.body.removeChild(wrap);
+      alert('Ocurrió un error generando la imagen: ' + e.message);
+    }
+  }
+  $('btnCompartirListaMateriales').addEventListener('click', generarImagenListaMateriales);
 
   /* ---- Etapa 5: vincular material de la orden con el catálogo histórico (solo consulta / referencia por ID) ---- */
   let matLinkTargetIndex = null; // null = crear una fila nueva; número = vincular una fila existente sin tocar su precio
@@ -2651,15 +2741,17 @@
     const stats = estadisticasPrecio(m.id);
     const costoUnit = stats ? stats.ultimoPrecio : null;
     if(matLinkTargetIndex === null){
-      // Nueva fila: se copia solo descripción/N° de parte como referencia editable; el precio al cliente
+      // Nueva fila: se copia descripción/N° de parte/unidad como referencia editable; el precio al cliente
       // queda en 0 para que el usuario lo capture — NUNCA se copia el costo del catálogo como precio de venta.
-      materialesRows.push({ cantidad:1, descripcion: m.descripcion||'', parte: m.parte||'', precioUnit:0, materialCatalogoId: m.id, costoUnit });
+      materialesRows.push({ cantidad:1, unidad: m.unidad||'', descripcion: m.descripcion||'', parte: m.parte||'', precioUnit:0, materialCatalogoId: m.id, costoUnit });
     } else {
       // Fila existente: solo se agrega la relación por ID y se congela costoUnit. Cantidad y precioUnit
-      // capturados por el usuario NO se tocan.
+      // capturados por el usuario NO se tocan. La unidad solo se autocompleta si la fila no traía una ya
+      // capturada manualmente, para no pisar lo que el usuario haya escrito.
       if(materialesRows[matLinkTargetIndex]){
         materialesRows[matLinkTargetIndex].materialCatalogoId = m.id;
         materialesRows[matLinkTargetIndex].costoUnit = costoUnit;
+        if(!materialesRows[matLinkTargetIndex].unidad && m.unidad) materialesRows[matLinkTargetIndex].unidad = m.unidad;
       }
     }
     closeModal('modalBuscarMatCatalogo');
@@ -2766,7 +2858,7 @@
   });
   $('ivaPorcentaje').addEventListener('input', recalcularTotales);
 
-  $('btnAddMaterial').addEventListener('click', ()=>{ materialesRows.push({cantidad:1, descripcion:'', parte:'', precioUnit:0}); renderMateriales(); recalcularTotales(); });
+  $('btnAddMaterial').addEventListener('click', ()=>{ materialesRows.push({cantidad:1, unidad:'', descripcion:'', parte:'', precioUnit:0}); renderMateriales(); recalcularTotales(); });
   $('btnAddManoObra').addEventListener('click', ()=>{ manoObraRows.push({cantidad:1, unidad:'Servicio', descripcion:'', precioUnit:0, costoRealUnit:null}); renderManoObra(); recalcularTotales(); });
   $('btnAddOtro').addEventListener('click', ()=>{ otrosRows.push({concepto:'', precio:0, tipo:'ingreso'}); renderOtros(); recalcularTotales(); });
 
@@ -3498,8 +3590,8 @@
       let html = '';
       if(materialesRows.length){
         html += `<div><h4 class="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-2">🧰 Materiales</h4>
-        <table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="pb-1 pr-2">Cant.</th><th class="pb-1 pr-2">Descripción</th><th class="pb-1 pr-2">N° Parte</th><th class="pb-1 pr-2">P. Unit.</th><th class="pb-1">Subtotal</th></tr></thead>
-        <tbody>${materialesRows.map(r=>filaCosto([r.cantidad, esc(r.descripcion||''), esc(r.parte||'—'), money(r.precioUnit||0), money((r.cantidad||0)*(r.precioUnit||0))])).join('')}</tbody></table>
+        <table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="pb-1 pr-2">Cant.</th><th class="pb-1 pr-2">Unidad</th><th class="pb-1 pr-2">Descripción</th><th class="pb-1 pr-2">N° Parte</th><th class="pb-1 pr-2">P. Unit.</th><th class="pb-1">Subtotal</th></tr></thead>
+        <tbody>${materialesRows.map(r=>filaCosto([r.cantidad, esc(r.unidad||'—'), esc(r.descripcion||''), esc(r.parte||'—'), money(r.precioUnit||0), money((r.cantidad||0)*(r.precioUnit||0))])).join('')}</tbody></table>
         <p class="text-right text-sm font-bold mt-1">Total materiales: ${money(totalMat)}</p></div>`;
       }
       if(manoObraRows.length){
@@ -3639,10 +3731,10 @@
 
       if(materialesRows.length){
         t += `\n🧰 *Materiales*\n\`\`\`\n`;
-        t += txt2('Cant',4)+' '+txt2('Descripción',13)+' '+num('P.Unit',7)+' '+num('Subt.',8) + '\n';
-        t += '-'.repeat(4+13+7+8+3) + '\n';
+        t += txt2('Cant',4)+' '+txt2('Unid',6)+' '+txt2('Descripción',13)+' '+num('P.Unit',7)+' '+num('Subt.',8) + '\n';
+        t += '-'.repeat(4+6+13+7+8+4) + '\n';
         materialesRows.forEach(row=>{
-          t += txt2(row.cantidad||0,4)+' '+txt2(row.descripcion||'',13)+' '+num(money(row.precioUnit||0),7)+' '+num(money((row.cantidad||0)*(row.precioUnit||0)),8) + '\n';
+          t += txt2(row.cantidad||0,4)+' '+txt2(row.unidad||'',6)+' '+txt2(row.descripcion||'',13)+' '+num(money(row.precioUnit||0),7)+' '+num(money((row.cantidad||0)*(row.precioUnit||0)),8) + '\n';
         });
         t += '```\n';
         t += `Subtotal materiales: *${money(d.totales.totalMat)}*\n`;
@@ -5133,10 +5225,15 @@
         <div class="flex items-center justify-between gap-2">
           <div class="min-w-0">
             <p class="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">${esc(m.descripcion||'')}</p>
-            <p class="text-[11px] text-slate-400">${esc(m.marca||'—')} ${m.parte?'· N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))} · ${esc(m.unidad||'')}</p>
+            <p class="text-[11px] text-slate-400">${esc(m.marca||'—')} ${m.parte?'· N/P '+esc(m.parte):''} · ${esc(nombreCategoriaMat(m.categoria))}</p>
           </div>
           ${m.estado==='Inactivo' ? '<span class="text-[10px] shrink-0 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400">inactivo</span>' : (stats ? `<span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0">${money(stats.ultimoPrecio)}</span>` : '')}
         </div>
+        <div class="flex flex-wrap items-center gap-1.5 mt-2">
+          ${m.unidad ? `<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300">📏 ${esc(m.unidad)}</span>` : ''}
+        </div>
+        ${m.especificaciones ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5"><span class="font-semibold text-slate-600 dark:text-slate-300">Especificaciones:</span> ${esc(m.especificaciones)}</p>` : ''}
+        ${m.comentarios ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><span class="font-semibold text-slate-600 dark:text-slate-300">Comentarios:</span> ${esc(m.comentarios)}</p>` : ''}
         <div class="flex gap-3 mt-2 text-xs font-semibold">
           <button data-id="${m.id}" class="verMaterialBtn text-slate-600 dark:text-slate-300">👁️ Ver</button>
           <button data-id="${m.id}" class="editarMaterialCat text-sky-600 dark:text-sky-400">✏️ Editar</button>
